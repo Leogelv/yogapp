@@ -1,4 +1,4 @@
-import { type FC, useMemo, useState } from 'react';
+import { type FC, useMemo, useState, useEffect } from 'react';
 import {
   initDataState as _initDataState,
   useSignal,
@@ -24,6 +24,13 @@ const listContainerStyle = {
 export const ProfilePage: FC = () => {
   const initDataState = useSignal(_initDataState);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [safeAreaValues, setSafeAreaValues] = useState({
+    top: '0px',
+    right: '0px',
+    bottom: '0px',
+    left: '0px',
+  });
+  const [showSafeAreaIndicator, setShowSafeAreaIndicator] = useState(false);
 
   // Пользователь из initData
   const user = useMemo(() => 
@@ -40,6 +47,45 @@ export const ProfilePage: FC = () => {
       setIsFullscreen(true);
     }
   };
+
+  // Получаем текущие значения CSS переменных content safe area
+  useEffect(() => {
+    const updateSafeAreaValues = () => {
+      const computedStyle = getComputedStyle(document.documentElement);
+      setSafeAreaValues({
+        top: computedStyle.getPropertyValue('--content-safe-area-top') || '0px',
+        right: computedStyle.getPropertyValue('--content-safe-area-right') || '0px',
+        bottom: computedStyle.getPropertyValue('--content-safe-area-bottom') || '0px',
+        left: computedStyle.getPropertyValue('--content-safe-area-left') || '0px',
+      });
+    };
+
+    // Запрашиваем информацию о content safe area
+    postEvent('web_app_request_content_safe_area');
+    
+    // Обновляем значения при монтировании
+    updateSafeAreaValues();
+    
+    // Устанавливаем интервал обновления для отслеживания изменений
+    const intervalId = setInterval(updateSafeAreaValues, 1000);
+    
+    return () => clearInterval(intervalId);
+  }, []);
+
+  // Стили для визуализации безопасной зоны
+  const safeAreaIndicatorStyle = showSafeAreaIndicator ? {
+    position: 'fixed' as const,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 999,
+    pointerEvents: 'none' as const,
+    borderTop: `${safeAreaValues.top} solid rgba(255, 0, 0, 0.3)`,
+    borderRight: `${safeAreaValues.right} solid rgba(0, 255, 0, 0.3)`,
+    borderBottom: `${safeAreaValues.bottom} solid rgba(0, 0, 255, 0.3)`,
+    borderLeft: `${safeAreaValues.left} solid rgba(255, 255, 0, 0.3)`,
+  } : {};
 
   // Если нет данных пользователя
   if (!user) {
@@ -61,6 +107,9 @@ export const ProfilePage: FC = () => {
 
   return (
     <Page>
+      {/* Визуальный индикатор безопасной зоны */}
+      {showSafeAreaIndicator && <div style={safeAreaIndicatorStyle} />}
+
       <div style={listContainerStyle}>
         <List>
           <Section header="Профиль пользователя">
@@ -105,6 +154,42 @@ export const ProfilePage: FC = () => {
               <div>Premium</div>
               <div>{user.is_premium ? 'Да' : 'Нет'}</div>
             </Cell>
+          </Section>
+          
+          {/* Отладочная информация для content safe area */}
+          <Section header="Отладка Content Safe Area">
+            <Cell multiline>
+              <div>Top</div>
+              <div>{safeAreaValues.top}</div>
+            </Cell>
+            <Cell multiline>
+              <div>Right</div>
+              <div>{safeAreaValues.right}</div>
+            </Cell>
+            <Cell multiline>
+              <div>Bottom</div>
+              <div>{safeAreaValues.bottom}</div>
+            </Cell>
+            <Cell multiline>
+              <div>Left</div>
+              <div>{safeAreaValues.left}</div>
+            </Cell>
+            <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <Button 
+                size="l" 
+                stretched 
+                onClick={() => postEvent('web_app_request_content_safe_area')}
+              >
+                Запросить Content Safe Area
+              </Button>
+              <Button 
+                size="l" 
+                stretched 
+                onClick={() => setShowSafeAreaIndicator(!showSafeAreaIndicator)}
+              >
+                {showSafeAreaIndicator ? 'Скрыть' : 'Показать'} индикатор Safe Area
+              </Button>
+            </div>
           </Section>
         </List>
       </div>
