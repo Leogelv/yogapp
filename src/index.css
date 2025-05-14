@@ -30,4 +30,21 @@ body {
   flex-direction: column;
   flex: 1;
   width: 100%;
+  box-sizing: border-box;
+}
+
+/* Стили для Telegram UI List и его контейнеров */
+.tgui-list {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.tgui-list__section {
+  width: 100% !important;
+}
+
+/* Добавление отступов для Telegram UI List внутри page-container */
+.page-container .tgui-list {
+  margin: 0 !important;
+  padding: 0 !important;
 }

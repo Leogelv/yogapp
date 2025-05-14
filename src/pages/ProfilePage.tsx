@@ -16,6 +16,11 @@ import {
 
 import { Page } from '@/components/Page.tsx';
 
+// Стили для контейнера списка
+const listContainerStyle = {
+  width: '100%',
+};
+
 export const ProfilePage: FC = () => {
   const initDataState = useSignal(_initDataState);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -56,51 +61,53 @@ export const ProfilePage: FC = () => {
 
   return (
     <Page>
-      <List>
-        <Section header="Профиль пользователя">
-          <div style={{ 
-            display: 'flex', 
-            flexDirection: 'column', 
-            alignItems: 'center', 
-            padding: '20px 0' 
-          }}>
-            <Avatar size={96} src={user.photo_url} alt={user.username || user.first_name} />
-            <Text weight="2" style={{ marginTop: 12, fontSize: 20 }}>
-              {user.first_name} {user.last_name || ''}
-            </Text>
-            {user.username && (
-              <Text style={{ color: 'var(--tgui-text-secondary)' }}>
-                @{user.username}
+      <div style={listContainerStyle}>
+        <List>
+          <Section header="Профиль пользователя">
+            <div style={{ 
+              display: 'flex', 
+              flexDirection: 'column', 
+              alignItems: 'center', 
+              padding: '20px 0' 
+            }}>
+              <Avatar size={96} src={user.photo_url} alt={user.username || user.first_name} />
+              <Text weight="2" style={{ marginTop: 12, fontSize: 20 }}>
+                {user.first_name} {user.last_name || ''}
               </Text>
-            )}
-          </div>
+              {user.username && (
+                <Text style={{ color: 'var(--tgui-text-secondary)' }}>
+                  @{user.username}
+                </Text>
+              )}
+            </div>
 
-          <div style={{ padding: 16 }}>
-            <Button 
-              size="l" 
-              stretched 
-              onClick={toggleFullscreen}
-            >
-              {isFullscreen ? 'Выйти из полноэкранного режима' : 'Включить полноэкранный режим'}
-            </Button>
-          </div>
-        </Section>
+            <div style={{ padding: 16 }}>
+              <Button 
+                size="l" 
+                stretched 
+                onClick={toggleFullscreen}
+              >
+                {isFullscreen ? 'Выйти из полноэкранного режима' : 'Включить полноэкранный режим'}
+              </Button>
+            </div>
+          </Section>
 
-        <Section header="Информация о пользователе">
-          <Cell multiline>
-            <div>ID пользователя</div>
-            <div>{user.id.toString()}</div>
-          </Cell>
-          <Cell multiline>
-            <div>Язык</div>
-            <div>{user.language_code || 'Не указан'}</div>
-          </Cell>
-          <Cell multiline>
-            <div>Premium</div>
-            <div>{user.is_premium ? 'Да' : 'Нет'}</div>
-          </Cell>
-        </Section>
-      </List>
+          <Section header="Информация о пользователе">
+            <Cell multiline>
+              <div>ID пользователя</div>
+              <div>{user.id.toString()}</div>
+            </Cell>
+            <Cell multiline>
+              <div>Язык</div>
+              <div>{user.language_code || 'Не указан'}</div>
+            </Cell>
+            <Cell multiline>
+              <div>Premium</div>
+              <div>{user.is_premium ? 'Да' : 'Нет'}</div>
+            </Cell>
+          </Section>
+        </List>
+      </div>
     </Page>
   );
 }; 
