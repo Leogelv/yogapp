@@ -10,6 +10,8 @@
 
 - **Content Safe Area** - подмножество безопасной зоны устройства, специфичное для UI элементов Telegram. Это пространство, где контент не будет перекрываться с элементами интерфейса Telegram.
 
+> **ВАЖНО**: В проекте используется именно **Safe Area** (не Content Safe Area) с добавлением 5 пикселей к каждому отступу для улучшения UX!
+
 ## Методы для работы с Safe Area
 
 ### `web_app_request_safe_area`
@@ -80,22 +82,31 @@ postEvent('web_app_request_content_safe_area');
 
 ```css
 :root {
+  /* Базовые значения Safe Area */
   --safe-area-top: 0px;
   --safe-area-right: 0px;
   --safe-area-bottom: 0px;
   --safe-area-left: 0px;
+  
+  /* Расчетные значения Safe Area с дополнительными 5 пикселями */
+  --safe-area-top-plus: calc(var(--safe-area-top, 0px) + 5px);
+  --safe-area-right-plus: calc(var(--safe-area-right, 0px) + 5px);
+  --safe-area-bottom-plus: calc(var(--safe-area-bottom, 0px) + 5px);
+  --safe-area-left-plus: calc(var(--safe-area-left, 0px) + 5px);
+  
+  /* Для совместимости также доступны значения Content Safe Area */
   --content-safe-area-top: 0px;
   --content-safe-area-right: 0px;
   --content-safe-area-bottom: 0px;
   --content-safe-area-left: 0px;
 }
 
-/* Пример использования переменных */
+/* Пример использования переменных (рекомендуемый подход) */
 body {
-  padding-top: var(--content-safe-area-top, 0px);
-  padding-right: var(--content-safe-area-right, 0px);
-  padding-bottom: var(--content-safe-area-bottom, 0px);
-  padding-left: var(--content-safe-area-left, 0px);
+  padding-top: var(--safe-area-top-plus);
+  padding-right: var(--safe-area-right-plus);
+  padding-bottom: var(--safe-area-bottom-plus);
+  padding-left: var(--safe-area-left-plus);
 }
 ```
 
@@ -161,27 +172,37 @@ postEvent('web_app_expand');
 
 ## Реализация в проекте
 
-Для корректной работы с safe area в проекте, рекомендуется:
+Для корректной работы с safe area в проекте используется следующий подход:
 
-1. При инициализации приложения запросить текущие значения:
+1. При инициализации приложения запрашиваем текущие значения safe area:
 ```typescript
 useEffect(() => {
   postEvent('web_app_request_safe_area');
-  postEvent('web_app_request_content_safe_area');
 }, []);
 ```
 
-2. Применить CSS переменные в стилях:
+2. Добавляем +5px к каждому отступу safe area для улучшения UX:
 ```css
-.app-container {
-  padding-top: var(--content-safe-area-top, 0px);
-  padding-right: var(--content-safe-area-right, 0px);
-  padding-bottom: var(--content-safe-area-bottom, 0px);
-  padding-left: var(--content-safe-area-left, 0px);
+:root {
+  --safe-area-top-plus: calc(var(--safe-area-top, 0px) + 5px);
+  --safe-area-right-plus: calc(var(--safe-area-right, 0px) + 5px);
+  --safe-area-bottom-plus: calc(var(--safe-area-bottom, 0px) + 5px);
+  --safe-area-left-plus: calc(var(--safe-area-left, 0px) + 5px);
 }
 ```
 
-3. Слушать события изменения:
+3. Применяем эти расчетные значения в компоненте Page:
+```typescript
+// Стили для учета отступов safe area с дополнительными 5px
+const safeAreaStyle = {
+  paddingTop: 'var(--safe-area-top-plus, 5px)',
+  paddingRight: 'var(--safe-area-right-plus, 5px)',
+  paddingBottom: 'var(--safe-area-bottom-plus, 5px)',
+  paddingLeft: 'var(--safe-area-left-plus, 5px)',
+};
+```
+
+4. Слушаем события изменения значений safe area:
 ```typescript
 useEffect(() => {
   const handleEvents = (event: MessageEvent) => {
@@ -192,10 +213,10 @@ useEffect(() => {
         ? JSON.parse(event.data) 
         : event.data;
         
-      if (data.eventType === 'content_safe_area_changed' || 
-          data.eventType === 'safe_area_changed') {
+      if (data.eventType === 'safe_area_changed') {
         // Обработать изменения
         console.log(data.eventType, data.eventData);
+        applySafeAreaToCSS(data.eventData);
       }
     } catch (e) {
       console.error('Error parsing event data:', e);

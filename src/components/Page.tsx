@@ -2,12 +2,12 @@ import { useNavigate } from 'react-router-dom';
 import { hideBackButton, onBackButtonClick, showBackButton, postEvent } from '@telegram-apps/sdk-react';
 import { type PropsWithChildren, useEffect, useRef } from 'react';
 
-// Стили для учета отступов content safe area
-const contentSafeAreaStyle = {
-  paddingTop: 'var(--content-safe-area-top, 0px)',
-  paddingRight: 'var(--content-safe-area-right, 0px)',
-  paddingBottom: 'var(--content-safe-area-bottom, 0px)',
-  paddingLeft: 'var(--content-safe-area-left, 0px)',
+// Стили для учета отступов safe area с дополнительными 5px
+const safeAreaStyle = {
+  paddingTop: 'var(--safe-area-top-plus, 5px)',
+  paddingRight: 'var(--safe-area-right-plus, 5px)',
+  paddingBottom: 'var(--safe-area-bottom-plus, 5px)',
+  paddingLeft: 'var(--safe-area-left-plus, 5px)',
   flex: 1,
   display: 'flex',
   flexDirection: 'column' as const,
@@ -34,13 +34,13 @@ export function Page({ children, back = true }: PropsWithChildren<{
     hideBackButton();
   }, [back, navigate]);
 
-  // Повторно запрашиваем content safe area при монтировании страницы
+  // Повторно запрашиваем safe area при монтировании страницы
   useEffect(() => {
-    postEvent('web_app_request_content_safe_area');
+    postEvent('web_app_request_safe_area');
   }, []);
 
   return (
-    <div className="page-container" style={contentSafeAreaStyle} ref={containerRef}>
+    <div className="page-container" style={safeAreaStyle} ref={containerRef}>
       {children}
     </div>
   );
