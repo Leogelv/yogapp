@@ -4,7 +4,6 @@ import { App } from '@/components/App.tsx';
 import { ErrorBoundary } from '@/components/ErrorBoundary.tsx';
 import { AppWrapper } from '@/components/AppWrapper.tsx';
 import { publicUrl } from '@/helpers/publicUrl.ts';
-import { SupabaseProvider } from '@/lib/supabase/context';
 
 function ErrorBoundaryError({ error }: { error: unknown }) {
   return (
@@ -29,11 +28,9 @@ export function Root() {
       <TonConnectUIProvider
         manifestUrl={publicUrl('tonconnect-manifest.json')}
       >
-        <SupabaseProvider>
-          <AppWrapper>
-            <App/>
-          </AppWrapper>
-        </SupabaseProvider>
+        <AppWrapper>
+          <App/>
+        </AppWrapper>
       </TonConnectUIProvider>
     </ErrorBoundary>
   );
