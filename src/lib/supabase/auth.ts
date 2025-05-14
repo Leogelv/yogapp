@@ -132,6 +132,14 @@ interface InitData {
   [key: string]: any;
 }
 
+// Добавим фиктивный объект TelegramUser для отладки
+const MOCK_TELEGRAM_USER: TelegramUser = {
+  id: 123456789,
+  first_name: 'Test',
+  auth_date: Math.floor(Date.now() / 1000),
+  hash: 'test-hash'
+};
+
 // Инициализирует пользователя в системе
 export async function initializeUser(): Promise<{
   user: TelegramUser | null;
@@ -141,65 +149,178 @@ export async function initializeUser(): Promise<{
   try {
     // Получаем данные из Telegram
     try {
-      const { initData } = retrieveLaunchParams();
-      const typedInitData = initData as InitData;
+      console.log('Получаем данные из Telegram...');
+      let telegramUser: TelegramUser | null = null;
       
-      if (!typedInitData.user) {
-        console.warn('Пользователь Telegram не найден в initData');
-        return { 
-          user: null, 
-          dbUser: null, 
-          error: 'Не удалось получить данные пользователя из Telegram' 
-        };
+      try {
+        const launchParams = retrieveLaunchParams();
+        console.log('Launch Params retrieved');
+        
+        // Безопасный журнал: не выводим полный объект, только структуру
+        console.log('Launch Params structure:', Object.keys(launchParams));
+        
+        const { initData } = launchParams;
+        
+        // Проверка на существование и тип initData
+        if (initData) {
+          console.log('Init Data получены. Тип:', typeof initData);
+          
+          if (typeof initData === 'string' && initData.length > 0) {
+            try {
+              // Если initData - строка, пытаемся распарсить его как JSON
+              const parsedData = JSON.parse(initData);
+              console.log('Init Data успешно распарсены, ключи:', Object.keys(parsedData));
+              
+              if (parsedData && parsedData.user) {
+                console.log('Пользователь найден в parsedData');
+                telegramUser = parsedData.user as TelegramUser;
+              } else {
+                console.warn('Пользователь не найден в parsedData');
+              }
+            } catch (parseError) {
+              console.error('Ошибка при парсинге initData:', parseError);
+              console.log('Raw initData (первые 100 символов):', 
+                initData.substring(0, 100) + (initData.length > 100 ? '...' : ''));
+            }
+          } else if (typeof initData === 'object' && initData !== null) {
+            const typedInitData = initData as InitData;
+            
+            console.log('initData является объектом, ключи:', Object.keys(typedInitData));
+            
+            if (typedInitData.user) {
+              console.log('Пользователь найден в initData object');
+              telegramUser = typedInitData.user as TelegramUser;
+            } else {
+              console.warn('Пользователь не найден в initData object');
+            }
+          } else {
+            console.warn(`initData имеет неподдерживаемый тип: ${typeof initData}`);
+          }
+        } else {
+          console.warn('initData отсутствует в launchParams');
+        }
+      } catch (launchParamsError) {
+        console.error('Ошибка при получении launchParams:', launchParamsError);
+      }
+      
+      // Если не удалось получить пользователя, используем моки для отладки
+      if (!telegramUser) {
+        console.warn('Пользователь Telegram не найден, используем запасной вариант');
+        
+        // В режиме разработки используем тестового пользователя
+        if (import.meta.env.DEV) {
+          telegramUser = { ...MOCK_TELEGRAM_USER };
+          console.log('Используем тестового пользователя:', telegramUser);
+        } else {
+          // В продакшене пытаемся создать минимальный профиль из URL-параметров
+          try {
+            const params = new URLSearchParams(window.location.search);
+            const userId = params.get('user_id') || params.get('tgWebAppStartParam');
+            
+            if (userId) {
+              console.log('Используем ID из URL-параметров:', userId);
+              telegramUser = {
+                id: parseInt(userId, 10) || Math.floor(Math.random() * 1000000 + 100000),
+                first_name: 'Guest',
+                auth_date: Math.floor(Date.now() / 1000),
+                hash: 'generated-hash'
+              };
+            } else {
+              console.warn('ID пользователя не найден в URL-параметрах');
+              return { 
+                user: null, 
+                dbUser: null, 
+                error: 'Не удалось получить данные пользователя из Telegram' 
+              };
+            }
+          } catch (urlError) {
+            console.error('Ошибка при получении данных из URL:', urlError);
+            return { 
+              user: null, 
+              dbUser: null, 
+              error: 'Не удалось получить данные пользователя' 
+            };
+          }
+        }
       }
 
-      const telegramUser = typedInitData.user as TelegramUser;
+      console.log('Получен пользователь Telegram:', 
+        telegramUser ? `ID: ${telegramUser.id}, Name: ${telegramUser.first_name}` : 'null');
       
       // Проверяем, существует ли пользователь
-      const userExists = await checkUserExists(telegramUser.id);
+      console.log('Проверяем существование пользователя в БД...');
       
-      if (userExists) {
-        // Если пользователь существует, обновляем время последнего входа
-        await updateUserLastLogin(telegramUser.id);
+      try {
+        const userExists = await checkUserExists(telegramUser.id);
+        console.log('Пользователь существует в БД:', userExists);
         
-        // Пытаемся выполнить вход в Supabase Auth
-        await loginUser(telegramUser.id);
-        
-        // Получаем данные пользователя из БД
-        const dbUser = await getUser(telegramUser.id);
-        
-        return { user: telegramUser, dbUser, error: null };
-      } else {
-        // Если пользователя нет, создаем нового
-        const userId = await registerUser(telegramUser);
-        
-        if (!userId) {
-          return { 
-            user: telegramUser, 
-            dbUser: null, 
-            error: 'Не удалось зарегистрировать пользователя' 
-          };
+        if (userExists) {
+          // Если пользователь существует, обновляем время последнего входа
+          await updateUserLastLogin(telegramUser.id);
+          
+          // Пытаемся выполнить вход в Supabase Auth
+          await loginUser(telegramUser.id);
+          
+          // Получаем данные пользователя из БД
+          const dbUser = await getUser(telegramUser.id);
+          console.log('Получены данные пользователя из БД');
+          
+          return { user: telegramUser, dbUser, error: null };
+        } else {
+          console.log('Создаем нового пользователя...');
+          // Если пользователя нет, создаем нового
+          const userId = await registerUser(telegramUser);
+          
+          if (!userId) {
+            return { 
+              user: telegramUser, 
+              dbUser: null, 
+              error: 'Не удалось зарегистрировать пользователя' 
+            };
+          }
+          
+          console.log('Пользователь зарегистрирован с ID:', userId);
+          
+          // Создаем запись в таблице users
+          const created = await createUserRecord(userId, telegramUser);
+          
+          if (!created) {
+            return { 
+              user: telegramUser, 
+              dbUser: null, 
+              error: 'Не удалось создать запись пользователя' 
+            };
+          }
+          
+          console.log('Запись пользователя создана, получаем данные...');
+          
+          // Получаем созданные данные
+          const dbUser = await getUser(telegramUser.id);
+          
+          return { user: telegramUser, dbUser, error: null };
         }
-        
-        // Создаем запись в таблице users
-        const created = await createUserRecord(userId, telegramUser);
-        
-        if (!created) {
-          return { 
-            user: telegramUser, 
-            dbUser: null, 
-            error: 'Не удалось создать запись пользователя' 
-          };
-        }
-        
-        // Получаем созданные данные
-        const dbUser = await getUser(telegramUser.id);
-        
-        return { user: telegramUser, dbUser, error: null };
+      } catch (dbError) {
+        console.error('Ошибка при работе с базой данных:', dbError);
+        return { 
+          user: telegramUser, 
+          dbUser: null, 
+          error: `Ошибка БД: ${dbError instanceof Error ? dbError.message : String(dbError)}` 
+        };
       }
     } catch (initError) {
       console.error('Ошибка при получении данных из Telegram:', initError);
-      // Возвращаем минимальные данные, чтобы приложение могло работать
+      console.trace(initError); // Выводим стек вызовов
+      
+      // В режиме разработки возвращаем мок-пользователя для отладки
+      if (import.meta.env.DEV) {
+        console.log('Используем тестового пользователя для отладки');
+        return {
+          user: MOCK_TELEGRAM_USER,
+          dbUser: null,
+          error: null
+        };
+      }
+      
       return { 
         user: null,
         dbUser: null,

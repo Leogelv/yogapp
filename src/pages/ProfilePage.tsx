@@ -1,4 +1,4 @@
-import { type FC, useState, useEffect } from 'react';
+import { type FC, useState, useEffect, useCallback } from 'react';
 import { postEvent } from '@telegram-apps/sdk-react';
 import { 
   List, 
@@ -19,8 +19,11 @@ const listContainerStyle = {
   width: '100%',
 };
 
+// Режим отладки
+const isDebugMode = import.meta.env.DEV || import.meta.env.VITE_DEBUG === 'true';
+
 export const ProfilePage: FC = () => {
-  const { user, telegramUser, loading, error } = useSupabase();
+  const { user, telegramUser, loading, error, refreshUser } = useSupabase();
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [safeAreaValues, setSafeAreaValues] = useState({
     top: '0px',
@@ -30,66 +33,130 @@ export const ProfilePage: FC = () => {
   });
   const [fullscreenPadding, setFullscreenPadding] = useState('0px');
   const [showSafeAreaIndicator, setShowSafeAreaIndicator] = useState(false);
+  const [debugInfo, setDebugInfo] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+
+  // Логирует данные для отладки
+  useEffect(() => {
+    if (isDebugMode) {
+      try {
+        const debug = {
+          environment: import.meta.env.MODE || 'unknown',
+          userPresent: !!user,
+          telegramUserPresent: !!telegramUser,
+          isLoading: loading,
+          error: error || 'none',
+          retryCount,
+          userKeys: user ? Object.keys(user) : [],
+          telegramUserKeys: telegramUser ? Object.keys(telegramUser) : [],
+          telegramUserData: telegramUser ? {
+            id: telegramUser.id,
+            name: telegramUser.first_name,
+            username: telegramUser.username || 'none'
+          } : null,
+          windowLocation: {
+            href: window.location.href,
+            hash: window.location.hash,
+            search: window.location.search,
+          }
+        };
+        
+        console.log('Debug Info:', debug);
+        setDebugInfo(JSON.stringify(debug, null, 2));
+      } catch (err) {
+        console.error('Ошибка при сборе отладочной информации:', err);
+        setDebugInfo(`Ошибка отладки: ${err instanceof Error ? err.message : String(err)}`);
+      }
+    }
+  }, [user, telegramUser, loading, error, retryCount]);
 
   // Переключение режима fullscreen
   const toggleFullscreen = () => {
-    if (isFullscreen) {
-      postEvent('web_app_exit_fullscreen');
-      setIsFullscreen(false);
-    } else {
-      postEvent('web_app_request_fullscreen');
-      setIsFullscreen(true);
+    try {
+      if (isFullscreen) {
+        postEvent('web_app_exit_fullscreen');
+        setIsFullscreen(false);
+      } else {
+        postEvent('web_app_request_fullscreen');
+        setIsFullscreen(true);
+      }
+    } catch (err) {
+      console.error('Ошибка при переключении полноэкранного режима:', err);
+      if (isDebugMode) {
+        setDebugInfo(prev => `${prev}\n\nОшибка fullscreen: ${err instanceof Error ? err.message : String(err)}`);
+      }
     }
   };
+
+  // Попытка повторно загрузить данные пользователя
+  const handleRetryLoad = useCallback(async () => {
+    try {
+      setRetryCount(prev => prev + 1);
+      await refreshUser();
+    } catch (err) {
+      console.error('Ошибка при попытке обновления данных:', err);
+      if (isDebugMode) {
+        setDebugInfo(prev => `${prev}\n\nОшибка обновления: ${err instanceof Error ? err.message : String(err)}`);
+      }
+    }
+  }, [refreshUser]);
 
   // Получаем текущие значения CSS переменных safe area
   useEffect(() => {
     const updateSafeAreaValues = () => {
-      const computedStyle = getComputedStyle(document.documentElement);
-      setSafeAreaValues({
-        top: computedStyle.getPropertyValue('--safe-area-top') || '0px',
-        right: computedStyle.getPropertyValue('--safe-area-right') || '0px',
-        bottom: computedStyle.getPropertyValue('--safe-area-bottom') || '0px',
-        left: computedStyle.getPropertyValue('--safe-area-left') || '0px',
-      });
-      setFullscreenPadding(computedStyle.getPropertyValue('--fullscreen-extra-padding') || '0px');
-    };
-
-    // Запрашиваем информацию о safe area
-    postEvent('web_app_request_safe_area');
-    postEvent('web_app_request_viewport');
-    
-    // Обновляем значения при монтировании
-    updateSafeAreaValues();
-    
-    // Устанавливаем интервал обновления для отслеживания изменений
-    const intervalId = setInterval(updateSafeAreaValues, 1000);
-    
-    // Подписываемся на события от Telegram
-    const handleEvents = (event: MessageEvent) => {
       try {
-        if (!event.data) return;
-        
-        const data = typeof event.data === 'string' 
-          ? JSON.parse(event.data) 
-          : event.data;
-          
-        if (data.eventType === 'safe_area_changed' || data.eventType === 'viewport_changed') {
-          if (data.eventType === 'viewport_changed' && data.eventData) {
-            setIsFullscreen(!!data.eventData.is_expanded);
-          }
-        }
-      } catch (e) {
-        console.error('Error parsing event data:', e);
+        const computedStyle = getComputedStyle(document.documentElement);
+        setSafeAreaValues({
+          top: computedStyle.getPropertyValue('--safe-area-top') || '0px',
+          right: computedStyle.getPropertyValue('--safe-area-right') || '0px',
+          bottom: computedStyle.getPropertyValue('--safe-area-bottom') || '0px',
+          left: computedStyle.getPropertyValue('--safe-area-left') || '0px',
+        });
+        setFullscreenPadding(computedStyle.getPropertyValue('--fullscreen-extra-padding') || '0px');
+      } catch (err) {
+        console.error('Ошибка при получении стилей:', err);
       }
     };
-    
-    window.addEventListener('message', handleEvents);
-    
-    return () => {
-      clearInterval(intervalId);
-      window.removeEventListener('message', handleEvents);
-    };
+
+    try {
+      // Запрашиваем информацию о safe area
+      postEvent('web_app_request_safe_area');
+      postEvent('web_app_request_viewport');
+      
+      // Обновляем значения при монтировании
+      updateSafeAreaValues();
+      
+      // Устанавливаем интервал обновления для отслеживания изменений
+      const intervalId = setInterval(updateSafeAreaValues, 1000);
+      
+      // Подписываемся на события от Telegram
+      const handleEvents = (event: MessageEvent) => {
+        try {
+          if (!event.data) return;
+          
+          const data = typeof event.data === 'string' 
+            ? JSON.parse(event.data) 
+            : event.data;
+            
+          if (data.eventType === 'safe_area_changed' || data.eventType === 'viewport_changed') {
+            if (data.eventType === 'viewport_changed' && data.eventData) {
+              setIsFullscreen(!!data.eventData.is_expanded);
+            }
+          }
+        } catch (e) {
+          console.error('Error parsing event data:', e);
+        }
+      };
+      
+      window.addEventListener('message', handleEvents);
+      
+      return () => {
+        clearInterval(intervalId);
+        window.removeEventListener('message', handleEvents);
+      };
+    } catch (err) {
+      console.error('Ошибка при установке обработчиков событий:', err);
+    }
   }, []);
 
   // Стили для визуализации безопасной зоны
@@ -125,7 +192,13 @@ export const ProfilePage: FC = () => {
       <Page>
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
           <Spinner size="l" />
+          {isDebugMode && <Text style={{ marginTop: 20 }}>Загрузка данных пользователя...</Text>}
         </div>
+        {isDebugMode && debugInfo && (
+          <div style={{ marginTop: 20, textAlign: 'left', maxHeight: 200, overflow: 'auto', fontSize: 12, padding: 12 }}>
+            <pre>{debugInfo}</pre>
+          </div>
+        )}
       </Page>
     );
   }
@@ -143,53 +216,62 @@ export const ProfilePage: FC = () => {
             src="https://xelene.me/telegram.gif"
             style={{ display: 'block', width: '144px', height: '144px' }}
           />
+          <div style={{ marginTop: 20 }}>
+            <Button onClick={handleRetryLoad}>Повторить</Button>
+          </div>
+          {isDebugMode && debugInfo && (
+            <div style={{ marginTop: 20, textAlign: 'left', maxHeight: 200, overflow: 'auto', fontSize: 12 }}>
+              <pre>{debugInfo}</pre>
+            </div>
+          )}
         </Placeholder>
       </Page>
     );
   }
 
-  // Если нет данных пользователя
-  if (!telegramUser && !user) {
-    return (
-      <Page>
-        <Placeholder
-          header="Нет данных пользователя"
-          description="Не удалось получить данные пользователя"
-        >
-          <img
-            alt="Telegram sticker"
-            src="https://xelene.me/telegram.gif"
-            style={{ display: 'block', width: '144px', height: '144px' }}
-          />
-        </Placeholder>
-      </Page>
-    );
-  }
-
-  // Используем данные из Supabase если есть, иначе из Telegram
+  // Убедимся, что по крайней мере хоть какие-то данные пользователя есть
   const displayUser = user || telegramUser;
   
-  // Убедимся, что displayUser не null
   if (!displayUser) {
     return (
       <Page>
         <Placeholder
-          header="Ошибка данных"
-          description="Что-то пошло не так"
+          header="Нет данных пользователя"
+          description="Не удалось получить данные пользователя из Telegram или Supabase"
         >
           <img
             alt="Telegram sticker"
             src="https://xelene.me/telegram.gif"
             style={{ display: 'block', width: '144px', height: '144px' }}
           />
+          <div style={{ marginTop: 20 }}>
+            <Button onClick={handleRetryLoad}>Повторить</Button>
+          </div>
+          {isDebugMode && debugInfo && (
+            <div style={{ marginTop: 20, textAlign: 'left', maxHeight: 200, overflow: 'auto', fontSize: 12 }}>
+              <pre>{debugInfo}</pre>
+            </div>
+          )}
         </Placeholder>
       </Page>
     );
   }
   
-  const displayName = displayUser.first_name + (displayUser.last_name ? ` ${displayUser.last_name}` : '');
-  const photoUrl = displayUser.photo_url;
-  const username = displayUser.username;
+  // Создаем безопасную обертку для извлечения данных пользователя
+  // с fallback значениями для предотвращения ошибок
+  const safeUser = {
+    first_name: displayUser.first_name || 'Пользователь',
+    last_name: displayUser.last_name || '',
+    photo_url: displayUser.photo_url || '',
+    username: displayUser.username || '', 
+    id: displayUser.id || 0,
+    last_login: user?.last_login ? new Date(user.last_login).toLocaleString() : 'Недавно'
+  };
+  
+  // Извлекаем и проверяем данные пользователя
+  const displayName = safeUser.first_name + (safeUser.last_name ? ` ${safeUser.last_name}` : '');
+  const photoUrl = safeUser.photo_url;
+  const username = safeUser.username;
 
   return (
     <Page>
@@ -216,86 +298,50 @@ export const ProfilePage: FC = () => {
                 </Text>
               )}
               {user && (
-                <Text style={{ color: 'var(--tgui-text-secondary)', marginTop: 8, fontSize: 12 }}>
-                  Последний вход: {new Date(user.last_login).toLocaleString()}
+                <Text style={{ 
+                  color: 'var(--tgui-text-secondary)', 
+                  fontSize: 14, 
+                  marginTop: 4 
+                }}>
+                  Последний вход: {safeUser.last_login}
                 </Text>
               )}
             </div>
-
-            <div style={{ padding: 16 }}>
-              <Button 
-                size="l" 
-                stretched 
-                onClick={toggleFullscreen}
-              >
-                {isFullscreen ? 'Выйти из полноэкранного режима' : 'Включить полноэкранный режим'}
-              </Button>
-            </div>
           </Section>
 
-          <Section header="Информация о пользователе">
-            <Cell multiline>
-              <div>ID пользователя</div>
-              <div>{displayUser.id.toString()}</div>
-            </Cell>
-            {displayUser.language_code && (
-              <Cell multiline>
-                <div>Язык</div>
-                <div>{displayUser.language_code}</div>
-              </Cell>
-            )}
-            {'is_premium' in displayUser && (
-              <Cell multiline>
-                <div>Premium</div>
-                <div>{displayUser.is_premium ? 'Да' : 'Нет'}</div>
-              </Cell>
-            )}
-            {user && (
-              <Cell multiline>
-                <div>Дата регистрации</div>
-                <div>{new Date(user.created_at).toLocaleDateString()}</div>
-              </Cell>
-            )}
-          </Section>
-          
-          {/* Раздел для отладки Safe Area API - в раздвижной панели */}
-          <Section header="Отладочная информация">
-            <Cell multiline>
-              <div>Safe Area - Top</div>
-              <div>{safeAreaValues.top}</div>
-            </Cell>
-            <Cell multiline>
-              <div>Fullscreen Padding</div>
-              <div>{fullscreenPadding}</div>
-            </Cell>
-            <Cell multiline>
-              <div>Текущий режим</div>
-              <div>{isFullscreen ? 'Fullscreen' : 'Regular'}</div>
+          <Section header="Действия">
+            <Cell
+              onClick={toggleFullscreen}
+              after={
+                <Button size="m">
+                  {isFullscreen ? 'Выйти из полноэкранного режима' : 'Полноэкранный режим'}
+                </Button>
+              }
+            >
+              Переключить режим экрана
             </Cell>
             
-            <div style={{ padding: 16 }}>
-              <Button 
-                size="l" 
-                stretched 
-                onClick={() => setShowSafeAreaIndicator(!showSafeAreaIndicator)}
-              >
-                {showSafeAreaIndicator ? 'Скрыть' : 'Показать'} индикаторы
-              </Button>
-            </div>
-            
-            <div style={{ padding: 16 }}>
-              <Button 
-                size="l" 
-                stretched 
-                onClick={() => {
-                  postEvent('web_app_request_safe_area');
-                  postEvent('web_app_request_viewport');
-                }}
-              >
-                Обновить данные
-              </Button>
-            </div>
+            <Cell
+              onClick={() => setShowSafeAreaIndicator(!showSafeAreaIndicator)}
+              after={
+                <Button size="m">
+                  {showSafeAreaIndicator ? 'Скрыть' : 'Показать'}
+                </Button>
+              }
+            >
+              Показать Safe Area
+            </Cell>
           </Section>
+
+          {isDebugMode && (
+            <Section header="Отладочная информация">
+              <div style={{ padding: 12, fontSize: 12, lineHeight: 1.4 }}>
+                <pre style={{ maxHeight: 200, overflow: 'auto', margin: 0 }}>
+                  {debugInfo}
+                </pre>
+              </div>
+            </Section>
+          )}
         </List>
       </div>
     </Page>
