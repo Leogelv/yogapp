@@ -20,10 +20,8 @@ export const AppWrapper: FC<AppWrapperProps> = ({ children }) => {
     // Отключаем вертикальные свайпы для закрытия приложения 
     postEvent('web_app_setup_swipe_behavior', { allow_vertical_swipe: false });
     
-    // Запрашиваем информацию о safe area (вместо content safe area)
+    // Запрашиваем информацию о safe area
     postEvent('web_app_request_safe_area');
-    // Для совместимости также запрашиваем content safe area
-    postEvent('web_app_request_content_safe_area');
     
     // Подписываемся на события используя window.addEventListener
     const handleEvents = (event: MessageEvent) => {
@@ -37,9 +35,15 @@ export const AppWrapper: FC<AppWrapperProps> = ({ children }) => {
         if (data.eventType === 'safe_area_changed' && data.eventData) {
           console.log('Safe area changed:', data.eventData);
           applySafeAreaToCSS(data.eventData);
-        } else if (data.eventType === 'content_safe_area_changed' && data.eventData) {
-          console.log('Content safe area changed:', data.eventData);
-          applyContentSafeAreaToCSS(data.eventData);
+        } else if (data.eventType === 'viewport_changed') {
+          // Обновляем состояние fullscreen
+          if (data.eventData && data.eventData.is_expanded) {
+            console.log('Fullscreen mode: active');
+            document.documentElement.style.setProperty('--fullscreen-extra-padding', '40px');
+          } else {
+            console.log('Fullscreen mode: inactive');
+            document.documentElement.style.setProperty('--fullscreen-extra-padding', '0px');
+          }
         }
       } catch (e) {
         console.error('Error parsing event data:', e);
@@ -51,8 +55,11 @@ export const AppWrapper: FC<AppWrapperProps> = ({ children }) => {
     // Для отладки повторяем запрос каждые несколько секунд
     const intervalId = setInterval(() => {
       postEvent('web_app_request_safe_area');
-      postEvent('web_app_request_content_safe_area');
+      postEvent('web_app_request_viewport');
     }, 5000);
+    
+    // Устанавливаем дополнительный отступ для fullscreen
+    document.documentElement.style.setProperty('--fullscreen-extra-padding', '40px');
     
     // Очистка подписок при размонтировании
     return () => {
@@ -85,32 +92,6 @@ export const AppWrapper: FC<AppWrapperProps> = ({ children }) => {
       right: document.documentElement.style.getPropertyValue('--safe-area-right'),
       bottom: document.documentElement.style.getPropertyValue('--safe-area-bottom'),
       left: document.documentElement.style.getPropertyValue('--safe-area-left')
-    });
-  };
-  
-  // Применяет content safe area к CSS переменным (для совместимости)
-  const applyContentSafeAreaToCSS = (safeArea: SafeAreaData) => {
-    const { top, right, bottom, left } = safeArea;
-    
-    console.log('Applying content safe area values:', { top, right, bottom, left });
-    
-    // Проверяем, что все значения числовые и не undefined
-    const topValue = typeof top === 'number' ? `${top}px` : '0px';
-    const rightValue = typeof right === 'number' ? `${right}px` : '0px';
-    const bottomValue = typeof bottom === 'number' ? `${bottom}px` : '0px';
-    const leftValue = typeof left === 'number' ? `${left}px` : '0px';
-    
-    document.documentElement.style.setProperty('--content-safe-area-top', topValue);
-    document.documentElement.style.setProperty('--content-safe-area-right', rightValue);
-    document.documentElement.style.setProperty('--content-safe-area-bottom', bottomValue);
-    document.documentElement.style.setProperty('--content-safe-area-left', leftValue);
-    
-    // Для отладки добавляем вывод после установки
-    console.log('Content safe area CSS variables set:', {
-      top: document.documentElement.style.getPropertyValue('--content-safe-area-top'),
-      right: document.documentElement.style.getPropertyValue('--content-safe-area-right'),
-      bottom: document.documentElement.style.getPropertyValue('--content-safe-area-bottom'),
-      left: document.documentElement.style.getPropertyValue('--content-safe-area-left')
     });
   };
   

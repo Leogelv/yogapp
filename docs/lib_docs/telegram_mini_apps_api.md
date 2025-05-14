@@ -2,15 +2,13 @@
 
 ## Важные методы API
 
-Данная документация содержит описание ключевых методов Telegram Mini Apps API, необходимых для разработки мини-приложений для Telegram. Особое внимание уделено методам работы с safe area и content safe area.
+Данная документация содержит описание ключевых методов Telegram Mini Apps API, необходимых для разработки мини-приложений для Telegram. Особое внимание уделено методам работы с safe area.
 
 ### Основная терминология
 
 - **Safe Area** - безопасная зона экрана устройства, которая учитывает вырезы, закругленные углы и системные элементы интерфейса. Это пространство всего устройства, где можно безопасно размещать контент без перекрытия системными элементами.
 
-- **Content Safe Area** - подмножество безопасной зоны устройства, специфичное для UI элементов Telegram. Это пространство, где контент не будет перекрываться с элементами интерфейса Telegram.
-
-> **ВАЖНО**: В проекте используется именно **Safe Area** (не Content Safe Area) с добавлением 5 пикселей к каждому отступу для улучшения UX!
+> **ВАЖНО**: В проекте используется **Safe Area** с дополнительным отступом 40px сверху при активированном fullscreen режиме.
 
 ## Методы для работы с Safe Area
 
@@ -27,21 +25,6 @@
 import { postEvent } from '@telegram-apps/sdk-react';
 
 postEvent('web_app_request_safe_area');
-```
-
-### `web_app_request_content_safe_area`
-
-**Доступно с версии**: v8.0
-
-Запрашивает информацию о текущей content safe area (безопасной зоне контента) от Telegram.
-
-В результате Telegram вызывает событие `content_safe_area_changed`.
-
-Пример использования:
-```typescript
-import { postEvent } from '@telegram-apps/sdk-react';
-
-postEvent('web_app_request_content_safe_area');
 ```
 
 ## События Safe Area
@@ -61,20 +44,20 @@ postEvent('web_app_request_content_safe_area');
 | left  | `number` | Левый отступ в пикселях                                       |
 | right | `number` | Правый отступ в пикселях                                      |
 
-### `content_safe_area_changed`
+## Fullscreen режим и дополнительный отступ
 
-**Доступно с версии**: v8.0
+В проекте применяется дополнительный отступ сверху при активном fullscreen режиме, чтобы избежать проблем с интерфейсом Telegram:
 
-Событие происходит при изменении безопасной зоны контента в приложении Telegram пользователя.
+```typescript
+// Устанавливаем дополнительный отступ для fullscreen
+document.documentElement.style.setProperty('--fullscreen-extra-padding', '40px');
+```
 
-**Content safe area** - это подмножество безопасной зоны устройства, охватывающее UI элементы Telegram.
+Этот дополнительный отступ добавляется к верхней safe area через CSS-переменную:
 
-| Поле  | Тип      | Описание                                                        |
-|-------|----------|----------------------------------------------------------------|
-| top   | `number` | Верхний отступ в пикселях для области содержимого              |
-| bottom| `number` | Нижний отступ в пикселях для области содержимого               |
-| left  | `number` | Левый отступ в пикселях для области содержимого               |
-| right | `number` | Правый отступ в пикселях для области содержимого              |
+```css
+paddingTop: 'calc(var(--safe-area-top, 0px) + var(--fullscreen-extra-padding, 0px))'
+```
 
 ## Применение Safe Area в CSS
 
@@ -88,25 +71,16 @@ postEvent('web_app_request_content_safe_area');
   --safe-area-bottom: 0px;
   --safe-area-left: 0px;
   
-  /* Расчетные значения Safe Area с дополнительными 5 пикселями */
-  --safe-area-top-plus: calc(var(--safe-area-top, 0px) + 5px);
-  --safe-area-right-plus: calc(var(--safe-area-right, 0px) + 5px);
-  --safe-area-bottom-plus: calc(var(--safe-area-bottom, 0px) + 5px);
-  --safe-area-left-plus: calc(var(--safe-area-left, 0px) + 5px);
-  
-  /* Для совместимости также доступны значения Content Safe Area */
-  --content-safe-area-top: 0px;
-  --content-safe-area-right: 0px;
-  --content-safe-area-bottom: 0px;
-  --content-safe-area-left: 0px;
+  /* Дополнительный отступ для fullscreen режима */
+  --fullscreen-extra-padding: 0px;
 }
 
 /* Пример использования переменных (рекомендуемый подход) */
-body {
-  padding-top: var(--safe-area-top-plus);
-  padding-right: var(--safe-area-right-plus);
-  padding-bottom: var(--safe-area-bottom-plus);
-  padding-left: var(--safe-area-left-plus);
+.page-container {
+  padding-top: calc(var(--safe-area-top, 0px) + var(--fullscreen-extra-padding, 0px));
+  padding-right: var(--safe-area-right, 0px);
+  padding-bottom: var(--safe-area-bottom, 0px);
+  padding-left: var(--safe-area-left, 0px);
 }
 ```
 
@@ -159,76 +133,19 @@ postEvent('web_app_setup_swipe_behavior', { allow_vertical_swipe: false });
 postEvent('web_app_setup_swipe_behavior', { allow_vertical_swipe: true });
 ```
 
-### `web_app_expand`
+## Изменение переменной fullscreen-extra-padding
 
-Распространяет мини-приложение на весь экран.
+Если требуется изменить значение дополнительного отступа, необходимо отредактировать файл `src/components/AppWrapper.tsx`:
 
-Пример использования:
 ```typescript
-import { postEvent } from '@telegram-apps/sdk-react';
-
-postEvent('web_app_expand');
+// Устанавливаем дополнительный отступ для fullscreen
+document.documentElement.style.setProperty('--fullscreen-extra-padding', '40px');
 ```
 
-## Реализация в проекте
+Для обычного режима значение должно быть `0px`:
 
-Для корректной работы с safe area в проекте используется следующий подход:
-
-1. При инициализации приложения запрашиваем текущие значения safe area:
 ```typescript
-useEffect(() => {
-  postEvent('web_app_request_safe_area');
-}, []);
-```
-
-2. Добавляем +5px к каждому отступу safe area для улучшения UX:
-```css
-:root {
-  --safe-area-top-plus: calc(var(--safe-area-top, 0px) + 5px);
-  --safe-area-right-plus: calc(var(--safe-area-right, 0px) + 5px);
-  --safe-area-bottom-plus: calc(var(--safe-area-bottom, 0px) + 5px);
-  --safe-area-left-plus: calc(var(--safe-area-left, 0px) + 5px);
-}
-```
-
-3. Применяем эти расчетные значения в компоненте Page:
-```typescript
-// Стили для учета отступов safe area с дополнительными 5px
-const safeAreaStyle = {
-  paddingTop: 'var(--safe-area-top-plus, 5px)',
-  paddingRight: 'var(--safe-area-right-plus, 5px)',
-  paddingBottom: 'var(--safe-area-bottom-plus, 5px)',
-  paddingLeft: 'var(--safe-area-left-plus, 5px)',
-};
-```
-
-4. Слушаем события изменения значений safe area:
-```typescript
-useEffect(() => {
-  const handleEvents = (event: MessageEvent) => {
-    try {
-      if (!event.data) return;
-      
-      const data = typeof event.data === 'string' 
-        ? JSON.parse(event.data) 
-        : event.data;
-        
-      if (data.eventType === 'safe_area_changed') {
-        // Обработать изменения
-        console.log(data.eventType, data.eventData);
-        applySafeAreaToCSS(data.eventData);
-      }
-    } catch (e) {
-      console.error('Error parsing event data:', e);
-    }
-  };
-  
-  window.addEventListener('message', handleEvents);
-  
-  return () => {
-    window.removeEventListener('message', handleEvents);
-  };
-}, []);
+document.documentElement.style.setProperty('--fullscreen-extra-padding', '0px');
 ```
 
 ## Ссылки на официальную документацию

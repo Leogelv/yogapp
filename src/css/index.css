@@ -1,18 +1,11 @@
 :root {
-  --content-safe-area-top: 0px;
-  --content-safe-area-right: 0px;
-  --content-safe-area-bottom: 0px;
-  --content-safe-area-left: 0px;
   --safe-area-top: 0px;
   --safe-area-right: 0px;
   --safe-area-bottom: 0px;
   --safe-area-left: 0px;
   
-  /* Расчетные значения с дополнительными 5 пикселями */
-  --safe-area-top-plus: calc(var(--safe-area-top, 0px) + 5px);
-  --safe-area-right-plus: calc(var(--safe-area-right, 0px) + 5px);
-  --safe-area-bottom-plus: calc(var(--safe-area-bottom, 0px) + 5px);
-  --safe-area-left-plus: calc(var(--safe-area-left, 0px) + 5px);
+  /* Дополнительный отступ для fullscreen режима */
+  --fullscreen-extra-padding: 0px;
 }
 
 html, body {
@@ -25,10 +18,6 @@ html, body {
 body {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, 
     Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  padding-top: var(--safe-area-top-plus);
-  padding-right: var(--safe-area-right-plus);
-  padding-bottom: var(--safe-area-bottom-plus);
-  padding-left: var(--safe-area-left-plus);
   box-sizing: border-box;
 }
 
@@ -36,10 +25,6 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  padding-top: var(--safe-area-top-plus);
-  padding-right: var(--safe-area-right-plus);
-  padding-bottom: var(--safe-area-bottom-plus);
-  padding-left: var(--safe-area-left-plus);
   box-sizing: border-box;
 }
 
@@ -65,8 +50,8 @@ body {
   bottom: 0;
   pointer-events: none;
   z-index: 9999;
-  border-top: var(--safe-area-top, 0px) solid rgba(255, 0, 0, 0.2);
-  border-right: var(--safe-area-right, 0px) solid rgba(0, 255, 0, 0.2);
-  border-bottom: var(--safe-area-bottom, 0px) solid rgba(0, 0, 255, 0.2);
-  border-left: var(--safe-area-left, 0px) solid rgba(255, 255, 0, 0.2);
+  border-top: var(--safe-area-top) solid rgba(255, 0, 0, 0.2);
+  border-right: var(--safe-area-right) solid rgba(0, 255, 0, 0.2);
+  border-bottom: var(--safe-area-bottom) solid rgba(0, 0, 255, 0.2);
+  border-left: var(--safe-area-left) solid rgba(255, 255, 0, 0.2);
 } 
