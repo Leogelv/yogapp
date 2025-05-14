@@ -52,7 +52,7 @@ export function SupabaseProvider({ children }: SupabaseProviderProps) {
 
       // Подписываемся на изменения статуса авторизации
       const { data: { subscription } } = supabase.auth.onAuthStateChange(
-        (event: AuthChangeEvent, session: Session | null) => {
+        (_event: AuthChangeEvent, session: Session | null) => {
           if (session) {
             // Если есть сессия, но нет данных пользователя, обновляем их
             if (!user) {
