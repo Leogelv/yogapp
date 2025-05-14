@@ -13,12 +13,11 @@ interface SafeAreaData {
 }
 
 export const AppWrapper: FC<AppWrapperProps> = ({ children }) => {
-  // Отслеживаем полноэкранный режим
   useEffect(() => {
     // Автоматически включаем полноэкранный режим на всех страницах
     postEvent('web_app_request_fullscreen');
     
-    // Запрашиваем ТОЛЬКО информацию о content safe area
+    // Запрашиваем информацию о content safe area
     postEvent('web_app_request_content_safe_area');
     
     // Отключаем вертикальные свайпы для закрытия приложения 
@@ -55,20 +54,6 @@ export const AppWrapper: FC<AppWrapperProps> = ({ children }) => {
     document.documentElement.style.setProperty('--content-safe-area-left', `${left}px`);
   };
   
-  // Стили для root элемента с учетом content safe area
-  const contentSafeAreaStyle = {
-    paddingTop: 'var(--content-safe-area-top, 0px)',
-    paddingRight: 'var(--content-safe-area-right, 0px)',
-    paddingBottom: 'var(--content-safe-area-bottom, 0px)',
-    paddingLeft: 'var(--content-safe-area-left, 0px)',
-    minHeight: '100vh',
-    maxWidth: '100vw',
-    boxSizing: 'border-box' as const
-  };
-  
-  return (
-    <div className="app-wrapper" style={contentSafeAreaStyle}>
-      {children}
-    </div>
-  );
+  // Теперь мы не применяем стили отступов здесь, это делает компонент Page
+  return <>{children}</>;
 }; 
