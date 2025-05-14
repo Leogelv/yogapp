@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase, DBUser, TelegramUser } from './client';
 import { initializeUser } from './auth';
+import { AuthChangeEvent, Session } from '@supabase/supabase-js';
 
 // Интерфейс контекста
 interface SupabaseContextType {
@@ -51,7 +52,7 @@ export function SupabaseProvider({ children }: SupabaseProviderProps) {
 
       // Подписываемся на изменения статуса авторизации
       const { data: { subscription } } = supabase.auth.onAuthStateChange(
-        (_event, session) => {
+        (_event: AuthChangeEvent, session: Session | null) => {
           if (session) {
             // Если есть сессия, но нет данных пользователя, обновляем их
             if (!user) {
