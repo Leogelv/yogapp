@@ -7,14 +7,48 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL ||
 
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 
                         import.meta.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 
-                        ''; // Анонимный ключ должен быть установлен в .env.local
+                        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1veHdlbmRneHh2aGJlc2Fqb21jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTYyOTAzMzQsImV4cCI6MjAzMTg2NjMzNH0.G2PVKK9QXYCZJXGfpQXL_JytGWtQGyzNFORPWX7PMnw'; // Временный ключ для тестирования
 
-if (!supabaseAnonKey) {
-  console.warn('Supabase Anon Key не найден. Проверьте переменные окружения.');
+// Добавим защиту от ошибок
+let supabaseClient: any;
+
+try {
+  console.log('Инициализация Supabase с URL:', supabaseUrl);
+  
+  if (!supabaseAnonKey) {
+    console.warn('Supabase Anon Key не найден. Используется тестовый ключ.');
+  }
+
+  // Создаем клиент Supabase
+  supabaseClient = createClient(supabaseUrl, supabaseAnonKey);
+} catch (error) {
+  console.error('Ошибка при инициализации Supabase:', error);
+  // Создаем заглушку клиента, чтобы приложение не падало
+  supabaseClient = {
+    auth: {
+      onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
+      signUp: () => Promise.resolve({ data: null, error: new Error('Supabase не инициализирован') }),
+      signInWithPassword: () => Promise.resolve({ data: null, error: new Error('Supabase не инициализирован') }),
+      signInWithOtp: () => Promise.resolve({ data: null, error: new Error('Supabase не инициализирован') }),
+      signOut: () => Promise.resolve()
+    },
+    from: () => ({
+      select: () => ({
+        eq: () => ({
+          maybeSingle: () => Promise.resolve({ data: null, error: null })
+        }),
+        single: () => Promise.resolve({ data: null, error: null })
+      }),
+      update: () => ({
+        eq: () => Promise.resolve({ data: null, error: null })
+      }),
+      insert: () => Promise.resolve({ data: null, error: null })
+    })
+  };
 }
 
-// Создаем и экспортируем клиент Supabase
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Экспортируем клиент
+export const supabase = supabaseClient;
 
 // Типы для пользователя из Telegram
 export interface TelegramUser {
@@ -47,47 +81,62 @@ export interface DBUser {
 
 // Проверяет, существует ли пользователь в Supabase
 export async function checkUserExists(telegramId: number): Promise<boolean> {
-  const { data, error } = await supabase
-    .from('users')
-    .select('id')
-    .eq('telegram_id', telegramId)
-    .maybeSingle();
-  
-  if (error) {
-    console.error('Ошибка при проверке пользователя:', error);
+  try {
+    const { data, error } = await supabase
+      .from('users')
+      .select('id')
+      .eq('telegram_id', telegramId)
+      .maybeSingle();
+    
+    if (error) {
+      console.error('Ошибка при проверке пользователя:', error);
+      return false;
+    }
+    
+    return !!data;
+  } catch (error) {
+    console.error('Необработанная ошибка при проверке пользователя:', error);
     return false;
   }
-  
-  return !!data;
 }
 
 // Получает данные пользователя из Supabase
 export async function getUser(telegramId: number): Promise<DBUser | null> {
-  const { data, error } = await supabase
-    .from('users')
-    .select('*')
-    .eq('telegram_id', telegramId)
-    .maybeSingle();
-
-  if (error) {
-    console.error('Ошибка при получении пользователя:', error);
+  try {
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('telegram_id', telegramId)
+      .maybeSingle();
+  
+    if (error) {
+      console.error('Ошибка при получении пользователя:', error);
+      return null;
+    }
+  
+    return data;
+  } catch (error) {
+    console.error('Необработанная ошибка при получении пользователя:', error);
     return null;
   }
-
-  return data;
 }
 
 // Обновляет время последнего входа пользователя
 export async function updateUserLastLogin(telegramId: number): Promise<boolean> {
-  const { error } = await supabase
-    .from('users')
-    .update({ last_login: new Date().toISOString() })
-    .eq('telegram_id', telegramId);
-
-  if (error) {
-    console.error('Ошибка при обновлении времени входа:', error);
+  try {
+    const { error } = await supabase
+      .from('users')
+      .update({ last_login: new Date().toISOString() })
+      .eq('telegram_id', telegramId);
+  
+    if (error) {
+      console.error('Ошибка при обновлении времени входа:', error);
+      return false;
+    }
+  
+    return true;
+  } catch (error) {
+    console.error('Необработанная ошибка при обновлении времени входа:', error);
     return false;
   }
-
-  return true;
 } 

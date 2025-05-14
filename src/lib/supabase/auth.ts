@@ -65,6 +65,7 @@ async function loginUser(telegramId: number): Promise<boolean> {
     });
 
     if (error) {
+      console.warn('Не удалось войти через пароль, пробуем через OTP:', error.message);
       // Если не удалось войти с паролем, попробуем использовать "магическую ссылку"
       // Это не идеальное решение, но позволит войти без знания пароля
       const { error: magicLinkError } = await supabase.auth.signInWithOtp({
@@ -139,60 +140,71 @@ export async function initializeUser(): Promise<{
 }> {
   try {
     // Получаем данные из Telegram
-    const { initData } = retrieveLaunchParams();
-    const typedInitData = initData as InitData;
-    
-    if (!typedInitData.user) {
-      return { 
-        user: null, 
-        dbUser: null, 
-        error: 'Не удалось получить данные пользователя из Telegram' 
-      };
-    }
+    try {
+      const { initData } = retrieveLaunchParams();
+      const typedInitData = initData as InitData;
+      
+      if (!typedInitData.user) {
+        console.warn('Пользователь Telegram не найден в initData');
+        return { 
+          user: null, 
+          dbUser: null, 
+          error: 'Не удалось получить данные пользователя из Telegram' 
+        };
+      }
 
-    const telegramUser = typedInitData.user as TelegramUser;
-    
-    // Проверяем, существует ли пользователь
-    const userExists = await checkUserExists(telegramUser.id);
-    
-    if (userExists) {
-      // Если пользователь существует, обновляем время последнего входа
-      await updateUserLastLogin(telegramUser.id);
+      const telegramUser = typedInitData.user as TelegramUser;
       
-      // Пытаемся выполнить вход в Supabase Auth
-      await loginUser(telegramUser.id);
+      // Проверяем, существует ли пользователь
+      const userExists = await checkUserExists(telegramUser.id);
       
-      // Получаем данные пользователя из БД
-      const dbUser = await getUser(telegramUser.id);
-      
-      return { user: telegramUser, dbUser, error: null };
-    } else {
-      // Если пользователя нет, создаем нового
-      const userId = await registerUser(telegramUser);
-      
-      if (!userId) {
-        return { 
-          user: telegramUser, 
-          dbUser: null, 
-          error: 'Не удалось зарегистрировать пользователя' 
-        };
+      if (userExists) {
+        // Если пользователь существует, обновляем время последнего входа
+        await updateUserLastLogin(telegramUser.id);
+        
+        // Пытаемся выполнить вход в Supabase Auth
+        await loginUser(telegramUser.id);
+        
+        // Получаем данные пользователя из БД
+        const dbUser = await getUser(telegramUser.id);
+        
+        return { user: telegramUser, dbUser, error: null };
+      } else {
+        // Если пользователя нет, создаем нового
+        const userId = await registerUser(telegramUser);
+        
+        if (!userId) {
+          return { 
+            user: telegramUser, 
+            dbUser: null, 
+            error: 'Не удалось зарегистрировать пользователя' 
+          };
+        }
+        
+        // Создаем запись в таблице users
+        const created = await createUserRecord(userId, telegramUser);
+        
+        if (!created) {
+          return { 
+            user: telegramUser, 
+            dbUser: null, 
+            error: 'Не удалось создать запись пользователя' 
+          };
+        }
+        
+        // Получаем созданные данные
+        const dbUser = await getUser(telegramUser.id);
+        
+        return { user: telegramUser, dbUser, error: null };
       }
-      
-      // Создаем запись в таблице users
-      const created = await createUserRecord(userId, telegramUser);
-      
-      if (!created) {
-        return { 
-          user: telegramUser, 
-          dbUser: null, 
-          error: 'Не удалось создать запись пользователя' 
-        };
-      }
-      
-      // Получаем созданные данные
-      const dbUser = await getUser(telegramUser.id);
-      
-      return { user: telegramUser, dbUser, error: null };
+    } catch (initError) {
+      console.error('Ошибка при получении данных из Telegram:', initError);
+      // Возвращаем минимальные данные, чтобы приложение могло работать
+      return { 
+        user: null,
+        dbUser: null,
+        error: `Ошибка инициализации: ${initError instanceof Error ? initError.message : String(initError)}`
+      };
     }
   } catch (error) {
     console.error('Необработанная ошибка при инициализации пользователя:', error);
@@ -206,5 +218,9 @@ export async function initializeUser(): Promise<{
 
 // Выход пользователя из системы
 export async function logoutUser(): Promise<void> {
-  await supabase.auth.signOut();
+  try {
+    await supabase.auth.signOut();
+  } catch (error) {
+    console.error('Ошибка при выходе из системы:', error);
+  }
 } 

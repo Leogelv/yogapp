@@ -36,6 +36,7 @@ export function SupabaseProvider({ children }: SupabaseProviderProps) {
       setUser(dbUser);
       setError(initError);
     } catch (err) {
+      console.error('Ошибка при обновлении пользователя:', err);
       setError(`Ошибка при обновлении пользователя: ${err instanceof Error ? err.message : String(err)}`);
     } finally {
       setLoading(false);
@@ -44,27 +45,34 @@ export function SupabaseProvider({ children }: SupabaseProviderProps) {
 
   // Инициализация при первой загрузке компонента
   useEffect(() => {
-    refreshUser();
+    // Оборачиваем в try/catch, чтобы предотвратить блокировку рендеринга
+    try {
+      refreshUser();
 
-    // Подписываемся на изменения статуса авторизации
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        if (session) {
-          // Если есть сессия, но нет данных пользователя, обновляем их
-          if (!user) {
-            refreshUser();
+      // Подписываемся на изменения статуса авторизации
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(
+        (_event, session) => {
+          if (session) {
+            // Если есть сессия, но нет данных пользователя, обновляем их
+            if (!user) {
+              refreshUser();
+            }
+          } else {
+            // Если сессия завершена, сбрасываем состояние
+            setUser(null);
           }
-        } else {
-          // Если сессия завершена, сбрасываем состояние
-          setUser(null);
         }
-      }
-    );
+      );
 
-    // Отписываемся при размонтировании
-    return () => {
-      subscription.unsubscribe();
-    };
+      // Отписываемся при размонтировании
+      return () => {
+        subscription.unsubscribe();
+      };
+    } catch (err) {
+      console.error('Критическая ошибка при инициализации Supabase:', err);
+      setError(`Критическая ошибка: ${err instanceof Error ? err.message : String(err)}`);
+      setLoading(false);
+    }
   }, []);
 
   // Значение контекста
@@ -76,6 +84,7 @@ export function SupabaseProvider({ children }: SupabaseProviderProps) {
     refreshUser,
   };
 
+  // Возвращаем провайдер даже при ошибке, чтобы не блокировать рендеринг
   return (
     <SupabaseContext.Provider value={value}>
       {children}
