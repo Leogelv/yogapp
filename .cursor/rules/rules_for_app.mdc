@@ -1,0 +1,67 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Архитектура проекта
+
+## Обзор
+
+Проект представляет собой Telegram Mini App на React, разработанное с использованием следующих технологий:
+- React + TypeScript
+- @telegram-apps/sdk-react для взаимодействия с Telegram API
+- @telegram-apps/telegram-ui для компонентов UI
+- TON Connect для интеграции с блокчейном TON
+- Vite для сборки
+
+## Структура файлов
+
+```
+reactjs-template
+  ├── src
+  │   ├── components          # Общие компоненты
+  │   ├── css                 # Стили
+  │   ├── helpers             # Вспомогательные функции
+  │   ├── navigation          # Маршрутизация
+  │   ├── pages               # Страницы приложения
+  │   ├── index.tsx           # Точка входа
+  │   ├── init.ts             # Инициализация приложения
+  │   └── mockEnv.ts          # Мок Telegram окружения для локальной разработки
+  ├── public                  # Статические файлы
+  └── ...                     # Другие конфигурационные файлы
+```
+
+## Основные компоненты
+
+### Страницы
+
+- **IndexPage** - Главная страница с навигацией по доступным функциям
+- **ProfilePage** - Страница профиля пользователя с фото и функцией fullscreen
+- **InitDataPage** - Страница для отображения данных initData от Telegram
+- **LaunchParamsPage** - Страница с параметрами запуска приложения
+- **ThemeParamsPage** - Страница с параметрами темы Telegram
+- **TONConnectPage** - Страница для подключения TON кошелька
+
+### Особенности реализации
+
+1. **Получение данных пользователя**
+   - Используем `initDataState` из `@telegram-apps/sdk-react` для получения информации о пользователе, включая фото
+   
+2. **Функционал fullscreen**
+   - Реализовано с использованием методов Telegram Mini Apps API:
+     - `web_app_request_fullscreen` - запрос на полноэкранный режим
+     - `web_app_exit_fullscreen` - выход из полноэкранного режима
+
+3. **Навигация**
+   - Реализована через React Router с использованием HashRouter
+   - Маршруты определены в файле `navigation/routes.tsx`
+
+## Специальные методы Telegram
+
+В проекте используются следующие методы Telegram Mini Apps API:
+- `postEvent('web_app_request_fullscreen')` - запрос на полноэкранный режим
+- `postEvent('web_app_exit_fullscreen')` - выход из полноэкранного режима
+
+## Последняя верификация
+
+Структура проекта верифицирована: 06.11.2023 

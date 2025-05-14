@@ -1,9 +1,5 @@
-import { type FC, useMemo, useState, useEffect } from 'react';
-import {
-  initDataState as _initDataState,
-  useSignal,
-  postEvent,
-} from '@telegram-apps/sdk-react';
+import { type FC, useState, useEffect } from 'react';
+import { postEvent } from '@telegram-apps/sdk-react';
 import { 
   List, 
   Placeholder, 
@@ -12,9 +8,11 @@ import {
   Avatar, 
   Text,
   Cell,
+  Spinner,
 } from '@telegram-apps/telegram-ui';
 
 import { Page } from '@/components/Page.tsx';
+import { useSupabase } from '@/lib/supabase/context';
 
 // Стили для контейнера списка
 const listContainerStyle = {
@@ -22,7 +20,7 @@ const listContainerStyle = {
 };
 
 export const ProfilePage: FC = () => {
-  const initDataState = useSignal(_initDataState);
+  const { user, telegramUser, loading, error } = useSupabase();
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [safeAreaValues, setSafeAreaValues] = useState({
     top: '0px',
@@ -32,11 +30,6 @@ export const ProfilePage: FC = () => {
   });
   const [fullscreenPadding, setFullscreenPadding] = useState('0px');
   const [showSafeAreaIndicator, setShowSafeAreaIndicator] = useState(false);
-
-  // Пользователь из initData
-  const user = useMemo(() => 
-    initDataState && initDataState.user ? initDataState.user : undefined,
-  [initDataState]);
 
   // Переключение режима fullscreen
   const toggleFullscreen = () => {
@@ -126,8 +119,37 @@ export const ProfilePage: FC = () => {
     pointerEvents: 'none' as const,
   } : {};
 
+  // Если загрузка
+  if (loading) {
+    return (
+      <Page>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
+          <Spinner size="l" />
+        </div>
+      </Page>
+    );
+  }
+
+  // Если есть ошибка
+  if (error) {
+    return (
+      <Page>
+        <Placeholder
+          header="Ошибка загрузки"
+          description={error}
+        >
+          <img
+            alt="Telegram sticker"
+            src="https://xelene.me/telegram.gif"
+            style={{ display: 'block', width: '144px', height: '144px' }}
+          />
+        </Placeholder>
+      </Page>
+    );
+  }
+
   // Если нет данных пользователя
-  if (!user) {
+  if (!telegramUser && !user) {
     return (
       <Page>
         <Placeholder
@@ -144,6 +166,31 @@ export const ProfilePage: FC = () => {
     );
   }
 
+  // Используем данные из Supabase если есть, иначе из Telegram
+  const displayUser = user || telegramUser;
+  
+  // Убедимся, что displayUser не null
+  if (!displayUser) {
+    return (
+      <Page>
+        <Placeholder
+          header="Ошибка данных"
+          description="Что-то пошло не так"
+        >
+          <img
+            alt="Telegram sticker"
+            src="https://xelene.me/telegram.gif"
+            style={{ display: 'block', width: '144px', height: '144px' }}
+          />
+        </Placeholder>
+      </Page>
+    );
+  }
+  
+  const displayName = displayUser.first_name + (displayUser.last_name ? ` ${displayUser.last_name}` : '');
+  const photoUrl = displayUser.photo_url;
+  const username = displayUser.username;
+
   return (
     <Page>
       {/* Визуальный индикатор безопасной зоны */}
@@ -159,13 +206,18 @@ export const ProfilePage: FC = () => {
               alignItems: 'center', 
               padding: '20px 0' 
             }}>
-              <Avatar size={96} src={user.photo_url} alt={user.username || user.first_name} />
+              <Avatar size={96} src={photoUrl} alt={username || displayName} />
               <Text weight="2" style={{ marginTop: 12, fontSize: 20 }}>
-                {user.first_name} {user.last_name || ''}
+                {displayName}
               </Text>
-              {user.username && (
+              {username && (
                 <Text style={{ color: 'var(--tgui-text-secondary)' }}>
-                  @{user.username}
+                  @{username}
+                </Text>
+              )}
+              {user && (
+                <Text style={{ color: 'var(--tgui-text-secondary)', marginTop: 8, fontSize: 12 }}>
+                  Последний вход: {new Date(user.last_login).toLocaleString()}
                 </Text>
               )}
             </div>
@@ -184,16 +236,26 @@ export const ProfilePage: FC = () => {
           <Section header="Информация о пользователе">
             <Cell multiline>
               <div>ID пользователя</div>
-              <div>{user.id.toString()}</div>
+              <div>{displayUser.id.toString()}</div>
             </Cell>
-            <Cell multiline>
-              <div>Язык</div>
-              <div>{user.language_code || 'Не указан'}</div>
-            </Cell>
-            <Cell multiline>
-              <div>Premium</div>
-              <div>{user.is_premium ? 'Да' : 'Нет'}</div>
-            </Cell>
+            {displayUser.language_code && (
+              <Cell multiline>
+                <div>Язык</div>
+                <div>{displayUser.language_code}</div>
+              </Cell>
+            )}
+            {'is_premium' in displayUser && (
+              <Cell multiline>
+                <div>Premium</div>
+                <div>{displayUser.is_premium ? 'Да' : 'Нет'}</div>
+              </Cell>
+            )}
+            {user && (
+              <Cell multiline>
+                <div>Дата регистрации</div>
+                <div>{new Date(user.created_at).toLocaleDateString()}</div>
+              </Cell>
+            )}
           </Section>
           
           {/* Раздел для отладки Safe Area API - в раздвижной панели */}
