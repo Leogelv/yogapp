@@ -30,7 +30,15 @@ export const ProfilePage: FC = () => {
     bottom: '0px',
     left: '0px',
   });
+  const [contentSafeAreaValues, setContentSafeAreaValues] = useState({
+    top: '0px',
+    right: '0px',
+    bottom: '0px',
+    left: '0px',
+  });
   const [showSafeAreaIndicator, setShowSafeAreaIndicator] = useState(false);
+  const [lastEventData, setLastEventData] = useState<any>(null);
+  const [lastEventTime, setLastEventTime] = useState<Date | null>(null);
 
   // Пользователь из initData
   const user = useMemo(() => 
@@ -52,16 +60,23 @@ export const ProfilePage: FC = () => {
   useEffect(() => {
     const updateSafeAreaValues = () => {
       const computedStyle = getComputedStyle(document.documentElement);
-      setSafeAreaValues({
+      setContentSafeAreaValues({
         top: computedStyle.getPropertyValue('--content-safe-area-top') || '0px',
         right: computedStyle.getPropertyValue('--content-safe-area-right') || '0px',
         bottom: computedStyle.getPropertyValue('--content-safe-area-bottom') || '0px',
         left: computedStyle.getPropertyValue('--content-safe-area-left') || '0px',
       });
+      setSafeAreaValues({
+        top: computedStyle.getPropertyValue('--safe-area-top') || '0px',
+        right: computedStyle.getPropertyValue('--safe-area-right') || '0px',
+        bottom: computedStyle.getPropertyValue('--safe-area-bottom') || '0px',
+        left: computedStyle.getPropertyValue('--safe-area-left') || '0px',
+      });
     };
 
-    // Запрашиваем информацию о content safe area
+    // Запрашиваем информацию о content safe area и safe area
     postEvent('web_app_request_content_safe_area');
+    postEvent('web_app_request_safe_area');
     
     // Обновляем значения при монтировании
     updateSafeAreaValues();
@@ -69,7 +84,33 @@ export const ProfilePage: FC = () => {
     // Устанавливаем интервал обновления для отслеживания изменений
     const intervalId = setInterval(updateSafeAreaValues, 1000);
     
-    return () => clearInterval(intervalId);
+    // Подписываемся на события от Telegram
+    const handleEvents = (event: MessageEvent) => {
+      try {
+        if (!event.data) return;
+        
+        const data = typeof event.data === 'string' 
+          ? JSON.parse(event.data) 
+          : event.data;
+          
+        if (data.eventType === 'content_safe_area_changed' || data.eventType === 'safe_area_changed') {
+          setLastEventData({
+            type: data.eventType,
+            data: data.eventData
+          });
+          setLastEventTime(new Date());
+        }
+      } catch (e) {
+        console.error('Error parsing event data:', e);
+      }
+    };
+    
+    window.addEventListener('message', handleEvents);
+    
+    return () => {
+      clearInterval(intervalId);
+      window.removeEventListener('message', handleEvents);
+    };
   }, []);
 
   // Стили для визуализации безопасной зоны
@@ -81,10 +122,10 @@ export const ProfilePage: FC = () => {
     bottom: 0,
     zIndex: 999,
     pointerEvents: 'none' as const,
-    borderTop: `${safeAreaValues.top} solid rgba(255, 0, 0, 0.3)`,
-    borderRight: `${safeAreaValues.right} solid rgba(0, 255, 0, 0.3)`,
-    borderBottom: `${safeAreaValues.bottom} solid rgba(0, 0, 255, 0.3)`,
-    borderLeft: `${safeAreaValues.left} solid rgba(255, 255, 0, 0.3)`,
+    borderTop: `${contentSafeAreaValues.top} solid rgba(255, 0, 0, 0.3)`,
+    borderRight: `${contentSafeAreaValues.right} solid rgba(0, 255, 0, 0.3)`,
+    borderBottom: `${contentSafeAreaValues.bottom} solid rgba(0, 0, 255, 0.3)`,
+    borderLeft: `${contentSafeAreaValues.left} solid rgba(255, 255, 0, 0.3)`,
   } : {};
 
   // Если нет данных пользователя
@@ -156,32 +197,66 @@ export const ProfilePage: FC = () => {
             </Cell>
           </Section>
           
-          {/* Отладочная информация для content safe area */}
-          <Section header="Отладка Content Safe Area">
-            <Cell multiline>
-              <div>Top</div>
-              <div>{safeAreaValues.top}</div>
-            </Cell>
-            <Cell multiline>
-              <div>Right</div>
-              <div>{safeAreaValues.right}</div>
-            </Cell>
-            <Cell multiline>
-              <div>Bottom</div>
-              <div>{safeAreaValues.bottom}</div>
-            </Cell>
-            <Cell multiline>
-              <div>Left</div>
-              <div>{safeAreaValues.left}</div>
-            </Cell>
-            <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <Button 
-                size="l" 
-                stretched 
-                onClick={() => postEvent('web_app_request_content_safe_area')}
-              >
-                Запросить Content Safe Area
-              </Button>
+          {/* Раздел для отладки Safe Area API */}
+          <Section header="Отладка Telegram API">
+            <Section header="Content Safe Area">
+              <Cell multiline>
+                <div>Top</div>
+                <div>{contentSafeAreaValues.top}</div>
+              </Cell>
+              <Cell multiline>
+                <div>Right</div>
+                <div>{contentSafeAreaValues.right}</div>
+              </Cell>
+              <Cell multiline>
+                <div>Bottom</div>
+                <div>{contentSafeAreaValues.bottom}</div>
+              </Cell>
+              <Cell multiline>
+                <div>Left</div>
+                <div>{contentSafeAreaValues.left}</div>
+              </Cell>
+              <div style={{ padding: 16 }}>
+                <Button 
+                  size="l" 
+                  stretched 
+                  onClick={() => postEvent('web_app_request_content_safe_area')}
+                >
+                  Запросить Content Safe Area
+                </Button>
+              </div>
+            </Section>
+            
+            <Section header="Safe Area">
+              <Cell multiline>
+                <div>Top</div>
+                <div>{safeAreaValues.top}</div>
+              </Cell>
+              <Cell multiline>
+                <div>Right</div>
+                <div>{safeAreaValues.right}</div>
+              </Cell>
+              <Cell multiline>
+                <div>Bottom</div>
+                <div>{safeAreaValues.bottom}</div>
+              </Cell>
+              <Cell multiline>
+                <div>Left</div>
+                <div>{safeAreaValues.left}</div>
+              </Cell>
+              <div style={{ padding: 16 }}>
+                <Button 
+                  size="l" 
+                  stretched 
+                  onClick={() => postEvent('web_app_request_safe_area')}
+                >
+                  Запросить Safe Area
+                </Button>
+              </div>
+            </Section>
+            
+            {/* Визуализация */}
+            <div style={{ padding: 16 }}>
               <Button 
                 size="l" 
                 stretched 
@@ -190,6 +265,73 @@ export const ProfilePage: FC = () => {
                 {showSafeAreaIndicator ? 'Скрыть' : 'Показать'} индикатор Safe Area
               </Button>
             </div>
+            
+            {/* Последнее событие */}
+            <Section header="Данные последнего события">
+              {lastEventData ? (
+                <>
+                  <Cell multiline>
+                    <div>Тип события</div>
+                    <div>{lastEventData.type}</div>
+                  </Cell>
+                  <Cell multiline>
+                    <div>Время</div>
+                    <div>{lastEventTime?.toLocaleTimeString()}</div>
+                  </Cell>
+                  <Cell multiline>
+                    <div>Данные</div>
+                    <div style={{ wordBreak: 'break-all' }}>
+                      {JSON.stringify(lastEventData.data)}
+                    </div>
+                  </Cell>
+                </>
+              ) : (
+                <Cell>
+                  <div>Нет данных о событиях</div>
+                </Cell>
+              )}
+            </Section>
+            
+            {/* Дополнительные методы Telegram API */}
+            <Section header="Другие методы API">
+              <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <Button 
+                  size="l" 
+                  stretched 
+                  onClick={() => postEvent('web_app_request_viewport')}
+                >
+                  Запросить Viewport
+                </Button>
+                <Button 
+                  size="l" 
+                  stretched 
+                  onClick={() => postEvent('web_app_request_theme')}
+                >
+                  Запросить Theme
+                </Button>
+                <Button 
+                  size="l" 
+                  stretched 
+                  onClick={() => postEvent('web_app_setup_settings_button', { is_visible: true })}
+                >
+                  Показать Settings Button
+                </Button>
+                <Button 
+                  size="l" 
+                  stretched 
+                  onClick={() => postEvent('web_app_setup_settings_button', { is_visible: false })}
+                >
+                  Скрыть Settings Button
+                </Button>
+                <Button 
+                  size="l" 
+                  stretched 
+                  onClick={() => postEvent('web_app_expand')}
+                >
+                  Expand App
+                </Button>
+              </div>
+            </Section>
           </Section>
         </List>
       </div>
