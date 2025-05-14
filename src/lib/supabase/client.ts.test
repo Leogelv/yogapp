@@ -1,0 +1,47 @@
+import { createClient } from '@supabase/supabase-js';
+
+// Типы данных
+export interface TelegramUser {
+  id: number;
+  first_name: string;
+  last_name?: string;
+  username?: string;
+  photo_url?: string;
+  language_code?: string;
+  is_premium?: boolean;
+  auth_date?: number;
+}
+
+export interface DBUser {
+  id: string;
+  telegram_id: number;
+  first_name: string;
+  last_name?: string | null;
+  username?: string | null;
+  photo_url?: string | null;
+  language_code?: string | null;
+  is_premium?: boolean;
+  created_at: string;
+  last_login: string;
+}
+
+// Заглушки для тестирования
+export const supabase = createClient(
+  'https://example.supabase.co', 
+  'dummy-key'
+);
+
+export async function checkUserExists(telegramId: number): Promise<boolean> {
+  console.log('Проверка пользователя:', telegramId);
+  return false;
+}
+
+export async function getUser(telegramId: number): Promise<DBUser | null> {
+  console.log('Получение пользователя:', telegramId);
+  return null;
+}
+
+export async function updateUserLastLogin(telegramId: number): Promise<boolean> {
+  console.log('Обновление времени входа:', telegramId);
+  return true;
+} 

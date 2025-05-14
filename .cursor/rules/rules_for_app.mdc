@@ -1,9 +1,9 @@
 ---
 description: 
 globs: 
-alwaysApply: false
+alwaysApply: true
 ---
-# Архитектура проекта
+Пушим всегда в ветку master 
 
 ## Обзор
 
