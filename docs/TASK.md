@@ -1,32 +1,48 @@
-# TASKS
+# Task Management: Supabase Integration
 
-## Текущая задача: Добавление фото пользователя и функционала fullscreen
+## Current Sprint: Supabase Core Integration
 
-1. Подготовка к разработке
-   - 🟢 Создать файлы планирования SHORT_PLANNING.md и TASK.md.
-   - 🟢 Изучить структуру проекта.
+### Main Task: Implement Supabase Authentication & IndexPage Display (Est: 4h)
 
-2. Разработка функционала
-   - 🟢 Создать страницу профиля пользователя с фото.
-   - 🟢 Интегрировать метод web_app_request_fullscreen.
-   - 🟢 Добавить кнопки для тестирования функционала.
-   - 🟢 Интегрировать компоненты в навигацию.
+*   **ID:** SUPA-AUTH-001
+*   **Description:** Integrate Supabase for user authentication using Telegram credentials. Display auth status and user data on the main IndexPage. **Includes creating new users in Supabase Auth and `public.users` table if they don't exist, and updating existing user data from Telegram `initData`.**
+*   **Status:** 🟡 В процессе
+*   **Sub-tasks:**
+    *   **SUPA-AUTH-001.1:** 🟢 Verify `users` table in Supabase.
+        *   Action: Use Supabase MCP `list_tables`.
+    *   **SUPA-AUTH-001.2:** 🟢 Create Supabase client instance.
+        *   File: `src/lib/supabase/supabaseClient.ts`
+    *   **SUPA-AUTH-001.3:** 🟢 Develop `useSupabaseAuth` hook.
+        *   File: `src/lib/supabase/useSupabaseAuth.ts`
+        *   Logic:
+            *   Accepts `launchParams` (containing `initData`) as a prop.
+            *   Retrieves Telegram user data from `initData.user`.
+            *   Checks if user exists in Supabase `public.users` table (by `telegram_id`).
+            *   **If exists:**
+                *   Updates `last_login` in `public.users` table.
+                *   Updates `first_name`, `last_name`, `username`, `photo_url` from `initData.user`.
+            *   **If not exists:**
+                *   Generates email (`<telegram_id>@telegram.user`) and random password.
+                *   Calls `supabase.auth.signUp()` with email, password, and TG user details in `options.data`.
+                *   If `signUp` is successful, takes new `AuthUser.id` and inserts a record into `public.users` table with all TG user details.
+                *   Handles `User already registered` error from `signUp` by attempting `signInWithPassword` and then creating the profile in `public.users`.
+            *   Returns Supabase user data (`DbUser`, `AuthUser`), connection/loading/error state, and status messages.
+    *   **SUPA-AUTH-001.4:** 🟢 Update `IndexPage.tsx`.
+        *   File: `src/pages/IndexPage/IndexPage.tsx`
+        *   Logic:
+            *   Retrieves `launchParams` using `retrieveLaunchParams()`.
+            *   Integrates `useSupabaseAuth` hook, passing `launchParams`.
+            *   Displays auth status, Supabase connection status, and status messages from the hook.
+            *   Displays current user's details from Supabase (`dbUser`, `sessionUser`).
+            *   Fetches and lists all users from `public.users`.
+    *   **SUPA-AUTH-001.5:** 🟢 Update `architecture.md`.
+    *   **SUPA-AUTH-001.6:** 🟡 Testing & Verification by user.
 
-3. Тестирование
-   - 🟢 Проверить корректное отображение фото пользователя.
-   - 🟢 Проверить работу функции fullscreen.
+### Discovered in ходе работы:
+*   Linter issues with `@telegram-apps/sdk-react` `useInitData` type, switched to `retrieveLaunchParams()`.
+*   Required installation of `uuid` and `@types/uuid`.
+*   Careful handling of `launchParams` and `initData` typings needed, simplified with `any` for now to avoid SDK type wrestling.
 
-4. Публикация
-   - 🟢 Сделать push в GitHub (https://github.com/Leogelv/tg_app_templ).
-
-## Результаты
-
-Все задачи успешно выполнены:
-1. Создана страница профиля пользователя с отображением фото из Telegram API
-2. Реализована функция переключения fullscreen режима
-3. Добавлена навигация к новой странице с главного экрана
-4. Все изменения отправлены в GitHub репозиторий
-
-Обнаружено в ходе работы:
-- Необходимо использовать Telegram SDK для получения данных пользователя.
-- Метод requestFullscreen требует версии Telegram Mini Apps SDK v8.0+. 
+---
+*Date Initialized: 2024-07-19*
+*Last Update: $(date +'%Y-%m-%d')* 
