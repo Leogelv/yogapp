@@ -1,4 +1,4 @@
-import { type FC, useMemo, useState, useEffect } from 'react';
+import { type FC, useMemo, useState } from 'react';
 import {
   initDataState as _initDataState,
   useSignal,
@@ -24,18 +24,6 @@ export const ProfilePage: FC = () => {
   const user = useMemo(() => 
     initDataState && initDataState.user ? initDataState.user : undefined,
   [initDataState]);
-
-  // Автоматически активируем полноэкранный режим при открытии страницы
-  useEffect(() => {
-    // Активируем полноэкранный режим
-    postEvent('web_app_request_fullscreen');
-    setIsFullscreen(true);
-
-    // При размонтировании выходим из полноэкранного режима
-    return () => {
-      postEvent('web_app_exit_fullscreen');
-    };
-  }, []);
 
   // Переключение режима fullscreen
   const toggleFullscreen = () => {

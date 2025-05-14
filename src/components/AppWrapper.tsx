@@ -15,19 +15,21 @@ interface SafeAreaData {
 export const AppWrapper: FC<AppWrapperProps> = ({ children }) => {
   // Отслеживаем полноэкранный режим
   useEffect(() => {
-    // Запрашиваем информацию о безопасной зоне контента
+    // Автоматически включаем полноэкранный режим на всех страницах
+    postEvent('web_app_request_fullscreen');
+    
+    // Запрашиваем ТОЛЬКО информацию о content safe area
     postEvent('web_app_request_content_safe_area');
-    postEvent('web_app_request_safe_area');
     
     // Отключаем вертикальные свайпы для закрытия приложения 
     postEvent('web_app_setup_swipe_behavior', { allow_vertical_swipe: false });
     
-    // Подписываемся на событие изменения полноэкранного режима
+    // Подписываемся на события
     const handleViewportChange = (event: MessageEvent) => {
       try {
         const { eventType, eventData } = JSON.parse(event.data);
         if (eventType === 'content_safe_area_changed' && eventData) {
-          applySafeAreaToCSS(eventData as SafeAreaData);
+          applyContentSafeAreaToCSS(eventData as SafeAreaData);
         }
       } catch (e) {
         // Игнорируем ошибки парсинга
@@ -36,35 +38,36 @@ export const AppWrapper: FC<AppWrapperProps> = ({ children }) => {
     
     window.addEventListener('message', handleViewportChange);
     
-    // Очистка подписок при размонтировании
+    // Очистка подписок и выход из полноэкранного режима при размонтировании
     return () => {
       window.removeEventListener('message', handleViewportChange);
+      postEvent('web_app_exit_fullscreen');
     };
   }, []);
   
-  // Применяет safe area к CSS переменным
-  const applySafeAreaToCSS = (safeArea: SafeAreaData) => {
+  // Применяет content safe area к CSS переменным
+  const applyContentSafeAreaToCSS = (safeArea: SafeAreaData) => {
     const { top, right, bottom, left } = safeArea;
     
-    document.documentElement.style.setProperty('--safe-area-top', `${top}px`);
-    document.documentElement.style.setProperty('--safe-area-right', `${right}px`);
-    document.documentElement.style.setProperty('--safe-area-bottom', `${bottom}px`);
-    document.documentElement.style.setProperty('--safe-area-left', `${left}px`);
+    document.documentElement.style.setProperty('--content-safe-area-top', `${top}px`);
+    document.documentElement.style.setProperty('--content-safe-area-right', `${right}px`);
+    document.documentElement.style.setProperty('--content-safe-area-bottom', `${bottom}px`);
+    document.documentElement.style.setProperty('--content-safe-area-left', `${left}px`);
   };
   
-  // Стили для root элемента с учетом safe area
-  const safeAreaStyle = {
-    paddingTop: 'var(--safe-area-top, 0px)',
-    paddingRight: 'var(--safe-area-right, 0px)',
-    paddingBottom: 'var(--safe-area-bottom, 0px)',
-    paddingLeft: 'var(--safe-area-left, 0px)',
+  // Стили для root элемента с учетом content safe area
+  const contentSafeAreaStyle = {
+    paddingTop: 'var(--content-safe-area-top, 0px)',
+    paddingRight: 'var(--content-safe-area-right, 0px)',
+    paddingBottom: 'var(--content-safe-area-bottom, 0px)',
+    paddingLeft: 'var(--content-safe-area-left, 0px)',
     minHeight: '100vh',
     maxWidth: '100vw',
     boxSizing: 'border-box' as const
   };
   
   return (
-    <div className="app-wrapper" style={safeAreaStyle}>
+    <div className="app-wrapper" style={contentSafeAreaStyle}>
       {children}
     </div>
   );
