@@ -36,7 +36,7 @@ export const checkSupabaseConnection = async (): Promise<{
     let realtimeStatus = 'unknown';
     try {
       const channel = supabase.channel('connection-check');
-      const subscription = channel.subscribe((status) => {
+      channel.subscribe((status) => {
         realtimeStatus = status;
         logger.debug(`Realtime status: ${status}`);
         

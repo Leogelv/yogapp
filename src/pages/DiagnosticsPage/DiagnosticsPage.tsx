@@ -6,7 +6,6 @@ import type { FC } from 'react';
 import { Page } from '@/components/Page.tsx';
 import { ServerStatus } from '@/components/ServerStatus/ServerStatus';
 import { logger } from '@/lib/logger';
-import { supabase } from '@/lib/supabase/client';
 import { checkSupabaseConnection, checkServerEndpoints } from '@/lib/supabase/utils/debugUtils';
 
 export const DiagnosticsPage: FC = () => {

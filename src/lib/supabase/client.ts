@@ -17,10 +17,6 @@ if (!supabaseAnonKey) {
 
 // Создаем и экспортируем клиент Supabase
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  realtime: {
-    // Включаем логирование для отладки realtime
-    debug: process.env.NODE_ENV === 'development',
-  },
   auth: {
     // Сохраняем сессию в localStorage
     persistSession: true,
@@ -43,7 +39,14 @@ async function customFetch(input: RequestInfo | URL, init?: RequestInit): Promis
     const duration = Date.now() - start;
 
     // Логируем информацию о запросе
-    const url = typeof input === 'string' ? input : input.url;
+    const url = typeof input === 'string' 
+      ? input 
+      : input instanceof URL 
+        ? input.toString() 
+        : input instanceof Request 
+          ? input.url 
+          : String(input);
+          
     const method = init?.method || 'GET';
     const status = response.status;
     
@@ -75,8 +78,16 @@ async function customFetch(input: RequestInfo | URL, init?: RequestInit): Promis
     
     return response;
   } catch (error) {
+    const url = typeof input === 'string' 
+      ? input 
+      : input instanceof URL 
+        ? input.toString() 
+        : input instanceof Request 
+          ? input.url 
+          : String(input);
+          
     logger.error(`Supabase API Request Failed`, {
-      url: typeof input === 'string' ? input : input.url,
+      url,
       method: init?.method || 'GET',
       error: error instanceof Error ? error.message : String(error),
     });

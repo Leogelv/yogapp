@@ -3,7 +3,7 @@ description:
 globs: 
 alwaysApply: true
 ---
-Пушим всегда в ветку master 
+Пушим всегда в ветку master и деплоим на vercel через CLI - мы уже подключены к проекту. XTH
 
 ## Обзор
 
