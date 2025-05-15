@@ -36,6 +36,11 @@ export function useSupabaseUser(initDataRaw: TelegramInitDataType | undefined): 
     setLoading(true);
     setError(null);
 
+    // Убедимся, что auth_date - это число
+    const authDateAsNumber = typeof authDateFromInitData === 'number' 
+      ? authDateFromInitData 
+      : Math.floor(new Date(authDateFromInitData as any).getTime() / 1000);
+
     // Используем поля с нижним подчеркиванием из telegramUserFromInitData, если они есть,
     // иначе пробуем camelCase (хотя SDK обычно предоставляет snake_case в user объекте)
     const userData: TelegramUserData = {
@@ -47,7 +52,7 @@ export function useSupabaseUser(initDataRaw: TelegramInitDataType | undefined): 
       username: telegramUserFromInitData.username,
       // @ts-expect-error
       photo_url: telegramUserFromInitData.photo_url || telegramUserFromInitData.photoUrl,
-      auth_date: authDateFromInitData, // auth_date уже является числом (Unix timestamp)
+      auth_date: authDateAsNumber, // Используем преобразованное число
       hash: hashFromInitData || '',
     };
 
@@ -69,7 +74,7 @@ export function useSupabaseUser(initDataRaw: TelegramInitDataType | undefined): 
           last_name: userData.last_name,
           username: userData.username,
           photo_url: userData.photo_url,
-          auth_date: userData.auth_date, // auth_date остается числом
+          auth_date: authDateAsNumber, // Используем преобразованное число
         };
 
         const { data: updatedUser, error: updateError } = await supabase
@@ -90,7 +95,7 @@ export function useSupabaseUser(initDataRaw: TelegramInitDataType | undefined): 
           last_name: userData.last_name,
           username: userData.username,
           photo_url: userData.photo_url,
-          auth_date: userData.auth_date, // auth_date остается числом
+          auth_date: authDateAsNumber, // Используем преобразованное число
           hash: userData.hash,
           last_login: new Date().toISOString(), // last_login это timestamptz
         };
