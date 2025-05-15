@@ -11,13 +11,10 @@ import {
   Title,
 } from '@telegram-apps/telegram-ui';
 import type { FC } from 'react';
-import { useState } from 'react';
 
 import { DisplayData } from '@/components/DisplayData/DisplayData.tsx';
 import { Page } from '@/components/Page.tsx';
-import { WalletBalance } from '@/components/TON/WalletBalance';
 import { bem } from '@/css/bem.ts';
-import { logger } from '@/lib/logger';
 
 import './TONConnectPage.css';
 
@@ -25,13 +22,6 @@ const [, e] = bem('ton-connect-page');
 
 export const TONConnectPage: FC = () => {
   const wallet = useTonWallet();
-  const [balanceRefreshCount, setBalanceRefreshCount] = useState(0);
-
-  // Функция для инициирования обновления баланса (при необходимости)
-  const triggerBalanceRefresh = () => {
-    setBalanceRefreshCount(prev => prev + 1);
-    logger.info('Запрошено обновление баланса');
-  };
 
   if (!wallet) {
     return (
@@ -84,18 +74,7 @@ export const TONConnectPage: FC = () => {
                 <Title level="3">{wallet.name}</Title>
               </Cell>
             </Section>
-            
-            {/* Отображение баланса кошелька */}
-            <WalletBalance 
-              style="section" 
-              title="TON Balance" 
-              autoRefreshInterval={60000} // 1 минута
-              showRefreshButton={true} 
-            />
-            
-            <Section>
-              <TonConnectButton className={e('button-connected')}/>
-            </Section>
+            <TonConnectButton className={e('button-connected')}/>
           </>
         )}
         <DisplayData
