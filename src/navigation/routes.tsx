@@ -1,11 +1,13 @@
 import type { ComponentType, JSX } from 'react';
+import { createHashRouter } from 'react-router-dom';
 
 import { IndexPage } from '@/pages/IndexPage/IndexPage';
-import { InitDataPage } from '@/pages/InitDataPage.tsx';
-import { LaunchParamsPage } from '@/pages/LaunchParamsPage.tsx';
-import { ThemeParamsPage } from '@/pages/ThemeParamsPage.tsx';
+import { InitDataPage } from '@/pages/InitDataPage';
+import { LaunchParamsPage } from '@/pages/LaunchParamsPage';
+import { ThemeParamsPage } from '@/pages/ThemeParamsPage';
+import { ProfilePage } from '@/pages/ProfilePage';
 import { TONConnectPage } from '@/pages/TONConnectPage/TONConnectPage';
-import { ProfilePage } from '@/pages/ProfilePage.tsx';
+import { DiagnosticsPage } from '@/pages/DiagnosticsPage/DiagnosticsPage';
 
 interface Route {
   path: string;
@@ -43,4 +45,36 @@ export const routes: Route[] = [
       </svg>
     ),
   },
+  { path: '/diagnostics', Component: DiagnosticsPage },
 ];
+
+export const router = createHashRouter([
+  {
+    path: '/',
+    element: <IndexPage />
+  },
+  {
+    path: '/init-data',
+    element: <InitDataPage />
+  },
+  {
+    path: '/launch-params',
+    element: <LaunchParamsPage />
+  },
+  {
+    path: '/theme-params',
+    element: <ThemeParamsPage />
+  },
+  {
+    path: '/profile',
+    element: <ProfilePage />
+  },
+  {
+    path: '/ton-connect',
+    element: <TONConnectPage />
+  },
+  {
+    path: '/diagnostics',
+    element: <DiagnosticsPage />
+  }
+]);

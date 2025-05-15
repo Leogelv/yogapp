@@ -1,14 +1,16 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { type InitData as TelegramInitDataType } from '@telegram-apps/sdk-react';
-import { supabase } from '../client';
+import { supabase, subscribeToUserChanges } from '../client';
 import { type SupabaseUser, type TelegramUserData } from '../types';
+import { logger } from '../../logger';
+import { RealtimeChannel } from '@supabase/supabase-js';
 
 // Определяем тип для возвращаемого значения хука
 interface UseSupabaseUserReturn {
   supabaseUser: SupabaseUser | null;
   loading: boolean;
   error: Error | null;
-  refetch: () => void; // Добавляем функцию для повторного запроса
+  refetch: () => void; // Функция для повторного запроса
 }
 
 /**
@@ -21,16 +23,36 @@ export function useSupabaseUser(initDataRaw: TelegramInitDataType | undefined): 
   const [supabaseUser, setSupabaseUser] = useState<SupabaseUser | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
+  
+  // Ref для хранения подписки на realtime
+  const channelRef = useRef<RealtimeChannel | null>(null);
 
   // Попытка получить данные пользователя из initData
   const telegramUserFromInitData = initDataRaw?.user;
   const authDateFromInitData = initDataRaw?.auth_date; // Это Unix timestamp (число)
   const hashFromInitData = initDataRaw?.hash;
 
+  // Функция для отписки от канала
+  const unsubscribeFromChannel = useCallback(() => {
+    if (channelRef.current) {
+      logger.info('Unsubscribing from user channel');
+      channelRef.current.unsubscribe();
+      channelRef.current = null;
+    }
+  }, []);
+
+  // Очистка подписки при размонтировании компонента
+  useEffect(() => {
+    return () => {
+      unsubscribeFromChannel();
+    };
+  }, [unsubscribeFromChannel]);
+
   // Оборачиваем процесс в useCallback для предотвращения лишних ререндеров
   const processUser = useCallback(async () => {
     // Проверка доступности необходимых данных
     if (!telegramUserFromInitData || typeof telegramUserFromInitData.id === 'undefined' || typeof authDateFromInitData === 'undefined') {
+      logger.warn('Missing required Telegram user data');
       setLoading(false);
       // Не устанавливаем ошибку, если данные еще не полные (например, начальная загрузка)
       return;
@@ -38,7 +60,7 @@ export function useSupabaseUser(initDataRaw: TelegramInitDataType | undefined): 
 
     // Проверка доступности Supabase клиента
     if (!supabase) {
-      console.error('Supabase client is not available');
+      logger.error('Supabase client is not available');
       setError(new Error('Supabase client is not available'));
       setLoading(false);
       return;
@@ -67,6 +89,8 @@ export function useSupabaseUser(initDataRaw: TelegramInitDataType | undefined): 
       hash: hashFromInitData || '',
     };
 
+    logger.info('Processing user authentication', { telegramId: userData.id });
+
     try {
       let { data: existingUser, error: selectError } = await supabase
         .from('users')
@@ -78,9 +102,22 @@ export function useSupabaseUser(initDataRaw: TelegramInitDataType | undefined): 
         throw selectError;
       }
 
+      // Подписываемся на изменения пользователя в realtime
+      if (!channelRef.current && userData.id) {
+        logger.info('Setting up realtime subscription for user', { telegramId: userData.id });
+        channelRef.current = subscribeToUserChanges(userData.id, (payload) => {
+          logger.info('Received realtime user update', { payload });
+          // Обновляем пользователя при получении события из realtime
+          if (payload.new) {
+            setSupabaseUser(payload.new);
+          }
+        });
+      }
+
       if (existingUser) {
+        logger.info('Updating existing user', { telegramId: userData.id });
         const updates: Partial<SupabaseUser> = {
-          last_login: new Date().toISOString(), // last_login это timestamptz, так что Date().toISOString() подходит
+          last_login: new Date().toISOString(), // last_login это timestamptz
           first_name: userData.first_name,
           last_name: userData.last_name,
           username: userData.username,
@@ -98,8 +135,10 @@ export function useSupabaseUser(initDataRaw: TelegramInitDataType | undefined): 
         if (updateError) {
           throw updateError;
         }
+        logger.info('User updated successfully');
         setSupabaseUser(updatedUser);
       } else {
+        logger.info('Creating new user', { telegramId: userData.id });
         const newUserPayload: Omit<SupabaseUser, 'id' | 'created_at' | 'updated_at' | 'last_login'> & { last_login?: string } = {
           telegram_id: userData.id,
           first_name: userData.first_name,
@@ -120,10 +159,11 @@ export function useSupabaseUser(initDataRaw: TelegramInitDataType | undefined): 
         if (insertError) {
           throw insertError;
         }
+        logger.info('New user created successfully');
         setSupabaseUser(newUser);
       }
     } catch (err) {
-      console.error('Ошибка при обработке пользователя в Supabase:', err);
+      logger.error('Error processing user in Supabase:', err);
       setError(err instanceof Error ? err : new Error('Произошла неизвестная ошибка'));
       setSupabaseUser(null);
     } finally {
@@ -134,10 +174,14 @@ export function useSupabaseUser(initDataRaw: TelegramInitDataType | undefined): 
   useEffect(() => {
     // Запускаем processUser только если все необходимые данные из initData присутствуют
     if (telegramUserFromInitData && typeof telegramUserFromInitData.id !== 'undefined' && typeof authDateFromInitData !== 'undefined') {
+      logger.info('Starting user authentication process');
       processUser();
     } else {
       // Если данные не полны, но загрузка была активна, завершаем её
-      if(loading) setLoading(false);
+      if(loading) {
+        logger.warn('Incomplete user data, stopping loading state');
+        setLoading(false);
+      }
     }
     // Зависимости useEffect должны включать все внешние переменные, используемые внутри
   }, [processUser, telegramUserFromInitData, authDateFromInitData, loading]);
@@ -145,7 +189,10 @@ export function useSupabaseUser(initDataRaw: TelegramInitDataType | undefined): 
   const refetch = useCallback(() => {
     // Убедимся, что processUser вызывается только если есть данные
     if (telegramUserFromInitData && typeof telegramUserFromInitData.id !== 'undefined' && typeof authDateFromInitData !== 'undefined') {
-       processUser();
+      logger.info('Refetching user data');
+      processUser();
+    } else {
+      logger.warn('Cannot refetch: incomplete user data');
     }
   }, [processUser, telegramUserFromInitData, authDateFromInitData]);
 
