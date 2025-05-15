@@ -42,6 +42,7 @@ reactjs-template
 - **LaunchParamsPage** - Страница с параметрами запуска приложения
 - **ThemeParamsPage** - Страница с параметрами темы Telegram
 - **TONConnectPage** - Страница для подключения TON кошелька
+- **DiagnosticsPage** - Страница для диагностики соединения с Supabase и сервером
 
 ### Особенности реализации
 
@@ -53,6 +54,7 @@ reactjs-template
    - Хук `useSupabaseUser` проверяет/создает/обновляет пользователя в Supabase на основе данных из Telegram
    - В `IndexPage` отображается статус подключения и данные пользователя из Supabase
    - Реализовано получение списка всех пользователей из таблицы `public.users`
+   - Реализована диагностика соединения с Supabase через `DiagnosticsPage`
    
 3. **Проверка окружения**
    - Реализована проверка запуска приложения внутри Telegram или в браузере
@@ -68,6 +70,26 @@ reactjs-template
    - Реализована через React Router с использованием HashRouter
    - Маршруты определены в файле `navigation/routes.tsx`
 
+## Структура базы данных
+
+### Таблицы
+1. **public.users** - Основная таблица пользователей:
+   - `id` - UUID, первичный ключ (генерируется автоматически)
+   - `telegram_id` - ID пользователя в Telegram
+   - `first_name` - Имя пользователя из Telegram
+   - `last_name` - Фамилия пользователя из Telegram
+   - `username` - Юзернейм в Telegram (может быть null)
+   - `photo_url` - URL фото профиля из Telegram (может быть null)
+   - `auth_date` - Дата авторизации из Telegram
+   - `hash` - Хеш данных инициализации из Telegram
+   - `last_login` - Дата последнего входа (timestamptz)
+   - `created_at` - Дата создания записи (timestamptz с default now())
+   - `updated_at` - Дата обновления записи (timestamptz с default now())
+
+### Известные особенности и проблемы
+- Первоначально таблица `public.users` имела ограничение внешнего ключа `users_id_fkey`, связывающее поле `id` с `auth.users.id`. Это вызывало ошибки при создании пользователей, так как auth.users не содержала соответствующих записей. Ограничение было удалено.
+- Для корректной работы приложения в браузере (в режиме разработки или тестирования) необходимо установить переменную окружения `NEXT_PUBLIC_ALLOW_BROWSER_ACCESS=true`.
+
 ## Специальные методы Telegram
 
 В проекте используются следующие методы Telegram Mini Apps API:
@@ -82,7 +104,17 @@ reactjs-template
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Публичный ключ Supabase для анонимного доступа
 - `NEXT_PUBLIC_ALLOW_BROWSER_ACCESS` - Флаг, позволяющий отключить проверку окружения Telegram (true/false)
 - `NEXT_PUBLIC_IGNORE_BUILD_ERROR` - Флаг для игнорирования ошибок сборки
+- `SUPABASE_PROJECT_ID` - ID проекта Supabase
+- `SUPABASE_PROJECT_URL` - URL проекта Supabase
+- `SUPABASE_SERVICE_KEY` - Сервисный ключ Supabase (с правами администратора)
+- `VITE_SUPABASE_URL` - URL Supabase для Vite
+- `VITE_SUPABASE_ANON_KEY` - Анонимный ключ Supabase для Vite
+
+### Особенности деплоя
+- Все перечисленные выше переменные окружения должны быть установлены в Vercel.
+- При локальной разработке переменные хранятся в файле `.env.local`.
+- Для деплоя на Vercel используется CLI команда `vercel deploy --prod`.
 
 ## Последняя верификация
 
-Структура проекта верифицирована: 08.07.2024 
+Структура проекта верифицирована: 15.05.2025 
