@@ -26,6 +26,12 @@ export function useSupabaseUser(initDataRaw: TelegramInitDataType | undefined): 
   
   // Ref для хранения подписки на realtime
   const channelRef = useRef<RealtimeChannel | null>(null);
+  // Ref для отслеживания последнего обновления пользователя через realtime
+  const lastUpdateTimeRef = useRef<number>(0);
+  // Ref для отслеживания последнего ID обновления
+  const lastUpdateIdRef = useRef<string | null>(null);
+  // Ref для хранения ID таймера debounce
+  const debounceTimerRef = useRef<number | null>(null);
 
   // Попытка получить данные пользователя из initData
   const telegramUserFromInitData = initDataRaw?.user;
@@ -38,6 +44,12 @@ export function useSupabaseUser(initDataRaw: TelegramInitDataType | undefined): 
       logger.info('Unsubscribing from user channel');
       channelRef.current.unsubscribe();
       channelRef.current = null;
+    }
+    
+    // Очистка таймера debounce при отписке
+    if (debounceTimerRef.current !== null) {
+      window.clearTimeout(debounceTimerRef.current);
+      debounceTimerRef.current = null;
     }
   }, []);
 
@@ -102,15 +114,49 @@ export function useSupabaseUser(initDataRaw: TelegramInitDataType | undefined): 
         throw selectError;
       }
 
-      // Подписываемся на изменения пользователя в realtime
+      // Подписываемся на изменения пользователя в realtime, только если еще не подписаны
       if (!channelRef.current && userData.id) {
         logger.info('Setting up realtime subscription for user', { telegramId: userData.id });
         channelRef.current = subscribeToUserChanges(userData.id, (payload) => {
-          logger.info('Received realtime user update', { payload });
-          // Обновляем пользователя при получении события из realtime
-          if (payload.new) {
-            setSupabaseUser(payload.new);
+          // Предотвращаем повторные обновления с тем же ID и в течение короткого промежутка времени
+          const now = Date.now();
+          const updateId = payload.new?.id;
+          
+          // Пропускаем обновление, если прошло менее 200 мс с последнего обновления
+          // или если это то же самое обновление (с тем же ID)
+          if (
+            (now - lastUpdateTimeRef.current < 200) || 
+            (lastUpdateIdRef.current === updateId && updateId !== null)
+          ) {
+            logger.debug('Skipping redundant realtime update', {
+              timeDiff: now - lastUpdateTimeRef.current,
+              isSameId: lastUpdateIdRef.current === updateId
+            });
+            return;
           }
+          
+          // Обновляем время и ID последнего обновления
+          lastUpdateTimeRef.current = now;
+          lastUpdateIdRef.current = updateId || null;
+          
+          logger.info('Received realtime user update', { payload });
+          
+          // Используем debounce для обновления состояния
+          if (debounceTimerRef.current !== null) {
+            window.clearTimeout(debounceTimerRef.current);
+          }
+          
+          // Обновляем пользователя при получении события из realtime через debounce
+          debounceTimerRef.current = window.setTimeout(() => {
+            if (payload.new && payload.new.id) {
+              setSupabaseUser(payload.new);
+              logger.info('User data updated via realtime', {
+                id: payload.new.id,
+                telegramId: payload.new.telegram_id
+              });
+            }
+            debounceTimerRef.current = null;
+          }, 300); // Задержка в 300 мс для debounce
         });
       }
 
@@ -136,6 +182,12 @@ export function useSupabaseUser(initDataRaw: TelegramInitDataType | undefined): 
           throw updateError;
         }
         logger.info('User updated successfully');
+        
+        // Обновляем данные отслеживания для избежания повторного обновления из realtime
+        const now = Date.now();
+        lastUpdateTimeRef.current = now;
+        lastUpdateIdRef.current = updatedUser?.id || null;
+        
         setSupabaseUser(updatedUser);
       } else {
         logger.info('Creating new user', { telegramId: userData.id });
@@ -160,6 +212,12 @@ export function useSupabaseUser(initDataRaw: TelegramInitDataType | undefined): 
           throw insertError;
         }
         logger.info('New user created successfully');
+        
+        // Обновляем данные отслеживания для избежания повторного обновления из realtime
+        const now = Date.now();
+        lastUpdateTimeRef.current = now;
+        lastUpdateIdRef.current = newUser?.id || null;
+        
         setSupabaseUser(newUser);
       }
     } catch (err) {

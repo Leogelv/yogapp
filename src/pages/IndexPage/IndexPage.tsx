@@ -1,6 +1,6 @@
 import { Section, Cell, Image, List, Spinner, Checkbox, Button } from '@telegram-apps/telegram-ui';
 import type { FC } from 'react';
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { initDataState as _initDataState, useSignal } from '@telegram-apps/sdk-react';
 
 import { Link } from '@/components/Link/Link.tsx';
@@ -36,6 +36,11 @@ export const IndexPage: FC = () => {
   
   // Ref для хранения состояния обновления realtime
   const isInitialMount = useRef(true);
+  
+  // Ref для отслеживания таймеров и предотвращения множественных запросов
+  const fetchTimerRef = useRef<number | null>(null);
+  const lastFetchTimeRef = useRef<number>(0);
+  const isUpdatingRef = useRef<boolean>(false);
   
   logger.info('IndexPage - начало рендеринга');
   
@@ -77,13 +82,89 @@ export const IndexPage: FC = () => {
   const [loadingUsers, setLoadingUsers] = useState<boolean>(false);
   const [usersError, setUsersError] = useState<Error | null>(null);
   
+  // Функция для получения списка всех пользователей с debounce
+  const fetchAllUsers = useCallback(async () => {
+    // Проверяем, не идет ли уже обновление и нужен ли debounce
+    const now = Date.now();
+    if (isUpdatingRef.current) {
+      logger.debug('Skipping fetchAllUsers, update already in progress');
+      return;
+    }
+    
+    // Проверяем, прошло ли достаточно времени с последнего запроса
+    if (now - lastFetchTimeRef.current < 2000) { // 2 секунды между запросами минимум
+      // Если уже есть запланированный запрос, просто выходим
+      if (fetchTimerRef.current !== null) {
+        logger.debug('Fetch already queued, skipping');
+        return;
+      }
+      
+      // Откладываем запрос с помощью debounce
+      logger.debug('Debouncing fetchAllUsers call');
+      if (fetchTimerRef.current !== null) {
+        window.clearTimeout(fetchTimerRef.current);
+      }
+      
+      fetchTimerRef.current = window.setTimeout(() => {
+        logger.debug('Executing debounced fetchAllUsers');
+        fetchTimerRef.current = null;
+        fetchAllUsers(); // Рекурсивный вызов после таймаута
+      }, 500);
+      return;
+    }
+    
+    try {
+      // Проверка доступности Supabase клиента
+      if (!supabase) {
+        logger.error('Supabase client is not available');
+        setUsersError(new Error('Supabase client is not available'));
+        return;
+      }
+      
+      // Устанавливаем флаг, что идет обновление
+      isUpdatingRef.current = true;
+      setLoadingUsers(true);
+      setUsersError(null);
+      
+      lastFetchTimeRef.current = now;
+      
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .order('last_login', { ascending: false });
+        
+      if (error) {
+        throw error;
+      }
+      
+      logger.info(`Loaded ${data?.length || 0} users`);
+      setAllUsers(data || []);
+    } catch (err) {
+      logger.error('Ошибка при загрузке списка пользователей:', err);
+      setUsersError(err instanceof Error ? err : new Error('Произошла неизвестная ошибка'));
+    } finally {
+      setLoadingUsers(false);
+      isUpdatingRef.current = false;
+    }
+  }, []);
+  
   // Настройка слушателя realtime соединения
   useEffect(() => {
+    if (!showAppContent) return;
+    
+    // Для отслеживания каналов и их очистки при размонтировании
+    let statusChannel: any = null;
+    let usersChannel: any = null;
+    
+    // Таймер для ограничения частоты обновлений из realtime
+    let updateThrottleTimer: number | null = null;
+    let lastUpdateTime = 0;
+    
     const setupRealtimeListener = () => {
       logger.info('Setting up realtime connection listener');
       
       // Создаем канал для обработки событий
-      const statusChannel = supabase.channel('connection-status');
+      statusChannel = supabase.channel('connection-status');
       
       // Подписываемся на изменения статуса соединения через события канала
       statusChannel
@@ -108,7 +189,7 @@ export const IndexPage: FC = () => {
           setRealtimeStatus('connecting');
           logger.info('Realtime reconnecting');
         })
-        .subscribe((status) => {
+        .subscribe((status: string) => {
           logger.info(`Status channel subscription: ${status}`);
           if (status === 'SUBSCRIBED') {
             setRealtimeStatus('connected');
@@ -117,68 +198,68 @@ export const IndexPage: FC = () => {
           }
         });
       
-      // Подписываемся на обновления таблицы users
-      const usersChannel = supabase.channel('public:users');
+      // Подписываемся на обновления таблицы users с защитой от частых обновлений
+      usersChannel = supabase.channel('public:users');
       usersChannel
         .on('postgres_changes', {
           event: '*',
           schema: 'public',
           table: 'users'
-        }, (payload) => {
+        }, (payload: any) => {
           logger.info('Realtime users table change:', { payload });
+          
+          // Ограничиваем частоту обновлений
+          const now = Date.now();
+          // Пропускаем слишком частые обновления (менее 2 секунд между обновлениями)
+          if (now - lastUpdateTime < 2000) {
+            if (updateThrottleTimer !== null) {
+              // Уже есть запланированный таймер, нет необходимости создавать новый
+              return;
+            }
+            
+            logger.debug('Throttling user list update due to frequency');
+            updateThrottleTimer = window.setTimeout(() => {
+              logger.debug('Executing throttled user list update');
+              setLastUpdate(new Date());
+              fetchAllUsers();
+              updateThrottleTimer = null;
+            }, 2000);
+            return;
+          }
+          
+          lastUpdateTime = now;
           setLastUpdate(new Date());
-          fetchAllUsers(); // Обновляем список пользователей
+          fetchAllUsers();
         })
-        .subscribe((status) => {
+        .subscribe((status: string) => {
           logger.info(`Users channel subscription status: ${status}`);
         });
-        
-      return () => {
-        // Отписываемся при размонтировании
-        statusChannel.unsubscribe();
-        usersChannel.unsubscribe();
-        logger.info('Cleaned up realtime subscriptions');
-      };
     };
     
-    // Настраиваем слушатели только если показываем контент
-    if (showAppContent) {
-      setupRealtimeListener();
-    }
+    // Настраиваем слушатели
+    setupRealtimeListener();
     
-  }, [showAppContent]);
-  
-  // Функция для получения списка всех пользователей
-  const fetchAllUsers = async () => {
-    try {
-      // Проверка доступности Supabase клиента
-      if (!supabase) {
-        logger.error('Supabase client is not available');
-        setUsersError(new Error('Supabase client is not available'));
-        return;
+    return () => {
+      // Отписываемся при размонтировании
+      if (statusChannel) {
+        statusChannel.unsubscribe();
+      }
+      if (usersChannel) {
+        usersChannel.unsubscribe();
       }
       
-      setLoadingUsers(true);
-      setUsersError(null);
-      
-      const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .order('last_login', { ascending: false });
-        
-      if (error) {
-        throw error;
+      // Очищаем таймеры
+      if (updateThrottleTimer !== null) {
+        window.clearTimeout(updateThrottleTimer);
+      }
+      if (fetchTimerRef.current !== null) {
+        window.clearTimeout(fetchTimerRef.current);
+        fetchTimerRef.current = null;
       }
       
-      logger.info(`Loaded ${data?.length || 0} users`);
-      setAllUsers(data || []);
-    } catch (err) {
-      logger.error('Ошибка при загрузке списка пользователей:', err);
-      setUsersError(err instanceof Error ? err : new Error('Произошла неизвестная ошибка'));
-    } finally {
-      setLoadingUsers(false);
-    }
-  };
+      logger.info('Cleaned up realtime subscriptions');
+    };
+  }, [showAppContent, fetchAllUsers]);
   
   // Получаем список всех пользователей при монтировании
   useEffect(() => {
@@ -187,7 +268,7 @@ export const IndexPage: FC = () => {
     
     logger.info('Initial users data loading');
     fetchAllUsers();
-  }, [showAppContent]);
+  }, [showAppContent, fetchAllUsers]);
   
   // Обработчик realtime обновлений пользователя
   useEffect(() => {
