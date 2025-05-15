@@ -10,49 +10,46 @@ interface StatsProps {
 }
 
 const Stats: FC<StatsProps> = ({ 
-  strength, 
   practiceMinutes, 
   daysInFlow, 
   onSelectPractice,
   className = ''
 }) => {
   return (
-    <div className={`stats-container ${className}`}>
-      <div className="meditation-image-container">
+    <section className={`stats-container ${className}`} aria-label="Статистика практики">
+      <div className="meditation-image-container" aria-hidden="true">
         <img 
           src="/mediman.png" 
           alt="Медитирующий человек" 
           className="meditation-image"
+          loading="eager"
+          fetchPriority="high"
         />
       </div>
       
       <div className="stats-card">
-        <div className="stats-strength">
-          <div className="stats-header">{strength}</div>
-          <div className="stats-label">ТВОЯ СИЛА</div>
-        </div>
-        
         <div className="stats-row">
           <div className="stats-item">
             <div className="stats-value">{practiceMinutes}</div>
-            <div className="stats-label">минут практики</div>
+            <div className="stats-label" aria-label={`Минут практики: ${practiceMinutes}`}>минут практики</div>
           </div>
           
           <div className="stats-item">
             <div className="stats-value">{daysInFlow}</div>
-            <div className="stats-label">дней в потоке</div>
+            <div className="stats-label" aria-label={`Дней в потоке: ${daysInFlow}`}>дней в потоке</div>
           </div>
         </div>
         
         <button 
           className="practice-button" 
           onClick={onSelectPractice}
+          aria-label="Выбрать практику"
         >
           <span>Выбрать практику</span>
-          <span className="arrow-icon">→</span>
+          <span className="arrow-icon" aria-hidden="true">→</span>
         </button>
       </div>
-    </div>
+    </section>
   );
 };
 
