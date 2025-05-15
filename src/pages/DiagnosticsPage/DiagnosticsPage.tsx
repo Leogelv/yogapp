@@ -8,12 +8,21 @@ import { ServerStatus } from '@/components/ServerStatus/ServerStatus';
 import { logger } from '@/lib/logger';
 import { checkSupabaseConnection, checkServerEndpoints } from '@/lib/supabase/utils/debugUtils';
 
+// Определяем интерфейс для результата проверки Supabase
+interface SupabaseConnectionResult {
+  connected: boolean;
+  error: string | null;
+  usersTableCount: number | null;
+  realtimeConnected: boolean;
+  features: {
+    authEnabled: boolean;
+    realtimeEnabled: boolean;
+    signUp: boolean;
+  } | null;
+}
+
 export const DiagnosticsPage: FC = () => {
-  const [supabaseConnectionStatus, setSupabaseConnectionStatus] = useState<{
-    connected: boolean;
-    error?: string;
-    details?: any;
-  } | null>(null);
+  const [supabaseConnectionStatus, setSupabaseConnectionStatus] = useState<SupabaseConnectionResult | null>(null);
   
   const [serverStatus, setServerStatus] = useState<{
     success: boolean;
@@ -191,7 +200,11 @@ export const DiagnosticsPage: FC = () => {
                 overflow: 'auto',
                 maxHeight: '200px'
               }}>
-                {formatObject(supabaseConnectionStatus.details)}
+                {formatObject({
+                  usersCount: supabaseConnectionStatus.usersTableCount,
+                  realtimeConnected: supabaseConnectionStatus.realtimeConnected,
+                  features: supabaseConnectionStatus.features
+                })}
               </pre>
             </Cell>
           )}

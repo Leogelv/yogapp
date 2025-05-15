@@ -34,9 +34,6 @@ export const IndexPage: FC = () => {
   // Отслеживаем время последнего обновления данных
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
   
-  // Ref для хранения состояния обновления realtime
-  const isInitialMount = useRef(true);
-  
   // Ref для отслеживания таймеров и предотвращения множественных запросов
   const fetchTimerRef = useRef<number | null>(null);
   const lastFetchTimeRef = useRef<number>(0);
@@ -154,16 +151,17 @@ export const IndexPage: FC = () => {
     
     // Для отслеживания каналов и их очистки при размонтировании
     let statusChannel: any = null;
-    let usersChannel: any = null;
-    
-    // Таймер для ограничения частоты обновлений из realtime
-    let updateThrottleTimer: number | null = null;
-    let lastUpdateTime = 0;
     
     const setupRealtimeListener = () => {
-      logger.info('Setting up realtime connection listener');
+      logger.info('Setting up realtime connection status listener only');
       
-      // Создаем канал для обработки событий
+      // Проверяем доступность Supabase клиента
+      if (!supabase) {
+        logger.error('Cannot setup realtime listener: Supabase client is not available');
+        return;
+      }
+      
+      // Создаем канал для отслеживания ТОЛЬКО статуса соединения
       statusChannel = supabase.channel('connection-status');
       
       // Подписываемся на изменения статуса соединения через события канала
@@ -198,45 +196,11 @@ export const IndexPage: FC = () => {
           }
         });
       
-      // Подписываемся на обновления таблицы users с защитой от частых обновлений
-      usersChannel = supabase.channel('public:users');
-      usersChannel
-        .on('postgres_changes', {
-          event: '*',
-          schema: 'public',
-          table: 'users'
-        }, (payload: any) => {
-          logger.info('Realtime users table change:', { payload });
-          
-          // Ограничиваем частоту обновлений
-          const now = Date.now();
-          // Пропускаем слишком частые обновления (менее 2 секунд между обновлениями)
-          if (now - lastUpdateTime < 2000) {
-            if (updateThrottleTimer !== null) {
-              // Уже есть запланированный таймер, нет необходимости создавать новый
-              return;
-            }
-            
-            logger.debug('Throttling user list update due to frequency');
-            updateThrottleTimer = window.setTimeout(() => {
-              logger.debug('Executing throttled user list update');
-              setLastUpdate(new Date());
-              fetchAllUsers();
-              updateThrottleTimer = null;
-            }, 2000);
-            return;
-          }
-          
-          lastUpdateTime = now;
-          setLastUpdate(new Date());
-          fetchAllUsers();
-        })
-        .subscribe((status: string) => {
-          logger.info(`Users channel subscription status: ${status}`);
-        });
+      // ВАЖНО: Полностью удаляем подписку на изменения таблицы users
+      // Это предотвратит постоянные обновления при изменениях в таблице
     };
     
-    // Настраиваем слушатели
+    // Настраиваем слушатели только для статуса соединения
     setupRealtimeListener();
     
     return () => {
@@ -244,14 +208,8 @@ export const IndexPage: FC = () => {
       if (statusChannel) {
         statusChannel.unsubscribe();
       }
-      if (usersChannel) {
-        usersChannel.unsubscribe();
-      }
       
       // Очищаем таймеры
-      if (updateThrottleTimer !== null) {
-        window.clearTimeout(updateThrottleTimer);
-      }
       if (fetchTimerRef.current !== null) {
         window.clearTimeout(fetchTimerRef.current);
         fetchTimerRef.current = null;
@@ -259,35 +217,20 @@ export const IndexPage: FC = () => {
       
       logger.info('Cleaned up realtime subscriptions');
     };
-  }, [showAppContent, fetchAllUsers]);
+  }, [showAppContent]);
   
-  // Получаем список всех пользователей при монтировании
+  // Получаем список всех пользователей только при монтировании
   useEffect(() => {
     // Если это не Telegram App и не разрешен доступ в браузере, не делаем запросы
     if (!showAppContent) return;
     
-    logger.info('Initial users data loading');
+    logger.info('Initial users data loading - one time only');
     fetchAllUsers();
-  }, [showAppContent, fetchAllUsers]);
-  
-  // Обработчик realtime обновлений пользователя
-  useEffect(() => {
-    // Пропускаем первый рендер
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-      return;
-    }
     
-    if (supabaseUser) {
-      logger.info('User data updated via realtime', { 
-        id: supabaseUser.id, 
-        telegramId: supabaseUser.telegram_id 
-      });
-      setLastUpdate(new Date());
-    }
-  }, [supabaseUser]);
+    // ВАЖНО: Убираем fetchAllUsers из зависимостей, чтобы эффект выполнился только один раз
+  }, [showAppContent]); // Убрали fetchAllUsers из зависимостей
   
-  // Обработчик для повторной загрузки данных
+  // Обработчик для повторной загрузки данных только по явному запросу
   const handleRefresh = () => {
     if (!showAppContent) return;
     
