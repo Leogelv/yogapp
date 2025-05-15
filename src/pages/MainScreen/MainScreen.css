@@ -86,4 +86,46 @@
   font-size: 20px;
   margin-bottom: 4px;
   color: var(--tgui-accent);
+}
+
+/* Стиль для верхней части с пользователем */
+.user-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.like-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.heart-icon {
+  font-size: 20px;
+}
+
+/* Стиль для предупреждения при открытии в браузере */
+.browser-warning {
+  padding: 16px;
+  margin: 16px;
+  background-color: var(--tgui-secondary-bg-color);
+  border-radius: 12px;
+  text-align: center;
 } 

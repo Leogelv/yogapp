@@ -1,18 +1,15 @@
-import { FC, useEffect } from 'react';
-import { viewport } from '@telegram-apps/sdk-react';
+import { FC } from 'react';
 import './SafeAreaFade.css';
 
+/**
+ * Компонент создает градиентные фейды в верхней и нижней частях экрана
+ * Располагается поверх всего контента с высоким z-index
+ */
 export const SafeAreaFade: FC = () => {
-  useEffect(() => {
-    // Включаем CSS переменные для viewport - это всё равно нужно для других компонентов
-    if (viewport.mount.isAvailable() && !viewport.isMounted()) {
-      viewport.mount();
-    }
-    
-    if (viewport.bindCssVars.isAvailable() && !viewport.isCssVarsBound()) {
-      viewport.bindCssVars();
-    }
-  }, []);
-  
-  return <div className="safe-area-fade" />;
+  return (
+    <>
+      <div className="safe-area-fade-top" />
+      <div className="safe-area-fade-bottom" />
+    </>
+  );
 }; 

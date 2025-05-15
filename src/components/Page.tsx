@@ -15,6 +15,7 @@ const safeAreaStyle = {
   flexDirection: 'column' as const,
   width: '100%',
   boxSizing: 'border-box' as const,
+  position: 'relative' as const,
 };
 
 interface PageProps {
@@ -58,14 +59,12 @@ export function Page({
   }, []);
 
   return (
-    <>
-      {showSafeAreaFade && <SafeAreaFade />}
-      <div className="page-container" style={safeAreaStyle} ref={containerRef}>
-        <div className="content-wrapper">
-          {children}
-        </div>
+    <div className="page-container" style={safeAreaStyle} ref={containerRef}>
+      <div className="content-wrapper">
+        {children}
       </div>
       {showTabBar && <TabBar />}
-    </>
+      {showSafeAreaFade && <SafeAreaFade />}
+    </div>
   );
 }

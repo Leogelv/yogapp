@@ -5,8 +5,6 @@ import {
   useSignal,
 } from '@telegram-apps/sdk-react';
 import { 
-  Section, 
-  Cell, 
   Avatar,
   Placeholder,
   Text,
@@ -14,7 +12,6 @@ import {
 } from '@telegram-apps/telegram-ui';
 
 import { Page } from '@/components/Page.tsx';
-import { Link } from '@/components/Link/Link.tsx';
 import Stats from '@/components/Stats';
 import { useSupabaseUser } from '@/lib/supabase/hooks/useSupabaseUser';
 import { logger } from '@/lib/logger';
@@ -22,14 +19,6 @@ import { useNavigate } from 'react-router-dom';
 
 // Импорт статических ресурсов
 import './MainScreen.css';
-
-// Временные данные для примера
-const mockRecommendedPractice = {
-  title: 'Утренняя медитация',
-  description: 'Начните день с ясности и спокойствия',
-  duration: '15 минут',
-  imageUrl: 'https://placehold.co/600x400/orange/white?text=Meditation',
-};
 
 // Компонент для индикатора состояния авторизации
 const AuthStatusIndicator: FC<{ isAuthenticated: boolean }> = ({ isAuthenticated }) => (
@@ -85,14 +74,10 @@ export const MainScreen: FC = () => {
     logger.warn('Access denied: not in Telegram app and browser access not allowed');
     return (
       <Page back={false}>
-        <Section header="Только для Telegram" footer="Это приложение доступно только в Telegram Mini Apps.">
-          <Cell>
-            Это приложение должно быть открыто внутри Telegram.
-          </Cell>
-          <Cell subtitle="Если вы видите это сообщение, значит вы пытаетесь открыть приложение в браузере.">
-            Пожалуйста, откройте это приложение через Telegram.
-          </Cell>
-        </Section>
+        <div className="browser-warning">
+          <Text weight="3">Только для Telegram</Text>
+          <Text>Это приложение доступно только в Telegram Mini Apps.</Text>
+        </div>
       </Page>
     );
   }
@@ -135,16 +120,16 @@ export const MainScreen: FC = () => {
 
   return (
     <Page back={false}>
-      {/* Информационный блок */}
-      <div className="welcome-block">
-        <div className="user-greeting">
+      {/* Верхний блок с аватаром и именем пользователя */}
+      <div className="user-header">
+        <div className="user-info">
           <Avatar size={40} src={user.photo_url} alt={user.username || user.first_name} />
-          <AuthStatusIndicator isAuthenticated={!!supabaseUser} />
-          <Text weight="3">
-            Привет, {user.first_name}!
-          </Text>
+          <div className="user-name">
+            <Text weight="3">{user.first_name}</Text>
+            <AuthStatusIndicator isAuthenticated={!!supabaseUser} />
+          </div>
         </div>
-        <Text>Готовы к сегодняшней практике?</Text>
+        <div className="like-button">3 <span className="heart-icon">❤</span></div>
       </div>
       
       {/* Блок статистики и кнопка выбора практики */}
@@ -154,55 +139,6 @@ export const MainScreen: FC = () => {
         daysInFlow={7}
         onSelectPractice={handleSelectPractice}
       />
-      
-      {/* Рекомендуемая практика */}
-      <Section header="Рекомендуемая практика">
-        <div className="recommended-practice">
-          <img 
-            src={mockRecommendedPractice.imageUrl} 
-            alt={mockRecommendedPractice.title}
-            className="practice-image"
-          />
-          <div className="practice-info">
-            <Text weight="3">{mockRecommendedPractice.title}</Text>
-            <Text className="practice-description">{mockRecommendedPractice.description}</Text>
-            <Text className="practice-duration">
-              Длительность: {mockRecommendedPractice.duration}
-            </Text>
-          </div>
-        </div>
-      </Section>
-      
-      {/* Блок калькулятора */}
-      <Section header="Калькулятор прогресса">
-        <Cell subtitle="Текущие показатели">
-          <div className="progress-calculator">
-            <div className="progress-item">
-              <Text weight="3">75%</Text>
-              <Text>Регулярность</Text>
-            </div>
-            <div className="progress-item">
-              <Text weight="3">15</Text>
-              <Text>Дней подряд</Text>
-            </div>
-            <div className="progress-item">
-              <Text weight="3">42</Text>
-              <Text>Всего практик</Text>
-            </div>
-          </div>
-        </Cell>
-      </Section>
-      
-      {/* Переход в профиль - временно */}
-      <Section>
-        <Link to="/profile">
-          <Cell
-            subtitle="Просмотр профиля и полноэкранный режим"
-          >
-            Профиль пользователя
-          </Cell>
-        </Link>
-      </Section>
     </Page>
   );
 }; 
