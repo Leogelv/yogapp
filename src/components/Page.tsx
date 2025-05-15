@@ -1,6 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 import { hideBackButton, onBackButtonClick, showBackButton, postEvent } from '@telegram-apps/sdk-react';
 import { type PropsWithChildren, useEffect, useRef } from 'react';
+import { SafeAreaFade } from '@/components/SafeAreaFade/SafeAreaFade';
+import { TabBar } from '@/components/TabBar/TabBar';
 
 // Стили для учета отступов safe area с дополнительным отступом для fullscreen режима
 const safeAreaStyle = {
@@ -15,12 +17,27 @@ const safeAreaStyle = {
   boxSizing: 'border-box' as const,
 };
 
-export function Page({ children, back = true }: PropsWithChildren<{
+interface PageProps {
   /**
    * True if it is allowed to go back from this page.
    */
-  back?: boolean
-}>) {
+  back?: boolean;
+  /**
+   * True if the page should display the bottom TabBar.
+   */
+  showTabBar?: boolean;
+  /**
+   * True if the page should display the SafeAreaFade at the top.
+   */
+  showSafeAreaFade?: boolean;
+}
+
+export function Page({ 
+  children, 
+  back = true, 
+  showTabBar = true,
+  showSafeAreaFade = true,
+}: PropsWithChildren<PageProps>) {
   const navigate = useNavigate();
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -41,8 +58,14 @@ export function Page({ children, back = true }: PropsWithChildren<{
   }, []);
 
   return (
-    <div className="page-container" style={safeAreaStyle} ref={containerRef}>
-      {children}
-    </div>
+    <>
+      {showSafeAreaFade && <SafeAreaFade />}
+      <div className="page-container" style={safeAreaStyle} ref={containerRef}>
+        <div className="content-wrapper">
+          {children}
+        </div>
+      </div>
+      {showTabBar && <TabBar />}
+    </>
   );
 }

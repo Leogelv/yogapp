@@ -6,6 +6,13 @@
   
   /* Дополнительный отступ для fullscreen режима */
   --fullscreen-extra-padding: 0px;
+  
+  /* RGB значения для использования с градиентами и прозрачностью */
+  --tgui-background-rgb: 30, 39, 46;
+  --tgui-surface-rgb: 41, 49, 55;
+  --tgui-text-rgb: 255, 255, 255;
+  --tgui-accent-rgb: 46, 138, 230;
+  --tgui-border-rgb: 72, 78, 86;
 }
 
 html, body {
@@ -39,6 +46,18 @@ body {
   width: 100% !important;
   margin: 0 !important;
   padding: 0 !important;
+}
+
+/* Page с учетом safe area */
+.page-container {
+  padding-top: calc(var(--tg-viewport-content-safe-area-inset-top, 90px) + 20px);
+  padding-bottom: 80px; /* Учитываем высоту TabBar */
+}
+
+/* Предотвращаем прокрутку под элементами интерфейса */
+.content-wrapper {
+  position: relative;
+  z-index: 10;
 }
 
 /* Стили для визуализации safe area */

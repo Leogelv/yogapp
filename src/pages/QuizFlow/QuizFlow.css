@@ -1,7 +1,38 @@
+.quiz-container {
+  padding: 12px;
+}
+
+.quiz-content {
+  background-color: var(--tgui-surface);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
 .quiz-coming-soon {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 20px 0;
+  padding: 24px 0;
+}
+
+/* Анимация для будущих интерактивных элементов */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.quiz-coming-soon Button {
+  animation: pulse 2s infinite ease-in-out;
+  background-color: var(--tgui-accent);
 } 

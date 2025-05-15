@@ -15,19 +15,23 @@ export const QuizFlow: FC = () => {
 
   return (
     <Page>
-      <Section header="Выбор практики">
-        <Placeholder
-          header="Квиз для выбора практики"
-          description="Здесь будет размещен интерактивный квиз для подбора подходящей практики"
-        >
-          <div className="quiz-coming-soon">
-            <Text weight="3" style={{ margin: '20px 0' }}>В разработке</Text>
-            <Button size="l" onClick={() => navigate('/')} stretched>
-              Вернуться на главную
-            </Button>
+      <div className="quiz-container">
+        <Section header="Выбор практики">
+          <div className="quiz-content">
+            <Placeholder
+              header="Квиз для выбора практики"
+              description="Здесь будет размещен интерактивный квиз для подбора подходящей практики"
+            >
+              <div className="quiz-coming-soon">
+                <Text weight="3" style={{ margin: '20px 0' }}>В разработке</Text>
+                <Button size="l" onClick={() => navigate('/')} stretched>
+                  Вернуться на главную
+                </Button>
+              </div>
+            </Placeholder>
           </div>
-        </Placeholder>
-      </Section>
+        </Section>
+      </div>
     </Page>
   );
 }; 

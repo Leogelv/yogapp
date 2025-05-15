@@ -1,0 +1,15 @@
+.safe-area-fade {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 90;
+  background: linear-gradient(
+    to bottom,
+    var(--tgui-background) 0%,
+    var(--tgui-background) 30%,
+    rgba(var(--tgui-background-rgb, 30, 39, 46), 0.8) 80%,
+    rgba(var(--tgui-background-rgb, 30, 39, 46), 0) 100%
+  );
+  pointer-events: none; /* Чтобы не перехватывать клики */
+} 

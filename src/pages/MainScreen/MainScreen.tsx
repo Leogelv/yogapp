@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useMemo } from 'react';
 import { type FC } from 'react';
 import {
   initDataState as _initDataState,
@@ -43,68 +43,6 @@ const AuthStatusIndicator: FC<{ isAuthenticated: boolean }> = ({ isAuthenticated
   }} />
 );
 
-// Временный компонент таб-бара
-const TabBar: FC<{ activeTab: string; setActiveTab: (tab: string) => void }> = ({ 
-  activeTab, 
-  setActiveTab 
-}) => {
-  return (
-    <div style={{ 
-      display: 'flex', 
-      justifyContent: 'space-around', 
-      padding: '12px 0',
-      borderTop: '1px solid var(--tgui-border)',
-      position: 'fixed',
-      bottom: 0,
-      left: 0,
-      right: 0,
-      backgroundColor: 'var(--tgui-background)',
-      zIndex: 100
-    }}>
-      <div 
-        onClick={() => setActiveTab('main')} 
-        style={{ 
-          padding: '8px 12px', 
-          opacity: activeTab === 'main' ? 1 : 0.7,
-          fontWeight: activeTab === 'main' ? 'bold' : 'normal'
-        }}
-      >
-        Главная
-      </div>
-      <div 
-        onClick={() => setActiveTab('library')} 
-        style={{ 
-          padding: '8px 12px', 
-          opacity: activeTab === 'library' ? 1 : 0.7,
-          fontWeight: activeTab === 'library' ? 'bold' : 'normal'
-        }}
-      >
-        Библиотека
-      </div>
-      <div 
-        onClick={() => setActiveTab('calendar')} 
-        style={{ 
-          padding: '8px 12px', 
-          opacity: activeTab === 'calendar' ? 1 : 0.7,
-          fontWeight: activeTab === 'calendar' ? 'bold' : 'normal'
-        }}
-      >
-        Календарь
-      </div>
-      <div 
-        onClick={() => setActiveTab('profile')} 
-        style={{ 
-          padding: '8px 12px', 
-          opacity: activeTab === 'profile' ? 1 : 0.7,
-          fontWeight: activeTab === 'profile' ? 'bold' : 'normal'
-        }}
-      >
-        Профиль
-      </div>
-    </div>
-  );
-};
-
 export const MainScreen: FC = () => {
   const initDataState = useSignal(_initDataState);
   const { supabaseUser, loading, error } = useSupabaseUser(initDataState);
@@ -134,8 +72,6 @@ export const MainScreen: FC = () => {
   const user = useMemo(() => 
     initDataState && initDataState.user ? initDataState.user : undefined,
   [initDataState]);
-
-  const [activeTab, setActiveTab] = useState('main');
 
   // Если это не Telegram App и не разрешен доступ в браузере, показываем предупреждение
   if (!showAppContent) {
@@ -192,21 +128,17 @@ export const MainScreen: FC = () => {
 
   return (
     <Page back={false}>
-      {/* Верхняя панель навигации - обработана компонентом Page */}
-      
       {/* Информационный блок */}
-      <Section>
-        <div className="welcome-block">
-          <div className="user-greeting">
-            <Avatar size={40} src={user.photo_url} alt={user.username || user.first_name} />
-            <AuthStatusIndicator isAuthenticated={!!supabaseUser} />
-            <Text weight="3">
-              Привет, {user.first_name}!
-            </Text>
-          </div>
-          <Text>Готовы к сегодняшней практике?</Text>
+      <div className="welcome-block">
+        <div className="user-greeting">
+          <Avatar size={40} src={user.photo_url} alt={user.username || user.first_name} />
+          <AuthStatusIndicator isAuthenticated={!!supabaseUser} />
+          <Text weight="3">
+            Привет, {user.first_name}!
+          </Text>
         </div>
-      </Section>
+        <Text>Готовы к сегодняшней практике?</Text>
+      </div>
       
       {/* Рекомендуемая практика */}
       <Section header="Рекомендуемая практика">
@@ -281,12 +213,6 @@ export const MainScreen: FC = () => {
           </Cell>
         </Link>
       </Section>
-      
-      {/* Добавляем пространство для таб-бара */}
-      <div style={{ height: 60 }}></div>
-      
-      {/* Нижняя панель навигации (таб-бар) */}
-      <TabBar activeTab={activeTab} setActiveTab={setActiveTab} />
     </Page>
   );
 }; 

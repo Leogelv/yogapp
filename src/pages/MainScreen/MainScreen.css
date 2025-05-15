@@ -1,5 +1,14 @@
 .welcome-block {
-  padding: 16px 0;
+  padding: 16px;
+  margin-bottom: 8px;
+  background: linear-gradient(
+    135deg,
+    rgba(var(--tgui-accent-rgb), 0.15) 0%,
+    rgba(var(--tgui-accent-rgb), 0.05) 100%
+  );
+  border-radius: 16px;
+  margin: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .user-greeting {
@@ -9,10 +18,17 @@
   margin-bottom: 8px;
 }
 
+.auth-status-indicator {
+  transition: background-color 0.3s ease;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
+}
+
 .recommended-practice {
-  border-radius: 12px;
+  border-radius: 16px;
   overflow: hidden;
-  margin-bottom: 12px;
+  margin: 12px;
+  background-color: var(--tgui-surface);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .practice-image {
@@ -22,7 +38,7 @@
 }
 
 .practice-info {
-  padding: 12px;
+  padding: 16px;
 }
 
 .practice-description {
@@ -33,10 +49,22 @@
 .practice-duration {
   font-size: 14px;
   color: var(--tgui-text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.practice-duration::before {
+  content: '';
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='16' height='16' fill='none' stroke='%23aaa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpolyline points='12 6 12 12 16 14'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
 }
 
 .action-buttons {
-  padding: 8px 0;
+  padding: 8px 12px;
 }
 
 .progress-calculator {
@@ -49,4 +77,17 @@
 .progress-item {
   text-align: center;
   flex: 1;
+  background-color: rgba(var(--tgui-accent-rgb), 0.05);
+  padding: 12px 8px;
+  border-radius: 12px;
+}
+
+.progress-item Text {
+  display: block;
+}
+
+.progress-item Text:first-child {
+  font-size: 20px;
+  margin-bottom: 4px;
+  color: var(--tgui-accent);
 } 
