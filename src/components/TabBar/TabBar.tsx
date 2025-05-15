@@ -1,5 +1,6 @@
 import { FC, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { Tabbar } from '@telegram-apps/telegram-ui';
 import './TabBar.css';
 
 // Иконки для таб-бара
@@ -10,14 +11,14 @@ import {
   ProfileIcon
 } from './icons';
 
-interface TabBarItem {
+interface TabBarUiItem {
   id: string;
   icon: FC<{ isActive: boolean }>;
   label: string;
   path: string;
 }
 
-const tabs: TabBarItem[] = [
+const tabs: TabBarUiItem[] = [
   {
     id: 'main',
     icon: HomeIcon,
@@ -58,17 +59,22 @@ export const TabBar: FC = () => {
   };
   
   return (
-    <div className="tab-bar">
-      {tabs.map((tab) => (
-        <div 
-          key={tab.id}
-          className={`tab-bar-item ${isActive(tab.path) ? 'active' : ''}`}
-          onClick={() => handleTabClick(tab.path)}
-        >
-          <tab.icon isActive={isActive(tab.path)} />
-          <span className="tab-bar-label">{tab.label}</span>
-        </div>
-      ))}
+    <div className="tab-bar-wrapper">
+      <Tabbar className="telegram-tabbar">
+        {tabs.map((tab) => (
+          <Tabbar.Item
+            key={tab.id}
+            selected={isActive(tab.path)}
+            onClick={() => handleTabClick(tab.path)}
+            text={tab.label}
+            className={`tabbar-item ${isActive(tab.path) ? 'active' : ''}`}
+          >
+            <div className="tabbar-icon-wrapper">
+              <tab.icon isActive={isActive(tab.path)} />
+            </div>
+          </Tabbar.Item>
+        ))}
+      </Tabbar>
       <div className="home-indicator" />
     </div>
   );

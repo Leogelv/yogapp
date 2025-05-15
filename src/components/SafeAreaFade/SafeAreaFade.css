@@ -1,15 +1,20 @@
 .safe-area-fade {
   position: fixed;
-  top: 0;
+  top: 0; /* Start from the very top of the viewport */
   left: 0;
   right: 0;
-  z-index: 90;
+  z-index: 950; /* Above page content, below Telegram's own top UI elements if any */
   background: linear-gradient(
     to bottom,
-    var(--tgui-background) 0%,
-    var(--tgui-background) 30%,
-    rgba(var(--tgui-background-rgb, 30, 39, 46), 0.8) 80%,
-    rgba(var(--tgui-background-rgb, 30, 39, 46), 0) 100%
+    var(--tgui-background) 0%, /* Start solid at the top */
+    var(--tgui-background) calc(var(--tg-viewport-header-height, 44px) - 20px), /* Solid up to near the bottom of header */
+    rgba(var(--tgui-background-rgb, 30, 39, 46), 0.95) calc(var(--tg-viewport-header-height, 44px) + 0px),
+    rgba(var(--tgui-background-rgb, 30, 39, 46), 0.8) calc(var(--tg-viewport-header-height, 44px) + 15px),
+    rgba(var(--tgui-background-rgb, 30, 39, 46), 0) calc(var(--tg-viewport-header-height, 44px) + 40px) /* Fade to transparent */
   );
-  pointer-events: none; /* Чтобы не перехватывать клики */
+  pointer-events: none; /* Allow clicks to pass through */
+  /* Height determined by the gradient itself and header height + fade distance */
+  /* Ensure the div is tall enough for the entire gradient to render */
+  height: calc(var(--tg-viewport-header-height, 44px) + 50px); 
+  /* No padding-top needed as top is 0 and gradient handles positioning */
 } 

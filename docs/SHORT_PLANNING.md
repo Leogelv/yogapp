@@ -125,3 +125,23 @@
 - [x] Код: Решения должны быть оптимальными и соответствовать стилю кодбазы.
 - [x] Логирование: Должно продолжать корректно работать после изменений в URL обработке.
 - [x] Деплой: Необходимо проверить успешность сборки и деплоя на Vercel после внесения исправлений.
+
+# Short-Term Plan
+
+## Current Goal: Build and Push Changes
+
+### Checklist & Verification:
+- [ ] Verify `SafeAreaFade.css` uses viewport variables correctly.
+- [ ] Confirm `TabBar.tsx` uses official Telegram UI components.
+- [ ] Ensure `Page.tsx` correctly integrates `SafeAreaFade` and `TabBar`.
+- [ ] Run build command (`npm run build`).
+- [ ] If build is successful, stage, commit, and push changes.
+
+### Navigation/Flow:
+- N/A for this specific build & push task.
+
+### Consistency Check:
+- Ensure UI components (`SafeAreaFade`, `TabBar`) are used consistently where intended. (Primarily through `Page.tsx`)
+
+### Notes:
+- Previous focus was on refining `SafeAreaFade` CSS and confirming `TabBar` implementation.
