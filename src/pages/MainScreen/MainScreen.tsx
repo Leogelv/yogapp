@@ -8,7 +8,6 @@ import {
   Section, 
   Cell, 
   Avatar,
-  Button, 
   Placeholder,
   Text,
   Spinner,
@@ -16,8 +15,10 @@ import {
 
 import { Page } from '@/components/Page.tsx';
 import { Link } from '@/components/Link/Link.tsx';
+import Stats from '@/components/Stats';
 import { useSupabaseUser } from '@/lib/supabase/hooks/useSupabaseUser';
 import { logger } from '@/lib/logger';
+import { useNavigate } from 'react-router-dom';
 
 // Импорт статических ресурсов
 import './MainScreen.css';
@@ -46,6 +47,7 @@ const AuthStatusIndicator: FC<{ isAuthenticated: boolean }> = ({ isAuthenticated
 export const MainScreen: FC = () => {
   const initDataState = useSignal(_initDataState);
   const { supabaseUser, loading, error } = useSupabaseUser(initDataState);
+  const navigate = useNavigate();
   
   // Проверяем запуск в телеграме
   const isTelegramApp = useMemo(() => {
@@ -72,6 +74,11 @@ export const MainScreen: FC = () => {
   const user = useMemo(() => 
     initDataState && initDataState.user ? initDataState.user : undefined,
   [initDataState]);
+
+  // Обработчик для кнопки выбора практики
+  const handleSelectPractice = () => {
+    navigate('/quiz');
+  };
 
   // Если это не Telegram App и не разрешен доступ в браузере, показываем предупреждение
   if (!showAppContent) {
@@ -140,6 +147,14 @@ export const MainScreen: FC = () => {
         <Text>Готовы к сегодняшней практике?</Text>
       </div>
       
+      {/* Блок статистики и кнопка выбора практики */}
+      <Stats 
+        strength={3}
+        practiceMinutes={100}
+        daysInFlow={7}
+        onSelectPractice={handleSelectPractice}
+      />
+      
       {/* Рекомендуемая практика */}
       <Section header="Рекомендуемая практика">
         <div className="recommended-practice">
@@ -156,31 +171,6 @@ export const MainScreen: FC = () => {
             </Text>
           </div>
         </div>
-      </Section>
-      
-      {/* Кнопка выбора практики */}
-      <Section>
-        <div className="action-buttons">
-          <Link to="/quiz">
-            <Button size="l" stretched>
-              Выбрать практику
-            </Button>
-          </Link>
-        </div>
-      </Section>
-      
-      {/* Блок статистики */}
-      <Section header="Ваша статистика">
-        <Cell
-          subtitle="Регулярность практик за последнюю неделю"
-        >
-          5 из 7 дней
-        </Cell>
-        <Cell
-          subtitle="Общее время практик"
-        >
-          3ч 45мин
-        </Cell>
       </Section>
       
       {/* Блок калькулятора */}

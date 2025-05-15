@@ -1,0 +1,75 @@
+.stats-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  padding: 0 16px;
+  margin-bottom: 24px;
+}
+
+.strength-card {
+  width: 100%;
+  background-color: var(--tgui-background);
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+}
+
+.stats-row {
+  display: flex;
+  width: 100%;
+  gap: 12px;
+}
+
+.stats-card {
+  flex: 1;
+  background-color: var(--tgui-background);
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.stat-value {
+  font-size: 32px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: var(--tgui-text-color);
+}
+
+.stat-item-highlight .stat-value {
+  font-size: 42px;
+}
+
+.stat-label {
+  font-size: 14px;
+  text-transform: uppercase;
+  color: var(--tgui-secondary-text-color);
+  opacity: 0.8;
+}
+
+.select-practice-button {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 12px;
+  padding: 16px;
+  background-color: var(--tgui-background);
+  color: var(--tgui-text-color);
+  font-size: 16px;
+  border: none;
+}
+
+/* Адаптация для темной темы */
+:root.dark .stats-card,
+:root.dark .strength-card,
+:root.dark .select-practice-button {
+  background-color: var(--tgui-secondary-bg-color);
+} 

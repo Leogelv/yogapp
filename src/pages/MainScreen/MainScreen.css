@@ -63,10 +63,6 @@
   background-repeat: no-repeat;
 }
 
-.action-buttons {
-  padding: 8px 12px;
-}
-
 .progress-calculator {
   display: flex;
   justify-content: space-between;

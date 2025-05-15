@@ -128,20 +128,24 @@
 
 # Short-Term Plan
 
-## Current Goal: Build and Push Changes
+## Current Goal: Улучшение UI и документация Telegram UI
 
 ### Checklist & Verification:
-- [ ] Verify `SafeAreaFade.css` uses viewport variables correctly.
-- [ ] Confirm `TabBar.tsx` uses official Telegram UI components.
-- [ ] Ensure `Page.tsx` correctly integrates `SafeAreaFade` and `TabBar`.
-- [ ] Run build command (`npm run build`).
-- [ ] If build is successful, stage, commit, and push changes.
+- [x] Создать компонент `Stats` для отображения статистики пользователя
+- [x] Интегрировать компонент `Stats` в главный экран
+- [x] Улучшить `SafeAreaFade` для корректной работы под UI элементами Telegram
+- [x] Исправить использование `Tabbar` из `@telegram-apps/telegram-ui`
+- [x] Создать документацию по компонентам Telegram UI в `docs/lib_docs/TELEGRAM_UI_COMPONENTS.md`
+- [x] Успешно собрать проект и проверить работу компонентов
 
 ### Navigation/Flow:
-- N/A for this specific build & push task.
+- Структура главного экрана теперь включает блок статистики "Твоя сила", "Минут практики" и "Дней в потоке"
+- TabBar корректно интегрирован и использует официальные компоненты Telegram UI
 
 ### Consistency Check:
-- Ensure UI components (`SafeAreaFade`, `TabBar`) are used consistently where intended. (Primarily through `Page.tsx`)
+- UI компоненты (`SafeAreaFade`, `TabBar`, `Stats`) используются последовательно.
+- Компонент `Stats` следует дизайну из предоставленного скриншота.
+- Стили и цвета соответствуют дизайн-системе Telegram UI.
 
 ### Notes:
 - Previous focus was on refining `SafeAreaFade` CSS and confirming `TabBar` implementation.
