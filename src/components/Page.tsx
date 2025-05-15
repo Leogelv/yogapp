@@ -16,7 +16,7 @@ const safeAreaStyle = {
   flexDirection: 'column' as const,
   width: '100%',
   boxSizing: 'border-box' as const,
-  position: 'relative' as const,
+  position: 'relative' as const
 };
 
 interface PageProps {
@@ -57,6 +57,12 @@ export function Page({
   useEffect(() => {
     postEvent('web_app_request_safe_area');
     postEvent('web_app_request_viewport');
+    
+    // Убедимся, что все родительские элементы имеют белый фон
+    document.body.style.backgroundColor = '#ffffff';
+    if (document.getElementById('root')) {
+      document.getElementById('root')!.style.backgroundColor = '#ffffff';
+    }
   }, []);
 
   return (
@@ -65,7 +71,7 @@ export function Page({
       style={safeAreaStyle} 
       ref={containerRef}
     >
-      <div className="content-wrapper">
+      <div className="content-wrapper" style={{ backgroundColor: '#ffffff' }}>
         {children}
       </div>
       {showTabBar && <TabBar />}

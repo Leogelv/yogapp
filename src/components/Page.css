@@ -1,6 +1,11 @@
 .page-container {
   min-height: 100vh;
   width: 100%;
+  background-color: var(--profile-bg, #ffffff);
+}
+
+html, body, #root {
+  background-color: var(--profile-bg, #ffffff);
 }
 
 /* Добавляем отступ только когда TabBar отображается */
