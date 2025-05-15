@@ -1,0 +1,52 @@
+.welcome-block {
+  padding: 16px 0;
+}
+
+.user-greeting {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.recommended-practice {
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.practice-image {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+}
+
+.practice-info {
+  padding: 12px;
+}
+
+.practice-description {
+  margin: 8px 0;
+  color: var(--tgui-text-secondary);
+}
+
+.practice-duration {
+  font-size: 14px;
+  color: var(--tgui-text-secondary);
+}
+
+.action-buttons {
+  padding: 8px 0;
+}
+
+.progress-calculator {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+}
+
+.progress-item {
+  text-align: center;
+  flex: 1;
+} 

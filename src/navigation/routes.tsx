@@ -8,6 +8,8 @@ import { ThemeParamsPage } from '@/pages/ThemeParamsPage';
 import { ProfilePage } from '@/pages/ProfilePage';
 import { TONConnectPage } from '@/pages/TONConnectPage/TONConnectPage';
 import { DiagnosticsPage } from '@/pages/DiagnosticsPage/DiagnosticsPage';
+import { MainScreen } from '@/pages/MainScreen/MainScreen';
+import { QuizFlow } from '@/pages/QuizFlow/QuizFlow';
 
 interface Route {
   path: string;
@@ -17,7 +19,16 @@ interface Route {
 }
 
 export const routes: Route[] = [
-  { path: '/', Component: IndexPage },
+  // Основной экран для телеграм мини-аппа
+  { path: '/', Component: MainScreen },
+  
+  // Новый квиз для выбора практики
+  { path: '/quiz', Component: QuizFlow, title: 'Выбор практики' },
+  
+  // Оставляем старую главную как диагностический инструмент
+  { path: '/old-index', Component: IndexPage, title: 'Старая главная' },
+  
+  // Другие страницы
   { path: '/init-data', Component: InitDataPage, title: 'Init Data' },
   { path: '/theme-params', Component: ThemeParamsPage, title: 'Theme Params' },
   { path: '/launch-params', Component: LaunchParamsPage, title: 'Launch Params' },
@@ -51,6 +62,14 @@ export const routes: Route[] = [
 export const router = createHashRouter([
   {
     path: '/',
+    element: <MainScreen />
+  },
+  {
+    path: '/quiz',
+    element: <QuizFlow />
+  },
+  {
+    path: '/old-index',
     element: <IndexPage />
   },
   {
