@@ -24,24 +24,40 @@ const isTelegramApp = (): boolean => {
 };
 
 export const IndexPage: FC = () => {
+  console.log('IndexPage - начало рендеринга');
+  
   // Проверяем, работает ли приложение в Telegram Mini App
-  const isInTelegramApp = useMemo(() => isTelegramApp(), []);
+  const isInTelegramApp = useMemo(() => {
+    const result = isTelegramApp();
+    console.log('isInTelegramApp:', result);
+    return result;
+  }, []);
   
   // Проверяем, можно ли показывать содержимое в браузере через env переменную
   const allowBrowserAccess = useMemo(() => {
-    return process.env.NEXT_PUBLIC_ALLOW_BROWSER_ACCESS === 'true';
+    const allowed = process.env.NEXT_PUBLIC_ALLOW_BROWSER_ACCESS === 'true';
+    console.log('allowBrowserAccess:', allowed, 'env value:', process.env.NEXT_PUBLIC_ALLOW_BROWSER_ACCESS);
+    return allowed;
   }, []);
   
   // Определяем, показывать ли содержимое приложения
   const showAppContent = useMemo(() => {
-    return isInTelegramApp || allowBrowserAccess;
+    const result = isInTelegramApp || allowBrowserAccess;
+    console.log('showAppContent:', result);
+    return result;
   }, [isInTelegramApp, allowBrowserAccess]);
   
   // Получаем initData из Telegram SDK
   const initDataState = useSignal(_initDataState);
+  console.log('initDataState:', initDataState ? 'получено' : 'не получено');
   
   // Используем наш хук для "аутентификации" в Supabase
   const { supabaseUser, loading, error, refetch } = useSupabaseUser(initDataState);
+  console.log('useSupabaseUser результат:', { 
+    userLoaded: !!supabaseUser, 
+    loading, 
+    error: error ? error.message : null 
+  });
   
   // Состояние для списка всех пользователей из таблицы users
   const [allUsers, setAllUsers] = useState<SupabaseUser[]>([]);
@@ -55,6 +71,13 @@ export const IndexPage: FC = () => {
     
     const fetchAllUsers = async () => {
       try {
+        // Проверка доступности Supabase клиента
+        if (!supabase) {
+          console.error('Supabase client is not available');
+          setUsersError(new Error('Supabase client is not available'));
+          return;
+        }
+        
         setLoadingUsers(true);
         setUsersError(null);
         
@@ -88,6 +111,13 @@ export const IndexPage: FC = () => {
     // Перезагружаем список всех пользователей
     const fetchAllUsers = async () => {
       try {
+        // Проверка доступности Supabase клиента
+        if (!supabase) {
+          console.error('Supabase client is not available');
+          setUsersError(new Error('Supabase client is not available'));
+          return;
+        }
+        
         setLoadingUsers(true);
         setUsersError(null);
         

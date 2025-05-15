@@ -22,14 +22,25 @@ export function useSupabaseUser(initDataRaw: TelegramInitDataType | undefined): 
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
 
+  // Попытка получить данные пользователя из initData
   const telegramUserFromInitData = initDataRaw?.user;
   const authDateFromInitData = initDataRaw?.auth_date; // Это Unix timestamp (число)
   const hashFromInitData = initDataRaw?.hash;
 
+  // Оборачиваем процесс в useCallback для предотвращения лишних ререндеров
   const processUser = useCallback(async () => {
+    // Проверка доступности необходимых данных
     if (!telegramUserFromInitData || typeof telegramUserFromInitData.id === 'undefined' || typeof authDateFromInitData === 'undefined') {
       setLoading(false);
       // Не устанавливаем ошибку, если данные еще не полные (например, начальная загрузка)
+      return;
+    }
+
+    // Проверка доступности Supabase клиента
+    if (!supabase) {
+      console.error('Supabase client is not available');
+      setError(new Error('Supabase client is not available'));
+      setLoading(false);
       return;
     }
 

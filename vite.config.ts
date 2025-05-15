@@ -28,6 +28,13 @@ export default defineConfig({
   build: {
     target: 'esnext',
   },
+  define: {
+    // Делаем переменные окружения доступными в приложении
+    'process.env.NEXT_PUBLIC_SUPABASE_URL': JSON.stringify(process.env.NEXT_PUBLIC_SUPABASE_URL || ''),
+    'process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY': JSON.stringify(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''),
+    'process.env.NEXT_PUBLIC_ALLOW_BROWSER_ACCESS': JSON.stringify(process.env.NEXT_PUBLIC_ALLOW_BROWSER_ACCESS || ''),
+    'process.env.NEXT_PUBLIC_IGNORE_BUILD_ERROR': JSON.stringify(process.env.NEXT_PUBLIC_IGNORE_BUILD_ERROR || ''),
+  },
   publicDir: './public',
   server: {
     // Exposes your dev server and makes it accessible for the devices in the same network.
