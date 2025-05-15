@@ -1,14 +1,7 @@
 import { type FC } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  Section,
-  Button,
-  Placeholder,
-  Text,
-} from '@telegram-apps/telegram-ui';
-
-import { Page } from '@/components/Page.tsx';
 import './QuizFlow.css';
+import { Page } from '@/components/Page';
 
 export const QuizFlow: FC = () => {
   const navigate = useNavigate();
@@ -16,21 +9,48 @@ export const QuizFlow: FC = () => {
   return (
     <Page>
       <div className="quiz-container">
-        <Section header="Выбор практики">
-          <div className="quiz-content">
-            <Placeholder
-              header="Квиз для выбора практики"
-              description="Здесь будет размещен интерактивный квиз для подбора подходящей практики"
-            >
-              <div className="quiz-coming-soon">
-                <Text weight="3" style={{ margin: '20px 0' }}>В разработке</Text>
-                <Button size="l" onClick={() => navigate('/')} stretched>
-                  Вернуться на главную
-                </Button>
-              </div>
-            </Placeholder>
+        <div className="quiz-progress">
+          <div className="quiz-progress-step active"></div>
+          <div className="quiz-progress-step"></div>
+          <div className="quiz-progress-step"></div>
+        </div>
+        
+        <div className="quiz-content">
+          <div className="quiz-header">
+            <button className="quiz-back-button" onClick={() => navigate('/')}>
+              ←
+            </button>
+            <div className="quiz-step">
+              1/3
+            </div>
           </div>
-        </Section>
+          
+          <h2 className="quiz-question">Какая ваша основная цель?</h2>
+          <p className="quiz-description">Выберите наиболее важную для вас цель практики</p>
+          
+          <div className="quiz-options">
+            <button className="quiz-option">
+              <span className="option-icon">😌</span>
+              <span className="option-text">Снижение стресса и тревоги</span>
+            </button>
+            <button className="quiz-option">
+              <span className="option-icon">💤</span>
+              <span className="option-text">Улучшение сна</span>
+            </button>
+            <button className="quiz-option">
+              <span className="option-icon">🧠</span>
+              <span className="option-text">Повышение концентрации</span>
+            </button>
+            <button className="quiz-option">
+              <span className="option-icon">⚡</span>
+              <span className="option-text">Увеличение энергии</span>
+            </button>
+          </div>
+        </div>
+        
+        <div className="quiz-info">
+          <p>На основе ваших ответов мы подберем индивидуальную практику, наиболее подходящую для ваших целей и уровня опыта.</p>
+        </div>
       </div>
     </Page>
   );

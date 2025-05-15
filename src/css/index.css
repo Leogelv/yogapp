@@ -51,7 +51,7 @@ body {
 /* Page с учетом safe area */
 .page-container {
   padding-top: calc(var(--tg-viewport-content-safe-area-inset-top, 90px) + 20px);
-  padding-bottom: 80px; /* Учитываем высоту TabBar */
+  /* Удаляем фиксированный padding-bottom, так как теперь он добавляется условно в Page.css */
 }
 
 /* Предотвращаем прокрутку под элементами интерфейса */

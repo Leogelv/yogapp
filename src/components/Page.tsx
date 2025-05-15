@@ -3,6 +3,7 @@ import { hideBackButton, onBackButtonClick, showBackButton, postEvent } from '@t
 import { type PropsWithChildren, useEffect, useRef } from 'react';
 import { SafeAreaFade } from '@/components/SafeAreaFade/SafeAreaFade';
 import TabBar from '@/components/TabBar/TabBar';
+import './Page.css';
 
 // Стили для учета отступов safe area с дополнительным отступом для fullscreen режима
 const safeAreaStyle = {
@@ -59,7 +60,11 @@ export function Page({
   }, []);
 
   return (
-    <div className="page-container" style={safeAreaStyle} ref={containerRef}>
+    <div 
+      className={`page-container ${showTabBar ? 'with-tab-bar' : ''}`} 
+      style={safeAreaStyle} 
+      ref={containerRef}
+    >
       <div className="content-wrapper">
         {children}
       </div>
