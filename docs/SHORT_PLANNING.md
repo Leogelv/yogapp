@@ -1,34 +1,38 @@
-# Short Term Plan: Supabase Integration (Initial)
+# Краткосрочный план по интеграции Supabase
 
-## Goal: Integrate Supabase authentication and display user data on IndexPage.
+## Логические основания
+- **Вещь**: Интеграция Supabase в React Telegram Mini App.
+- **Свойства**: 
+    - Получение данных пользователя Telegram.
+    - "Аутентификация" пользователя в Supabase (создание/обновление записи).
+    - Отображение данных пользователя из Supabase на `IndexPage`.
+    - Отображение всех пользователей из таблицы `public.users` на `IndexPage`.
+    - Проверка окружения (Telegram vs. браузер) с возможностью отключения.
+- **Отношения**: 
+    - Клиент Supabase взаимодействует с API Supabase.
+    - `IndexPage` отображает данные, полученные через клиент Supabase.
+    - Логика "аутентификации" использует `initData` от Telegram SDK.
 
-## Checklist & Steps:
+## Задачи:
+1.  [x] Проверить существование таблицы `users` в схеме `public` через MCP Supabase.
+2.  [x] Создать клиент Supabase (`src/lib/supabase/client.ts`).
+3.  [x] Реализовать логику "регистрации/входа" пользователя:
+    *   [x] Функция для проверки/создания/обновления пользователя в Supabase на основе Telegram `initData`.
+4.  [x] Интегрировать в `IndexPage.tsx`:
+    *   [x] Получение и отображение данных текущего пользователя из Supabase.
+    *   [x] Отображение статуса подключения к Supabase.
+    *   [x] Получение и отображение списка всех пользователей из `public.users`.
+5.  [x] Реализовать проверку окружения (Telegram App vs Browser) с возможностью отключения через ENV.
+6.  [x] Обновить `architecture.md`.
+7.  [x] Протестировать.
+8.  [ ] Сделать коммит и пуш.
 
-1.  [ ] **File Creation:**
-    *   [X] Create `docs/SHORT_PLANNING.md`
-    *   [ ] Create `docs/TASK.md`
-2.  [ ] **Supabase Setup Verification:**
-    *   [ ] Verify `users` table existence via Supabase MCP.
-3.  [ ] **Code Implementation:**
-    *   [ ] Create `src/lib/supabase/supabaseClient.ts` for Supabase client initialization.
-    *   [ ] Create `src/lib/supabase/useSupabaseAuth.ts` custom hook for authentication logic:
-        *   Fetch Telegram user data.
-        *   Check Supabase for existing user.
-        *   Create user in Supabase Auth & `users` table if new.
-        *   Update `last_login`.
-    *   [ ] Update `src/pages/IndexPage/IndexPage.tsx`:
-        *   Use `useSupabaseAuth` hook.
-        *   Display Supabase connection status.
-        *   Display current user's data from Supabase.
-        *   Display list of all users from `public.users` table.
-4.  [ ] **Documentation:**
-    *   [ ] Update `docs/architecture.md` with Supabase integration details.
-5.  [ ] **Review & Testing:**
-    *   [ ] Ensure no existing Telegram functionality is broken.
-    *   [ ] Test Supabase connection and data display on `IndexPage`.
-
-## Key Considerations:
-*   Use `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` from `.env.local` for client-side Supabase.
-*   RLS is currently disabled on `public.users` table.
-*   Do not modify Telegram SDK integrations.
-*   Do not modify `ProfilePage`. 
+## Чек-лист проверок:
+- [x] Навигация: Не затронута.
+- [x] Консистентность флоу: Проверить, что данные пользователя из Telegram корректно передаются и используются для Supabase.
+- [x] Читаемость кода: Код должен быть понятен, с комментариями на русском.
+- [x] Обработка ошибок: Предусмотреть базовую обработку ошибок при взаимодействии с Supabase.
+- [x] Соответствие ТЗ: Все пункты из запроса пользователя учтены.
+- [x] Лимиты на размер файла: Соблюдены.
+- [x] .env переменные: используются корректно (NEXT_PUBLIC_).
+- [x] RLS: Убедиться, что RLS для public.users временно отключен (пользователь подтвердил). 

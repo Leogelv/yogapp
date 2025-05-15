@@ -1,48 +1,37 @@
-# Task Management: Supabase Integration
+# Задачи по проекту
 
-## Current Sprint: Supabase Core Integration
+## Логические основания
+- **Вещь**: Управление задачами проекта.
+- **Свойства**: Статус (🔴 Не начато, 🟡 В процессе, 🟢 Выполнено), Описание, Дата добавления/обновления, Приоритет (если нужен).
+- **Отношения**: Задачи могут быть связаны (подзадачи), задачи относятся к определенным фичам или этапам проекта.
 
-### Main Task: Implement Supabase Authentication & IndexPage Display (Est: 4h)
+## Текущая основная задача: Интеграция Supabase (08.07.2024)
 
-*   **ID:** SUPA-AUTH-001
-*   **Description:** Integrate Supabase for user authentication using Telegram credentials. Display auth status and user data on the main IndexPage. **Includes creating new users in Supabase Auth and `public.users` table if they don't exist, and updating existing user data from Telegram `initData`.**
-*   **Status:** 🟡 В процессе
-*   **Sub-tasks:**
-    *   **SUPA-AUTH-001.1:** 🟢 Verify `users` table in Supabase.
-        *   Action: Use Supabase MCP `list_tables`.
-    *   **SUPA-AUTH-001.2:** 🟢 Create Supabase client instance.
-        *   File: `src/lib/supabase/supabaseClient.ts`
-    *   **SUPA-AUTH-001.3:** 🟢 Develop `useSupabaseAuth` hook.
-        *   File: `src/lib/supabase/useSupabaseAuth.ts`
-        *   Logic:
-            *   Accepts `launchParams` (containing `initData`) as a prop.
-            *   Retrieves Telegram user data from `initData.user`.
-            *   Checks if user exists in Supabase `public.users` table (by `telegram_id`).
-            *   **If exists:**
-                *   Updates `last_login` in `public.users` table.
-                *   Updates `first_name`, `last_name`, `username`, `photo_url` from `initData.user`.
-            *   **If not exists:**
-                *   Generates email (`<telegram_id>@telegram.user`) and random password.
-                *   Calls `supabase.auth.signUp()` with email, password, and TG user details in `options.data`.
-                *   If `signUp` is successful, takes new `AuthUser.id` and inserts a record into `public.users` table with all TG user details.
-                *   Handles `User already registered` error from `signUp` by attempting `signInWithPassword` and then creating the profile in `public.users`.
-            *   Returns Supabase user data (`DbUser`, `AuthUser`), connection/loading/error state, and status messages.
-    *   **SUPA-AUTH-001.4:** 🟢 Update `IndexPage.tsx`.
-        *   File: `src/pages/IndexPage/IndexPage.tsx`
-        *   Logic:
-            *   Retrieves `launchParams` using `retrieveLaunchParams()`.
-            *   Integrates `useSupabaseAuth` hook, passing `launchParams`.
-            *   Displays auth status, Supabase connection status, and status messages from the hook.
-            *   Displays current user's details from Supabase (`dbUser`, `sessionUser`).
-            *   Fetches and lists all users from `public.users`.
-    *   **SUPA-AUTH-001.5:** 🟢 Update `architecture.md`.
-    *   **SUPA-AUTH-001.6:** 🟡 Testing & Verification by user.
+### Подзадачи:
+1.  [x] 🟢 **Настройка окружения и файлов планирования** (08.07.2024)
+    *   [x] Создать `docs/SHORT_PLANNING.md`
+    *   [x] Создать `docs/TASK.md`
+2.  [x] 🟢 **Проверка Supabase и создание клиента** (08.07.2024)
+    *   [x] Проверить существование таблицы `users` в схеме `public` и отключенный RLS (используя Supabase MCP).
+    *   [x] Создать файл `src/lib/supabase/client.ts` с инициализацией клиента Supabase.
+3.  [x] 🟢 **Реализация логики "Аутентификации/Регистрации"** (08.07.2024)
+    *   [x] Создать функцию/хук для работы с пользователем: проверка существования, создание новой записи, обновление `last_login` на основе Telegram `initData`.
+4.  [x] 🟢 **Интеграция с `IndexPage.tsx`** (08.07.2024)
+    *   [x] Реализовать получение данных текущего пользователя из Supabase.
+    *   [x] Отобразить статус подключения к Supabase (например, через Telegram UI).
+    *   [x] Вывести данные текущего пользователя (например, ID, имя).
+    *   [x] Вывести список всех пользователей из `public.users`.
+5.  [x] 🟢 **Реализация проверки окружения (Telegram vs Browser)** (08.07.2024)
+    *   [x] Добавить логику для определения, открыто ли приложение в браузере или в Telegram.
+    *   [x] Показывать сообщение "Доступно только в приложениях Telegram", если открыто в браузере.
+    *   [x] Сделать эту проверку отключаемой через переменную окружения (например, `NEXT_PUBLIC_ALLOW_BROWSER_ACCESS`).
+6.  [x] 🟢 **Документация и Завершение** (08.07.2024)
+    *   [x] Обновить `architecture.md` с описанием новой интеграции и структуры.
+    *   [x] Провести финальное тестирование.
+    *   [ ] Подготовить коммит и пуш в `master`.
 
-### Discovered in ходе работы:
-*   Linter issues with `@telegram-apps/sdk-react` `useInitData` type, switched to `retrieveLaunchParams()`.
-*   Required installation of `uuid` and `@types/uuid`.
-*   Careful handling of `launchParams` and `initData` typings needed, simplified with `any` for now to avoid SDK type wrestling.
+## Обнаружено в ходе работы:
+-   Пока ничего.
 
----
-*Date Initialized: 2024-07-19*
-*Last Update: $(date +'%Y-%m-%d')* 
+## Завершенные задачи:
+-   ... 
