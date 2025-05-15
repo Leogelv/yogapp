@@ -1,57 +1,76 @@
-import { useMemo } from 'react';
-import { type FC } from 'react';
+import { useMemo, FC, useEffect, useState } from 'react';
 import {
   initDataState as _initDataState,
   useSignal,
 } from '@telegram-apps/sdk-react';
-import { 
-  Avatar,
-  Placeholder,
-  Text,
-  Spinner,
-} from '@telegram-apps/telegram-ui';
-
-import { Page } from '@/components/Page.tsx';
-import Stats from '@/components/Stats';
-import { useSupabaseUser } from '@/lib/supabase/hooks/useSupabaseUser';
-import { logger } from '@/lib/logger';
 import { useNavigate } from 'react-router-dom';
 
-// Импорт статических ресурсов
+// Пользовательские компоненты и хуки
+import { Page } from '@/components/Page';
+import Stats from '@/components/Stats';
+import TabBar from '@/components/TabBar';
+import AuthStatusIndicator from '@/components/AuthStatusIndicator';
+import { useSupabaseUser } from '@/lib/supabase/hooks/useSupabaseUser';
+import { logger } from '@/lib/logger';
+
+// Стили
 import './MainScreen.css';
 
-// Компонент для индикатора состояния авторизации
-const AuthStatusIndicator: FC<{ isAuthenticated: boolean }> = ({ isAuthenticated }) => (
-  <div className="auth-status-indicator" style={{ 
-    width: 12, 
-    height: 12, 
-    borderRadius: '50%', 
-    backgroundColor: isAuthenticated ? '#4caf50' : '#f44336',
-    marginLeft: 8,
-    display: 'inline-block',
-    verticalAlign: 'middle'
-  }} />
+// Компонент загрузки
+const LoadingState: FC = () => (
+  <div className="loading-container">
+    <div className="loading-spinner" aria-hidden="true" />
+    <p className="loading-text">Загрузка данных...</p>
+  </div>
+);
+
+// Компонент ошибки
+const ErrorState: FC<{ message: string }> = ({ message }) => (
+  <div className="error-container">
+    <div className="error-icon" aria-hidden="true">⚠️</div>
+    <h2 className="error-title">Ошибка</h2>
+    <p className="error-message">{message}</p>
+  </div>
+);
+
+// Компонент предупреждения для браузера
+const BrowserWarning: FC = () => (
+  <div className="browser-warning">
+    <h2 className="warning-title">Только для Telegram</h2>
+    <p className="warning-message">Это приложение доступно только в Telegram Mini Apps.</p>
+  </div>
 );
 
 export const MainScreen: FC = () => {
   const initDataState = useSignal(_initDataState);
   const { supabaseUser, loading, error } = useSupabaseUser(initDataState);
   const navigate = useNavigate();
-  
+  const [contentVisible, setContentVisible] = useState(false);
+
+  // Применяем анимацию появления контента
+  useEffect(() => {
+    if (!loading && !error) {
+      const timer = setTimeout(() => {
+        setContentVisible(true);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [loading, error]);
+
   // Проверяем запуск в телеграме
   const isTelegramApp = useMemo(() => {
     const result = typeof window !== 'undefined' && !!window.Telegram;
     logger.debug(`isTelegramApp check: ${result}`);
     return result;
   }, []);
-  
+
   // Проверяем, можно ли показывать содержимое в браузере
   const allowBrowserAccess = useMemo(() => {
     const allowed = process.env.NEXT_PUBLIC_ALLOW_BROWSER_ACCESS === 'true';
     logger.info('allowBrowserAccess:', { allowed, envValue: process.env.NEXT_PUBLIC_ALLOW_BROWSER_ACCESS });
     return allowed;
   }, []);
-  
+
   // Определяем, показывать ли содержимое приложения
   const showAppContent = useMemo(() => {
     const result = isTelegramApp || allowBrowserAccess;
@@ -60,7 +79,7 @@ export const MainScreen: FC = () => {
   }, [isTelegramApp, allowBrowserAccess]);
 
   // Определяем пользователя из initDataState
-  const user = useMemo(() => 
+  const user = useMemo(() =>
     initDataState && initDataState.user ? initDataState.user : undefined,
   [initDataState]);
 
@@ -74,9 +93,8 @@ export const MainScreen: FC = () => {
     logger.warn('Access denied: not in Telegram app and browser access not allowed');
     return (
       <Page back={false}>
-        <div className="browser-warning">
-          <Text weight="3">Только для Telegram</Text>
-          <Text>Это приложение доступно только в Telegram Mini Apps.</Text>
+        <div className="main-screen">
+          <BrowserWarning />
         </div>
       </Page>
     );
@@ -86,10 +104,9 @@ export const MainScreen: FC = () => {
   if (loading) {
     return (
       <Page back={false}>
-        <Placeholder>
-          <Spinner size="m" />
-          <Text weight="3" style={{ marginTop: 8 }}>Загрузка данных...</Text>
-        </Placeholder>
+        <div className="main-screen">
+          <LoadingState />
+        </div>
       </Page>
     );
   }
@@ -98,10 +115,9 @@ export const MainScreen: FC = () => {
   if (error) {
     return (
       <Page back={false}>
-        <Placeholder 
-          header="Ошибка" 
-          description={`Не удалось загрузить данные: ${error.message}`}
-        />
+        <div className="main-screen">
+          <ErrorState message={error.message} />
+        </div>
       </Page>
     );
   }
@@ -110,35 +126,47 @@ export const MainScreen: FC = () => {
   if (!user) {
     return (
       <Page back={false}>
-        <Placeholder
-          header="Нет данных пользователя"
-          description="Не удалось получить данные пользователя из Telegram"
-        />
+        <div className="main-screen">
+          <ErrorState message="Не удалось получить данные пользователя из Telegram" />
+        </div>
       </Page>
     );
   }
 
   return (
     <Page back={false}>
-      {/* Верхний блок с аватаром и именем пользователя */}
-      <div className="user-header">
-        <div className="user-info">
-          <Avatar size={40} src={user.photo_url} alt={user.username || user.first_name} />
-          <div className="user-name">
-            <Text weight="3">{user.first_name}</Text>
-            <AuthStatusIndicator isAuthenticated={!!supabaseUser} />
+      <div className={`main-screen ${contentVisible ? 'content-visible' : ''}`}>
+        {/* Верхний блок с аватаром и именем пользователя */}
+        <div className="user-header">
+          <div className="user-info">
+            <div className="user-avatar">
+              {user.photo_url ? (
+                <img src={user.photo_url} alt={user.username || user.first_name} loading="lazy" />
+              ) : (
+                <div className="user-avatar-placeholder" aria-hidden="true">{user.first_name.charAt(0)}</div>
+              )}
+            </div>
+            <div className="user-name">
+              {user.first_name}
+              <AuthStatusIndicator isAuthenticated={!!supabaseUser} className="ml-2" />
+            </div>
+          </div>
+          <div className="like-button">
+            3 <span className="heart-icon" aria-hidden="true">❤</span>
           </div>
         </div>
-        <div className="like-button">3 <span className="heart-icon">❤</span></div>
+
+        {/* Блок статистики и кнопка выбора практики */}
+        <Stats
+          strength={3}
+          practiceMinutes={100}
+          daysInFlow={7}
+          onSelectPractice={handleSelectPractice}
+        />
+
+        {/* Нижний таб-бар */}
+        <TabBar />
       </div>
-      
-      {/* Блок статистики и кнопка выбора практики */}
-      <Stats 
-        strength={3}
-        practiceMinutes={100}
-        daysInFlow={7}
-        onSelectPractice={handleSelectPractice}
-      />
     </Page>
   );
 }; 

@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { hideBackButton, onBackButtonClick, showBackButton, postEvent } from '@telegram-apps/sdk-react';
 import { type PropsWithChildren, useEffect, useRef } from 'react';
 import { SafeAreaFade } from '@/components/SafeAreaFade/SafeAreaFade';
-import { TabBar } from '@/components/TabBar/TabBar';
+import TabBar from '@/components/TabBar/TabBar';
 
 // Стили для учета отступов safe area с дополнительным отступом для fullscreen режима
 const safeAreaStyle = {

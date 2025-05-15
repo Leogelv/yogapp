@@ -1,67 +1,57 @@
-import React from 'react';
-import { ChevronRight } from './icons';
+import { FC } from 'react';
 import './Stats.css';
 
-interface StatItemProps {
-  value: string | number;
-  label: string;
-  highlight?: boolean;
-}
-
-const StatItem: React.FC<StatItemProps> = ({ value, label, highlight = false }) => {
-  return (
-    <div className={`stat-item ${highlight ? 'stat-item-highlight' : ''}`}>
-      <div className="stat-value">{value}</div>
-      <div className="stat-label">{label}</div>
-    </div>
-  );
-};
-
 interface StatsProps {
-  strength?: number;
-  practiceMinutes?: number;
-  daysInFlow?: number;
+  strength: number;
+  practiceMinutes: number;
+  daysInFlow: number;
   onSelectPractice?: () => void;
+  className?: string;
 }
 
-const Stats: React.FC<StatsProps> = ({ 
-  strength = 3, 
-  practiceMinutes = 100, 
-  daysInFlow = 7,
-  onSelectPractice 
+const Stats: FC<StatsProps> = ({ 
+  strength, 
+  practiceMinutes, 
+  daysInFlow, 
+  onSelectPractice,
+  className = ''
 }) => {
   return (
-    <div className="stats-container">
-      <div className="strength-card">
-        <StatItem 
-          value={strength} 
-          label="ТВОЯ СИЛА" 
-          highlight={true} 
+    <div className={`stats-container ${className}`}>
+      <div className="meditation-image-container">
+        <img 
+          src="/mediman.png" 
+          alt="Медитирующий человек" 
+          className="meditation-image"
         />
       </div>
       
-      <div className="stats-row">
-        <div className="stats-card">
-          <StatItem 
-            value={practiceMinutes} 
-            label="МИНУТ ПРАКТИКИ" 
-          />
+      <div className="stats-card">
+        <div className="stats-strength">
+          <div className="stats-header">{strength}</div>
+          <div className="stats-label">ТВОЯ СИЛА</div>
         </div>
-        <div className="stats-card">
-          <StatItem 
-            value={daysInFlow} 
-            label="ДНЕЙ В ПОТОКЕ" 
-          />
+        
+        <div className="stats-row">
+          <div className="stats-item">
+            <div className="stats-value">{practiceMinutes}</div>
+            <div className="stats-label">минут практики</div>
+          </div>
+          
+          <div className="stats-item">
+            <div className="stats-value">{daysInFlow}</div>
+            <div className="stats-label">дней в потоке</div>
+          </div>
         </div>
+        
+        <button 
+          className="practice-button" 
+          onClick={onSelectPractice}
+        >
+          <span>Выбрать практику</span>
+          <span className="arrow-icon">→</span>
+        </button>
       </div>
-      
-      <button 
-        className="select-practice-button"
-        onClick={onSelectPractice}
-      >
-        <span>Выбрать практику</span>
-        <ChevronRight />
-      </button>
     </div>
   );
 };
