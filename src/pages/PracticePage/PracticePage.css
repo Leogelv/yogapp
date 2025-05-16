@@ -1,0 +1,89 @@
+.practice-page {
+  width: 100%;
+  min-height: calc(100vh - 56px);
+  padding: 16px;
+  box-sizing: border-box;
+  background-color: var(--tgui-bg-color);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.practice-content {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  padding-bottom: 20px;
+}
+
+.practice-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+  padding: 0 16px;
+}
+
+.back-button {
+  background-color: var(--tgui-secondary-bg);
+  color: var(--tgui-text-color);
+  border: none;
+  border-radius: 8px;
+  padding: 10px 16px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.share-button {
+  background-color: var(--tgui-button-color);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 16px;
+  cursor: pointer;
+  font-size: 14px;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.player-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+  width: 100%;
+  color: var(--tgui-text-color);
+  font-size: 16px;
+}
+
+.player-error {
+  padding: 20px;
+  text-align: center;
+  background-color: var(--tgui-secondary-bg);
+  border-radius: 10px;
+  margin: 20px 0;
+  color: var(--tgui-text-color);
+}
+
+.player-error p {
+  margin-bottom: 16px;
+  color: var(--tgui-destructive);
+}
+
+/* Адаптивные стили */
+@media (max-width: 480px) {
+  .practice-page {
+    padding: 8px;
+  }
+  
+  .practice-actions {
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+  }
+  
+  .back-button,
+  .share-button {
+    width: 100%;
+    text-align: center;
+  }
+} 

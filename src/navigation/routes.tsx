@@ -10,6 +10,7 @@ import { TONConnectPage } from '@/pages/TONConnectPage/TONConnectPage';
 import { DiagnosticsPage } from '@/pages/DiagnosticsPage/DiagnosticsPage';
 import { MainScreen } from '@/pages/MainScreen/MainScreen';
 import { QuizFlow } from '@/pages/QuizFlow/QuizFlow';
+import PracticePage from '@/pages/PracticePage/PracticePage';
 
 interface Route {
   path: string;
@@ -24,6 +25,9 @@ export const routes: Route[] = [
   
   // Новый квиз для выбора практики
   { path: '/quiz', Component: QuizFlow, title: 'Выбор практики' },
+  
+  // Страница практики
+  { path: '/practice/:contentId', Component: PracticePage, title: 'Практика' },
   
   // Оставляем старую главную как диагностический инструмент
   { path: '/old-index', Component: IndexPage, title: 'Старая главная' },
@@ -67,6 +71,18 @@ export const router = createHashRouter([
   {
     path: '/quiz',
     element: <QuizFlow />
+  },
+  {
+    path: '/practice/:contentId',
+    element: <PracticePage />
+  },
+  {
+    path: '/practice/meditation/:meditationType/:meditationObject',
+    element: <PracticePage />
+  },
+  {
+    path: '/practice/:contentId/:meditationType',
+    element: <PracticePage />
   },
   {
     path: '/old-index',
