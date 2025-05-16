@@ -86,9 +86,53 @@ reactjs-template
    - `created_at` - Дата создания записи (timestamptz с default now())
    - `updated_at` - Дата обновления записи (timestamptz с default now())
 
+2. **public.content_types** - Типы контента:
+   - `id` - UUID, первичный ключ (генерируется автоматически)
+   - `name` - Название типа контента (not null)
+   - `slug` - Короткий идентификатор типа (not null)
+   - `description` - Описание типа контента (not null)
+   - `created_at` - Дата создания записи (timestamptz, not null)
+
+3. **public.categories** - Категории контента:
+   - `id` - UUID, первичный ключ (генерируется автоматически)
+   - `name` - Название категории (not null)
+   - `slug` - Короткий идентификатор категории (not null)
+   - `description` - Описание категории
+   - `icon` - URL иконки категории
+   - `color` - Цвет категории (hex или название)
+   - `display_order` - Порядок отображения категории
+   - `created_at` - Дата создания (timestamptz с default now())
+   - `updated_at` - Дата обновления (timestamptz с default now())
+
+4. **public.contents** - Контент (медитации, курсы, материалы):
+   - `id` - UUID, первичный ключ
+   - `title` - Заголовок контента (not null)
+   - `subtitle` - Подзаголовок
+   - `description` - Описание контента
+   - `duration` - Продолжительность в секундах
+   - `thumbnail_url` - URL миниатюры
+   - `background_image_url` - URL фонового изображения
+   - `content_type_id` - Внешний ключ на таблицу content_types
+   - `category_id` - Внешний ключ на таблицу categories
+   - `difficulty_level` - Уровень сложности
+   - `kinescope_id` - ID видео в Kinescope
+   - `audio_file_path` - Путь к аудиофайлу
+   - `is_premium` - Флаг премиум-контента
+   - `is_featured` - Флаг рекомендуемого контента
+   - `display_order` - Порядок отображения
+   - `metadata` - Дополнительные метаданные (JSONB)
+   - `created_at` - Дата создания (timestamptz)
+   - `updated_at` - Дата обновления (timestamptz)
+
+### Связи между таблицами
+1. **contents -> categories**: `contents.category_id` -> `categories.id` (fk_category)
+2. **contents -> content_types**: `contents.content_type_id` -> `content_types.id` (fk_content_type)
+
 ### Известные особенности и проблемы
 - Первоначально таблица `public.users` имела ограничение внешнего ключа `users_id_fkey`, связывающее поле `id` с `auth.users.id`. Это вызывало ошибки при создании пользователей, так как auth.users не содержала соответствующих записей. Ограничение было удалено.
 - Для корректной работы приложения в браузере (в режиме разработки или тестирования) необходимо установить переменную окружения `NEXT_PUBLIC_ALLOW_BROWSER_ACCESS=true`.
+- Таблица `contents` содержит ссылки на типы контента и категории, что позволяет организовать контент в иерархическую структуру.
+- RLS (Row Level Security) включен для таблиц categories и content_types, но отключен для таблиц users и contents.
 
 ## Специальные методы Telegram
 
@@ -117,7 +161,7 @@ reactjs-template
 
 ## Последняя верификация
 
-Структура проекта верифицирована: 15.05.2025 
+Структура проекта верифицирована: 04.11.2024
 
 ## Realtime обновления и оптимизации
 

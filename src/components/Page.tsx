@@ -65,10 +65,16 @@ export function Page({
     }
   }, []);
 
+  // Добавляем отступ снизу, если показываем TabBar
+  const containerStyle = {
+    ...safeAreaStyle,
+    paddingBottom: showTabBar ? 'calc(56px + env(safe-area-inset-bottom, 0) + 5px)' : 'var(--safe-area-bottom, 0px)',
+  };
+
   return (
     <div 
       className={`page-container ${showTabBar ? 'with-tab-bar' : ''}`} 
-      style={safeAreaStyle} 
+      style={containerStyle} 
       ref={containerRef}
     >
       <div className="content-wrapper" style={{ backgroundColor: '#ffffff' }}>

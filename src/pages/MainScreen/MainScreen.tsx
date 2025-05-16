@@ -8,7 +8,6 @@ import { useNavigate } from 'react-router-dom';
 // Пользовательские компоненты и хуки
 import { Page } from '@/components/Page';
 import Stats from '@/components/Stats';
-import TabBar from '@/components/TabBar';
 import AuthStatusIndicator from '@/components/AuthStatusIndicator';
 import { useSupabaseUser } from '@/lib/supabase/hooks/useSupabaseUser';
 import { logger } from '@/lib/logger';
@@ -163,9 +162,6 @@ export const MainScreen: FC = () => {
           daysInFlow={7}
           onSelectPractice={handleSelectPractice}
         />
-
-        {/* Нижний таб-бар */}
-        <TabBar />
       </div>
     </Page>
   );
