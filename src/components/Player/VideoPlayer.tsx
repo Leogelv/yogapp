@@ -38,13 +38,13 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoId, title, description }
     if (state.fullscreen) {
       if (document.fullscreenElement !== playerContainer) {
         playerContainer.requestFullscreen().catch(() => {
-          console.error(`Ошибка перехода в полноэкранный режим`);
+          // Ошибка перехода в полноэкранный режим (не используется)
         });
       }
     } else {
       if (document.fullscreenElement === playerContainer) {
         document.exitFullscreen().catch(() => {
-          console.error(`Ошибка выхода из полноэкранного режима`);
+          // Ошибка выхода из полноэкранного режима (не используется)
         });
       }
     }
@@ -56,11 +56,11 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoId, title, description }
     
     if (state.playing) {
       playerRef.current.play().catch(() => {
-        console.error('Ошибка при запуске воспроизведения');
+        // Ошибка при запуске воспроизведения (не используется)
       });
     } else {
       playerRef.current.pause().catch(() => {
-        console.error('Ошибка при постановке на паузу');
+        // Ошибка при постановке на паузу (не используется)
       });
     }
   }, [state.playing]);
@@ -71,14 +71,14 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoId, title, description }
     
     if (state.muted) {
       playerRef.current.mute().catch(() => {
-        // Оставляем только логирование критичных ошибок
+        // Ошибка при mute (не используется)
       });
     } else {
       playerRef.current.unmute().catch(() => {
-        // Оставляем только логирование критичных ошибок
+        // Ошибка при unmute (не используется)
       });
       playerRef.current.setVolume(state.volume).catch(() => {
-        // Оставляем только логирование критичных ошибок  
+        // Ошибка при setVolume (не используется)
       });
     }
   }, [state.volume, state.muted]);
@@ -88,7 +88,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoId, title, description }
     if (!playerRef.current) return;
     
     playerRef.current.setPlaybackRate(state.playbackRate).catch(() => {
-      // Оставляем только логирование критичных ошибок
+      // Ошибка при setPlaybackRate (не используется)
     });
   }, [state.playbackRate]);
 
@@ -113,11 +113,8 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoId, title, description }
             onPause={handlePause}
             onTimeUpdate={handleTimeUpdate}
             onEnded={handleEnded}
-            onError={(err: unknown) => {
+            onError={() => {
               // Оставляем только критичные ошибки
-              if (err instanceof Error && err.message) {
-                console.error('Критическая ошибка плеера:', err.message);
-              }
             }}
           />
         ) : (

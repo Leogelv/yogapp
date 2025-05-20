@@ -18,7 +18,6 @@ export interface QuizCombination {
 }
 
 export function generateAllQuizCombinations(): QuizCombination[] {
-  const types = ['short', 'physical', 'breathing', 'meditation'];
   const goals: Record<PracticeType, PracticeGoal[]> = {
     short: ['energize', 'relax', 'stretch', 'focus'],
     physical: ['legs', 'whole_body', 'shoulders', 'core', 'digestive', 'back_pain', 'hormonal'],

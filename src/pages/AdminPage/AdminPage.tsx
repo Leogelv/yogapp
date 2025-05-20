@@ -9,7 +9,6 @@ import { supabase } from '@/lib/supabase/client';
 import { useSupabaseUser } from '@/lib/supabase/hooks/useSupabaseUser';
 import { PlayerProvider } from '@/contexts/PlayerContext';
 import './AdminPage.css';
-import { generateAllQuizCombinations } from '@/helpers/quizCombinations';
 import { uploadFileToR2 } from '@/lib/cloudflareR2Service';
 import { MdPlayCircleOutline, MdRefresh, MdLogout } from 'react-icons/md';
 import TimeInput, { formatTimeFromSeconds } from '@/components/TimeInput/TimeInput';
@@ -43,7 +42,6 @@ const AdminPage: React.FC = () => {
   const [contentTypes, setContentTypes] = useState<any[]>([]);
   const [savingPractice, setSavingPractice] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
-  const [loadingMetadata, setLoadingMetadata] = useState<boolean>(false);
 
   // Добавляем класс 'admin-mode' к body при монтировании компонента
   useEffect(() => {
@@ -72,7 +70,6 @@ const AdminPage: React.FC = () => {
     
     const fetchMetadata = async () => {
       if (!supabase) return;
-      setLoadingMetadata(true);
       
       try {
         console.log('Загружаем метаданные (категории и типы контента)...');
@@ -99,8 +96,6 @@ const AdminPage: React.FC = () => {
         setContentTypes(types || []);
       } catch (error) {
         console.error('Ошибка при загрузке метаданных:', error);
-      } finally {
-        setLoadingMetadata(false);
       }
     };
     
@@ -345,7 +340,6 @@ const PracticesManager: React.FC<{
   const [loading, setLoading] = useState<boolean>(true);
   const [editingCell, setEditingCell] = useState<{id: string, field: string} | null>(null);
   const [editValue, setEditValue] = useState<string | number>('');
-  const [savingInline, setSavingInline] = useState(false);
   
   console.log('PracticesManager рендеринг');
 
@@ -446,7 +440,6 @@ const PracticesManager: React.FC<{
     if (!editingCell) return;
     
     try {
-      setSavingInline(true);
       console.log(`Сохраняем изменение поля ${editingCell.field} для практики ID: ${editingCell.id}`);
       
       if (!supabase) throw new Error('Supabase не инициализирован');
@@ -514,7 +507,6 @@ const PracticesManager: React.FC<{
       console.error('Ошибка при сохранении изменения:', e);
       alert(`Ошибка при сохранении: ${e.message}`);
     } finally {
-      setSavingInline(false);
       cancelEditing();
     }
   };
