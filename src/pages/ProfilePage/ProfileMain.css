@@ -344,8 +344,25 @@
 }
 
 .settings-info {
+  text-align: center;
   color: var(--profile-text-secondary);
-  font-size: 0.95rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Контейнер для кнопки администратора */
+.admin-button-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.admin-button {
+  background-color: #9f2f2f !important; /* Темно-красный цвет для админской кнопки */
+  color: white !important;
+}
+
+.admin-button:hover {
+  background-color: #c23a3a !important;
 }
 
 /* Кнопки действий */

@@ -1,15 +1,7 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { usePlayer } from '../../contexts/PlayerContext';
+import KinescopePlayer from '@kinescope/react-kinescope-player';
 import './Player.css';
-
-// Определение типов для Kinescope
-declare global {
-  interface Window {
-    Kinescope?: {
-      IframePlayer: new (element: HTMLElement, options: any) => any;
-    };
-  }
-}
 
 interface VideoPlayerProps {
   videoId: string;
@@ -19,113 +11,38 @@ interface VideoPlayerProps {
 
 const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoId, title, description }) => {
   const { state, play, pause, seekTo, toggleFullscreen } = usePlayer();
-  const playerRef = useRef<HTMLDivElement>(null);
-  const playerInstanceRef = useRef<any>(null);
+  const playerRef = useRef<any>(null);
 
-  // Инициализация Kinescope плеера
-  useEffect(() => {
-    if (!videoId || !playerRef.current) return;
+  // Обработчики событий для Kinescope Player
+  const handlePlay = () => {
+    play();
+  };
 
-    // Функция загрузки Kinescope API
-    const loadKinescopeAPI = () => {
-      return new Promise<void>((resolve) => {
-        // Проверка, загружен ли уже скрипт
-        if (window.Kinescope) {
-          resolve();
-          return;
-        }
+  const handlePause = () => {
+    pause();
+  };
 
-        // Создание и загрузка скрипта
-        const script = document.createElement('script');
-        script.src = 'https://player.kinescope.io/latest/iframe.player.js';
-        script.async = true;
-        script.onload = () => resolve();
-        document.body.appendChild(script);
-      });
-    };
+  const handleTimeUpdate = ({ currentTime }: { currentTime: number }) => {
+    seekTo(currentTime);
+  };
 
-    // Инициализация плеера
-    const initPlayer = async () => {
-      await loadKinescopeAPI();
-      
-      if (window.Kinescope && playerRef.current) {
-        // Создаем новый экземпляр плеера
-        playerInstanceRef.current = new window.Kinescope.IframePlayer(playerRef.current, {
-          url: `https://kinescope.io/embed/${videoId}`,
-          autoplay: false,
-          loop: false,
-        });
-
-        // Добавляем обработчики событий
-        playerInstanceRef.current.on('ready', () => {
-          console.log('Kinescope player ready');
-        });
-
-        playerInstanceRef.current.on('play', () => {
-          play();
-        });
-
-        playerInstanceRef.current.on('pause', () => {
-          pause();
-        });
-
-        playerInstanceRef.current.on('timeupdate', (data: { currentTime: number }) => {
-          seekTo(data.currentTime);
-        });
-
-        playerInstanceRef.current.on('ended', () => {
-          pause();
-        });
-      }
-    };
-
-    initPlayer();
-
-    // Очистка при размонтировании
-    return () => {
-      if (playerInstanceRef.current) {
-        playerInstanceRef.current.destroy();
-      }
-    };
-  }, [videoId, play, pause, seekTo]);
-
-  // Управление воспроизведением
-  useEffect(() => {
-    if (!playerInstanceRef.current) return;
-
-    if (state.playing) {
-      playerInstanceRef.current.play();
-    } else {
-      playerInstanceRef.current.pause();
-    }
-  }, [state.playing]);
-
-  // Управление громкостью
-  useEffect(() => {
-    if (!playerInstanceRef.current) return;
-    
-    playerInstanceRef.current.setVolume(state.muted ? 0 : state.volume);
-  }, [state.volume, state.muted]);
-
-  // Управление скоростью воспроизведения
-  useEffect(() => {
-    if (!playerInstanceRef.current) return;
-    
-    playerInstanceRef.current.setPlaybackRate(state.playbackRate);
-  }, [state.playbackRate]);
+  const handleEnded = () => {
+    pause();
+  };
 
   // Управление полноэкранным режимом
   useEffect(() => {
-    if (!playerRef.current) return;
+    const playerContainer = document.querySelector('.video-player-wrapper');
+    if (!playerContainer) return;
 
     if (state.fullscreen) {
-      if (document.fullscreenElement !== playerRef.current) {
-        playerRef.current.requestFullscreen().catch(err => {
+      if (document.fullscreenElement !== playerContainer) {
+        playerContainer.requestFullscreen().catch(err => {
           console.error(`Ошибка перехода в полноэкранный режим: ${err.message}`);
         });
       }
     } else {
-      if (document.fullscreenElement === playerRef.current) {
+      if (document.fullscreenElement === playerContainer) {
         document.exitFullscreen().catch(err => {
           console.error(`Ошибка выхода из полноэкранного режима: ${err.message}`);
         });
@@ -133,15 +50,79 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoId, title, description }
     }
   }, [state.fullscreen]);
 
+  // Управление воспроизведением
+  useEffect(() => {
+    if (!playerRef.current) return;
+    
+    if (state.playing) {
+      playerRef.current.play().catch((err: Error) => {
+        console.error('Ошибка при запуске воспроизведения:', err);
+      });
+    } else {
+      playerRef.current.pause().catch((err: Error) => {
+        console.error('Ошибка при постановке на паузу:', err);
+      });
+    }
+  }, [state.playing]);
+
+  // Управление громкостью
+  useEffect(() => {
+    if (!playerRef.current) return;
+    
+    if (state.muted) {
+      playerRef.current.mute().catch((err: Error) => {
+        // Оставляем только логирование критичных ошибок
+      });
+    } else {
+      playerRef.current.unmute().catch((err: Error) => {
+        // Оставляем только логирование критичных ошибок
+      });
+      playerRef.current.setVolume(state.volume).catch((err: Error) => {
+        // Оставляем только логирование критичных ошибок  
+      });
+    }
+  }, [state.volume, state.muted]);
+
+  // Управление скоростью воспроизведения
+  useEffect(() => {
+    if (!playerRef.current) return;
+    
+    playerRef.current.setPlaybackRate(state.playbackRate).catch((err: Error) => {
+      // Оставляем только логирование критичных ошибок
+    });
+  }, [state.playbackRate]);
+
   return (
     <div className="video-player-container">
       <div className="video-player-header">
-        <h2>{title}</h2>
+        <h2>{title || 'Без заголовка'}</h2>
         {description && <p className="video-description">{description}</p>}
       </div>
       
       <div className="video-player-wrapper">
-        <div ref={playerRef} className="kinescope-player"></div>
+        {videoId ? (
+          <KinescopePlayer
+            ref={playerRef}
+            videoId={videoId}
+            width="100%"
+            height="100%"
+            controls={true}
+            autoPlay={false}
+            muted={state.muted}
+            onPlay={handlePlay}
+            onPause={handlePause}
+            onTimeUpdate={handleTimeUpdate}
+            onEnded={handleEnded}
+            onError={(err: unknown) => {
+              // Оставляем только критичные ошибки
+              if (err instanceof Error && err.message) {
+                console.error('Критическая ошибка плеера:', err.message);
+              }
+            }}
+          />
+        ) : (
+          <div className="error-message">Ошибка: ID видео не указан</div>
+        )}
         
         {/* Пользовательские элементы управления */}
         {state.displayControls && (

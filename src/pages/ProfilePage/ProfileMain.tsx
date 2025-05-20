@@ -181,6 +181,18 @@ export const ProfileMain: FC = () => {
         {activeTab === 'settings' && (
           <div className="profile-settings">
             <p className="settings-info">Настройки профиля будут доступны в следующем обновлении</p>
+            
+            {/* Кнопка для администраторов, видна только если у пользователя есть права админа */}
+            {supabaseUser?.is_admin && (
+              <div className="admin-button-container">
+                <button 
+                  className="action-button admin-button" 
+                  onClick={() => navigate('/admin')}
+                >
+                  Панель администратора
+                </button>
+              </div>
+            )}
           </div>
         )}
 

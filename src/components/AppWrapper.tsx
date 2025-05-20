@@ -33,15 +33,13 @@ export const AppWrapper: FC<AppWrapperProps> = ({ children }) => {
           : event.data;
           
         if (data.eventType === 'safe_area_changed' && data.eventData) {
-          console.log('Safe area changed:', data.eventData);
+          // Убираем логи safe area, они очень часто повторяются
           applySafeAreaToCSS(data.eventData);
         } else if (data.eventType === 'viewport_changed') {
-          // Обновляем состояние fullscreen
+          // Обновляем состояние fullscreen, но убираем логи
           if (data.eventData && data.eventData.is_expanded) {
-            console.log('Fullscreen mode: active');
             document.documentElement.style.setProperty('--fullscreen-extra-padding', '40px');
           } else {
-            console.log('Fullscreen mode: inactive');
             document.documentElement.style.setProperty('--fullscreen-extra-padding', '0px');
           }
         }
@@ -52,11 +50,11 @@ export const AppWrapper: FC<AppWrapperProps> = ({ children }) => {
     
     window.addEventListener('message', handleEvents);
     
-    // Для отладки повторяем запрос каждые несколько секунд
+    // Снижаем частоту запросов для уменьшения логов
     const intervalId = setInterval(() => {
       postEvent('web_app_request_safe_area');
       postEvent('web_app_request_viewport');
-    }, 5000);
+    }, 15000); // Увеличиваем до 15 секунд
     
     // Устанавливаем дополнительный отступ для fullscreen
     document.documentElement.style.setProperty('--fullscreen-extra-padding', '40px');
@@ -73,7 +71,7 @@ export const AppWrapper: FC<AppWrapperProps> = ({ children }) => {
   const applySafeAreaToCSS = (safeArea: SafeAreaData) => {
     const { top, right, bottom, left } = safeArea;
     
-    console.log('Applying safe area values:', { top, right, bottom, left });
+    // Убираем лишний лог про применение значений
     
     // Проверяем, что все значения числовые и не undefined
     const topValue = typeof top === 'number' ? `${top}px` : '0px';
@@ -86,13 +84,7 @@ export const AppWrapper: FC<AppWrapperProps> = ({ children }) => {
     document.documentElement.style.setProperty('--safe-area-bottom', bottomValue);
     document.documentElement.style.setProperty('--safe-area-left', leftValue);
     
-    // Для отладки добавляем вывод после установки
-    console.log('Safe area CSS variables set:', {
-      top: document.documentElement.style.getPropertyValue('--safe-area-top'),
-      right: document.documentElement.style.getPropertyValue('--safe-area-right'),
-      bottom: document.documentElement.style.getPropertyValue('--safe-area-bottom'),
-      left: document.documentElement.style.getPropertyValue('--safe-area-left')
-    });
+    // Убираем лишний лог про установку CSS-переменных
   };
   
   // Теперь мы не применяем стили отступов здесь, это делает компонент Page

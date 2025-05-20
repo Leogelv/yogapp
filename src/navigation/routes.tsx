@@ -11,6 +11,7 @@ import { DiagnosticsPage } from '@/pages/DiagnosticsPage/DiagnosticsPage';
 import { MainScreen } from '@/pages/MainScreen/MainScreen';
 import { QuizFlow } from '@/pages/QuizFlow/QuizFlow';
 import PracticePage from '@/pages/PracticePage/PracticePage';
+import AdminPage from '@/pages/AdminPage/AdminPage';
 
 interface Route {
   path: string;
@@ -28,6 +29,9 @@ export const routes: Route[] = [
   
   // Страница практики
   { path: '/practice/:contentId', Component: PracticePage, title: 'Практика' },
+  
+  // Админ панель
+  { path: '/admin', Component: AdminPage, title: 'Админ панель' },
   
   // Оставляем старую главную как диагностический инструмент
   { path: '/old-index', Component: IndexPage, title: 'Старая главная' },
@@ -83,6 +87,10 @@ export const router = createHashRouter([
   {
     path: '/practice/:contentId/:meditationType',
     element: <PracticePage />
+  },
+  {
+    path: '/admin',
+    element: <AdminPage />
   },
   {
     path: '/old-index',

@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { supabase } from '../lib/supabase/client';
+import { useQuizData } from './QuizDataContext';
 
 // Типы практик
 export type PracticeType = 'short' | 'physical' | 'breathing' | 'meditation';
@@ -237,4 +239,28 @@ export const useQuiz = (): QuizContextType => {
     throw new Error('useQuiz must be used within a QuizProvider');
   }
   return context;
-}; 
+};
+
+// Универсальный хук для real-time загрузки шагов и вариантов квиза
+export interface QuizStep {
+  id: string;
+  order: number;
+  title: string;
+  type: string;
+  is_active: boolean;
+  answers: QuizAnswer[];
+}
+
+export interface QuizAnswer {
+  id: string;
+  question_id: string;
+  value: string;
+  label: string;
+  order: number;
+  icon?: string;
+}
+
+export function useQuizStepsRealtime() {
+  // Теперь просто используем глобальный стор
+  return useQuizData();
+} 
