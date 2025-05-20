@@ -37,14 +37,14 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoId, title, description }
 
     if (state.fullscreen) {
       if (document.fullscreenElement !== playerContainer) {
-        playerContainer.requestFullscreen().catch(err => {
-          console.error(`Ошибка перехода в полноэкранный режим: ${err.message}`);
+        playerContainer.requestFullscreen().catch(() => {
+          console.error(`Ошибка перехода в полноэкранный режим`);
         });
       }
     } else {
       if (document.fullscreenElement === playerContainer) {
-        document.exitFullscreen().catch(err => {
-          console.error(`Ошибка выхода из полноэкранного режима: ${err.message}`);
+        document.exitFullscreen().catch(() => {
+          console.error(`Ошибка выхода из полноэкранного режима`);
         });
       }
     }
@@ -55,12 +55,12 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoId, title, description }
     if (!playerRef.current) return;
     
     if (state.playing) {
-      playerRef.current.play().catch((err: Error) => {
-        console.error('Ошибка при запуске воспроизведения:', err);
+      playerRef.current.play().catch(() => {
+        console.error('Ошибка при запуске воспроизведения');
       });
     } else {
-      playerRef.current.pause().catch((err: Error) => {
-        console.error('Ошибка при постановке на паузу:', err);
+      playerRef.current.pause().catch(() => {
+        console.error('Ошибка при постановке на паузу');
       });
     }
   }, [state.playing]);
@@ -70,14 +70,14 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoId, title, description }
     if (!playerRef.current) return;
     
     if (state.muted) {
-      playerRef.current.mute().catch((err: Error) => {
+      playerRef.current.mute().catch(() => {
         // Оставляем только логирование критичных ошибок
       });
     } else {
-      playerRef.current.unmute().catch((err: Error) => {
+      playerRef.current.unmute().catch(() => {
         // Оставляем только логирование критичных ошибок
       });
-      playerRef.current.setVolume(state.volume).catch((err: Error) => {
+      playerRef.current.setVolume(state.volume).catch(() => {
         // Оставляем только логирование критичных ошибок  
       });
     }
@@ -87,7 +87,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoId, title, description }
   useEffect(() => {
     if (!playerRef.current) return;
     
-    playerRef.current.setPlaybackRate(state.playbackRate).catch((err: Error) => {
+    playerRef.current.setPlaybackRate(state.playbackRate).catch(() => {
       // Оставляем только логирование критичных ошибок
     });
   }, [state.playbackRate]);

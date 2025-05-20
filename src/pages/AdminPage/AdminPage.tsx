@@ -9,9 +9,9 @@ import { supabase } from '@/lib/supabase/client';
 import { useSupabaseUser } from '@/lib/supabase/hooks/useSupabaseUser';
 import { PlayerProvider } from '@/contexts/PlayerContext';
 import './AdminPage.css';
-import { generateAllQuizCombinations, QuizCombination } from '@/helpers/quizCombinations';
+import { generateAllQuizCombinations } from '@/helpers/quizCombinations';
 import { uploadFileToR2 } from '@/lib/cloudflareR2Service';
-import { MdPlayCircleOutline, MdEdit, MdDelete, MdAdd, MdRefresh, MdLogout } from 'react-icons/md';
+import { MdPlayCircleOutline, MdRefresh, MdLogout } from 'react-icons/md';
 import TimeInput, { formatTimeFromSeconds } from '@/components/TimeInput/TimeInput';
 import { getKinescopeVideoMetadata } from '@/lib/kinescopeService';
 

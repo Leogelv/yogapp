@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { PlayerProvider, usePlayer, PlayerType } from '../../contexts/PlayerContext';
 import VideoPlayer from '../../components/Player/VideoPlayer';
