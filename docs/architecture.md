@@ -11,27 +11,29 @@
 
 ## 1. Общий обзор
 
-- **Технологии**: React + TypeScript, Vite, Supabase (DB + Realtime + Storage), @telegram-apps/sdk-react, @telegram-apps/telegram-ui, Kinescope, MCP (Supabase, Context7), Railway/Vercel (деплой)
+- **Технологии**: React + TypeScript, Vite, Supabase (DB + Realtime + Storage), @telegram-apps/sdk-react, @telegram-apps/telegram-ui, Kinescope (@kinescope/react-kinescope-player), MCP (Supabase, Context7), Railway/Vercel (деплой)
 - **Dev/Prod отличия**: локально — .env.local, dev MCP, мок-режим Telegram; прод — переменные в Vercel, боевой Supabase, все MCP через prod endpoints
 - **Realtime**: все ключевые данные (users, quiz_steps, quiz_answers, contents) обновляются через Supabase Realtime (WebSocket)
 - **MCP**: для работы с Supabase, получения логов, миграций, анализа структуры БД, генерации типов, диагностики
 
 ---
 
-## 2. Структура файлов (июль 2024)
+## 2. Структура файлов (июль 2024 - обновлено)
 
 ```
 reactjs-template/
   src/
     components/         # UI-компоненты (AppWrapper, Player, TabBar, ...)
+      Player/           # Компоненты плеера (VideoPlayer, AudioPlayer, TimerPlayer)
     contexts/           # React-контексты (User, Quiz, Player)
     css/                # Стили
     helpers/            # Вспомогательные функции, утилиты
     lib/                # Внешние клиенты (supabase, hooks, utils)
-      supabase/
+      supabase/         # Логика для работы с Supabase
         client.ts       # Инициализация клиента Supabase
         hooks/          # Хуки для работы с Supabase
         types.ts        # Типы для Supabase
+      # kinescopeService.ts - УДАЛЕН
     navigation/         # Маршрутизация
     pages/              # Страницы приложения (Index, Profile, Admin, QuizFlow, Practice, ...)
     ...
@@ -55,7 +57,7 @@ reactjs-template/
 ### 3.2 Контексты и State Management
 - **UserContext**: данные пользователя, сессия, realtime
 - **QuizContext**: состояние квиза, шаги, выбранные параметры, сохранение в localStorage
-- **PlayerContext**: состояние плеера (тип, прогресс, fullscreen, ...)
+- **PlayerContext**: состояние плеера (тип, прогресс, fullscreen, ...). Обновлен для корректной работы с Kinescope, аудио и таймером. Управляет `contentData` (включая `kinescopeId`).
 
 ### 3.3 Realtime паттерны
 - Все ключевые таблицы подписаны на realtime через Supabase (channel, on('postgres_changes'))
@@ -173,7 +175,7 @@ useEffect(() => () => {
 
 ## 9. Плееры: видео, аудио, таймер
 
-- **VideoPlayer**: Kinescope, fullscreen, управление прогрессом, громкостью, скоростью
+- **VideoPlayer**: Kinescope, интегрирован через `@kinescope/react-kinescope-player`. Управляется через `PlayerContext`. `VideoPlayer.tsx` берет `kinescopeId` и другие данные из `PlayerContext.state.contentData`. Файл `kinescopeService.ts` удален.
 - **AudioPlayer**: аудио-медитации, прогресс-бар, визуализация, фон
 - **TimerPlayer**: самостоятельные медитации, круговой таймер, визуальные подсказки
 - Все плееры управляются через PlayerContext, поддерживают mobile UX

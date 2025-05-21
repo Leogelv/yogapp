@@ -1,92 +1,159 @@
-import React, { useRef, useEffect, useState } from 'react';
-import { usePlayer } from '../../contexts/PlayerContext';
+import React, { useEffect, useState } from 'react';
+import KinescopePlayer from '@kinescope/react-kinescope-player';
+import { usePlayer, PlayerState } from '../../contexts/PlayerContext';
 import './Player.css';
 
 interface VideoPlayerProps {
-  videoId: string;
-  title: string;
-  description?: string;
+  // videoId будет браться из PlayerContext.state.contentData.kinescopeId
+  // title будет браться из PlayerContext.state.contentData.title
+  // description будет браться из PlayerContext.state.contentData.description
 }
 
-const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoId, title, description }) => {
-  const { state, toggleFullscreen } = usePlayer();
-  const [videoError, setVideoError] = useState<boolean>(false);
-  const iframeRef = useRef<HTMLIFrameElement>(null);
-  
-  // Fallback для демо/тестирования
-  const fallbackVideoId = 'CetLf3cKNDETJhGsUaP2s9';
-  
-  // ID видео с учетом возможных ошибок
-  const effectiveVideoId = videoId || fallbackVideoId;
+const VideoPlayer: React.FC<VideoPlayerProps> = () => {
+  const { state, setState, play, pause } = usePlayer();
+  const { contentData, playing, muted, fullscreen } = state as PlayerState;
+  const [playerError, setPlayerError] = useState<boolean>(false);
+  // const kinescopePlayerRef = useRef<any>(null); // Если понадобится прямой доступ к методам плеера
 
-  // Управление полноэкранным режимом
+  const kinescopeId = contentData?.kinescopeId;
+  const title = contentData?.title || 'Видео';
+  const description = contentData?.description;
+
+  // Fallback для демо/тестирования, если kinescopeId отсутствует
+  const fallbackVideoId = 'CetLf3cKNDETJhGsUaP2s9';
+  const effectiveVideoId = kinescopeId || fallbackVideoId;
+
   useEffect(() => {
     const playerContainer = document.querySelector('.video-player-wrapper');
     if (!playerContainer) return;
 
-    if (state.fullscreen) {
+    if (fullscreen) {
       if (document.fullscreenElement !== playerContainer) {
-        playerContainer.requestFullscreen().catch(() => {
-          // Ошибка перехода в полноэкранный режим
-          console.error('Ошибка перехода в полноэкранный режим');
+        playerContainer.requestFullscreen().catch(err => {
+          console.error('Ошибка перехода в полноэкранный режим:', err);
         });
       }
     } else {
       if (document.fullscreenElement === playerContainer) {
-        document.exitFullscreen().catch(() => {
-          // Ошибка выхода из полноэкранного режима
-          console.error('Ошибка выхода из полноэкранного режима');
+        document.exitFullscreen().catch(err => {
+          console.error('Ошибка выхода из полноэкранного режима:', err);
         });
       }
     }
-  }, [state.fullscreen]);
+  }, [fullscreen]);
 
-  // Обработчик ошибки загрузки iframe
-  const handleIframeError = () => {
-    setVideoError(true);
-    console.error('Ошибка загрузки видео с Kinescope ID:', videoId);
+  const handlePlayerError = (error: any) => {
+    console.error('Ошибка Kinescope плеера:', error, 'для videoId:', kinescopeId);
+    setPlayerError(true);
+    // Можно добавить логику для показа fallbackVideoId, если основной вызывает ошибку
+    // if (kinescopeId && kinescopeId !== fallbackVideoId) {
+    //   // Попробовать загрузить fallback (но это может вызвать рекурсию, если и он недоступен)
+    // }
+  };
+  
+  const handleReady = (data: { duration: number }) => {
+    setState((prevState: PlayerState) => ({ ...prevState, duration: data.duration }));
   };
 
-  console.log('Рендеринг VideoPlayer с videoId:', videoId, 'effectiveVideoId:', effectiveVideoId);
+  const handleTimeUpdate = (data: { currentTime: number }) => {
+    setState((prevState: PlayerState) => ({ ...prevState, currentTime: data.currentTime }));
+  };
+
+  const handlePlay = () => {
+    if (!playing) play();
+  };
+
+  const handlePause = () => {
+    if (playing) pause();
+  };
+
+  const handleEnded = () => {
+    pause();
+    // Можно добавить логику перехода к следующему видео или закрытия плеера
+  };
+  
+  // Синхронизация состояния PlayerContext с KinescopePlayer
+  // Этот useEffect не нужен, если KinescopePlayer сам управляет своим состоянием проигрывания/паузы/громкости
+  // через пропсы, но если нужно принудительно вызывать play/pause/setVolume из контекста,
+  // то потребуется ref и вызов методов плеера.
+  // Пока оставляем так, предполагая, что пропсы autoPlay и muted работают.
+
+  console.log('Рендеринг VideoPlayer с effectiveVideoId:', effectiveVideoId, 'из PlayerContext');
+
+  if (!effectiveVideoId) {
+    return (
+      <div className="player-error">
+        <p>Ошибка: ID видео Kinescope не указан в contentData.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="video-player-container">
       <div className="video-player-header">
-        <h2>{title || 'Без заголовка'}</h2>
+        <h2>{title}</h2>
         {description && <p className="video-description">{description}</p>}
-        {videoError && (
+        {playerError && (
           <div className="video-error-banner">
-            <p>Оригинальное видео недоступно. Используется демо-контент.</p>
+            <p>Ошибка загрузки видео. {kinescopeId ? 'Попробуйте обновить страницу.' : 'Используется демо-контент.'}</p>
           </div>
         )}
       </div>
       
-      <div className="video-player-wrapper">
-        {effectiveVideoId ? (
-          <div style={{ position: 'relative', paddingTop: '56.25%', width: '100%' }}>
-            <iframe 
-              ref={iframeRef}
-              src={`https://kinescope.io/embed/${effectiveVideoId}`}
-              allow="autoplay; fullscreen; picture-in-picture; encrypted-media; gyroscope; accelerometer; clipboard-write;"
-              frameBorder="0"
-              allowFullScreen
-              style={{ position: 'absolute', width: '100%', height: '100%', top: 0, left: 0 }}
-              title={title || 'Видео'}
-              onError={handleIframeError}
-            ></iframe>
-          </div>
-        ) : (
-          <div className="error-message">Ошибка: ID видео не указан</div>
-        )}
+      <div className="video-player-wrapper" style={{ position: 'relative', width: '100%', aspectRatio: '16/9' }}>
+        <KinescopePlayer
+          // ref={kinescopePlayerRef} // Раскомментировать, если нужен прямой доступ к API плеера
+          videoId={effectiveVideoId}
+          width="100%"
+          height="100%"
+          autoPlay={playing} // Управляем автовоспроизведением из контекста
+          muted={muted}      // Управляем Mute из контекста
+          // volume={volume}    // Управляем громкостью из контекста
+          // playsInline // По умолчанию true, важно для мобильных
+          // controls // По умолчанию true, используем стандартные контролы Kinescope
+          // title={title} // Kinescope сам подтянет, если есть
+          onReady={handleReady}
+          onPlay={handlePlay}
+          onPause={handlePause}
+          onEnded={handleEnded}
+          onTimeUpdate={handleTimeUpdate}
+          onError={handlePlayerError}
+          style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+          // Тут можно добавить другие пропсы из документации Kinescope, если нужно
+          // Например, chapters, vtt, poster, language, etc.
+        />
         
-        {/* Пользовательские элементы управления */}
-        {state.displayControls && (
+        {/* Оставляем кастомные контролы на случай, если они нужны для обертки */} 
+        {/* state.displayControls && (
           <div className="custom-controls">
+            <button className="play-pause-btn" onClick={togglePlay}>
+              {playing ? 'Пауза' : 'Воспроизвести'}
+            </button>
+            <input 
+              type="range" 
+              min="0" 
+              max={duration} 
+              value={currentTime} 
+              onChange={(e) => seekTo(Number(e.target.value))} 
+              className="progress-bar"
+            />
+            <input 
+              type="range" 
+              min="0" 
+              max="1" 
+              step="0.1" 
+              value={volume} 
+              onChange={(e) => setVolume(Number(e.target.value))} 
+              className="volume-bar"
+            />
+            <button className="mute-btn" onClick={toggleMute}>
+              {muted ? 'Вкл. звук' : 'Выкл. звук'}
+            </button>
             <button className="fullscreen-btn" onClick={toggleFullscreen}>
-              {state.fullscreen ? 'Выйти из полноэкрана' : 'Полный экран'}
+              {fullscreen ? 'Оконный режим' : 'Полный экран'}
             </button>
           </div>
-        )}
+            )*/} 
       </div>
     </div>
   );

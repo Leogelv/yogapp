@@ -242,11 +242,7 @@ const AutoPlayPracticePage: React.FC = () => {
     switch (state.activeType) {
       case PlayerType.VIDEO:
         return (
-          <VideoPlayer
-            videoId={content.kinescope_id}
-            title={content.title}
-            description={content.description}
-          />
+          <VideoPlayer />
         );
       case PlayerType.AUDIO:
         return (

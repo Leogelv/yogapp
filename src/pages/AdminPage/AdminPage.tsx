@@ -12,7 +12,7 @@ import './AdminPage.css';
 import { uploadFileToR2 } from '@/lib/cloudflareR2Service';
 import { MdPlayCircleOutline, MdRefresh, MdLogout } from 'react-icons/md';
 import TimeInput, { formatTimeFromSeconds } from '@/components/TimeInput/TimeInput';
-import { getKinescopeVideoMetadata } from '@/lib/kinescopeService';
+// import { getKinescopeVideoMetadata } from '@/lib/kinescopeService'; // <--- ЗАКОММЕНТИРОВАНО ИЛИ УДАЛЕНО
 
 // Типы для вкладок админ-панели
 type AdminTab = 'practices' | 'categories' | 'quiz' | 'users';
@@ -685,37 +685,13 @@ const EditPracticeModal: React.FC<{
   const [thumbPreview, setThumbPreview] = useState<string>(practice.thumbnail_url || '');
   const [audioPreview, setAudioPreview] = useState<string>(practice.audio_file_path || '');
   const [uploading, setUploading] = useState(false);
-  const [loadingDuration, setLoadingDuration] = useState(false);
+  // const [loadingDuration, setLoadingDuration] = useState(false); // Удалено состояние для загрузки длительности
   
   // Добавляем debug чтобы видеть данные
   useEffect(() => {
     console.log('Категории в модалке:', categories);
     console.log('Текущая категория практики:', form.category_id);
   }, [categories, form.category_id]);
-
-  // Функция для получения длительности видео из Kinescope API
-  const fetchVideoDuration = async () => {
-    if (!form.kinescope_id) {
-      alert('Для получения длительности необходимо указать Kinescope ID');
-      return;
-    }
-    
-    setLoadingDuration(true);
-    try {
-      const metadata = await getKinescopeVideoMetadata(form.kinescope_id);
-      if (metadata && metadata.duration) {
-        setForm((f: any) => ({ ...f, duration: metadata.duration }));
-        alert(`Длительность успешно получена: ${formatTimeFromSeconds(metadata.duration)}`);
-      } else {
-        alert('Не удалось получить информацию о длительности видео');
-      }
-    } catch (error) {
-      console.error('Ошибка при получении длительности:', error);
-      alert('Произошла ошибка при получении длительности видео');
-    } finally {
-      setLoadingDuration(false);
-    }
-  };
 
   // Обработка выбора файла обложки
   const handleThumbChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -904,6 +880,7 @@ const EditPracticeModal: React.FC<{
                   setForm((f: any) => ({ ...f, kinescope_id: e.target.value }));
                 }} 
               />
+              {/* Кнопка для получения длительности УДАЛЕНА
               <button 
                 type="button" 
                 className="admin-button" 
@@ -912,7 +889,7 @@ const EditPracticeModal: React.FC<{
                 style={{ whiteSpace: 'nowrap' }}
               >
                 {loadingDuration ? 'Загрузка...' : 'Получить длительность'}
-              </button>
+              </button> */}
             </div>
           </div>
           

@@ -26,6 +26,7 @@ export interface PlayerState {
 // Интерфейс контекста
 interface PlayerContextType {
   state: PlayerState;
+  setState: React.Dispatch<React.SetStateAction<PlayerState>>;
   play: () => void;
   pause: () => void;
   togglePlay: () => void;
@@ -184,6 +185,7 @@ export const PlayerProvider: React.FC<{children: ReactNode}> = ({ children }) =>
     <PlayerContext.Provider
       value={{
         state,
+        setState,
         play,
         pause,
         togglePlay,
