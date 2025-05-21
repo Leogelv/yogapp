@@ -15,14 +15,6 @@ import { logger } from '@/lib/logger';
 // Стили
 import './MainScreen.css';
 
-// Компонент загрузки
-const LoadingState: FC = () => (
-  <div className="loading-container">
-    <div className="loading-spinner" aria-hidden="true" />
-    <p className="loading-text">Загрузка данных...</p>
-  </div>
-);
-
 // Компонент ошибки
 const ErrorState: FC<{ message: string }> = ({ message }) => (
   <div className="error-container">
@@ -42,19 +34,17 @@ const BrowserWarning: FC = () => (
 
 export const MainScreen: FC = () => {
   const initDataState = useSignal(_initDataState);
-  const { supabaseUser, loading, error } = useSupabaseUser(initDataState);
+  const { supabaseUser, error } = useSupabaseUser(initDataState);
   const navigate = useNavigate();
   const [contentVisible, setContentVisible] = useState(false);
 
   // Применяем анимацию появления контента
   useEffect(() => {
-    if (!loading && !error) {
-      const timer = setTimeout(() => {
-        setContentVisible(true);
-      }, 100);
-      return () => clearTimeout(timer);
-    }
-  }, [loading, error]);
+    const timer = setTimeout(() => {
+      setContentVisible(true);
+    }, 100);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Проверяем запуск в телеграме
   const isTelegramApp = useMemo(() => {
@@ -94,17 +84,6 @@ export const MainScreen: FC = () => {
       <Page back={false}>
         <div className="main-screen">
           <BrowserWarning />
-        </div>
-      </Page>
-    );
-  }
-
-  // Если данные пользователя загружаются
-  if (loading) {
-    return (
-      <Page back={false}>
-        <div className="main-screen">
-          <LoadingState />
         </div>
       </Page>
     );
