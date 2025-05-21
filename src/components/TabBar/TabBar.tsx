@@ -1,5 +1,6 @@
 import { FC } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import './TabBar.css';
 
 interface TabBarProps {
   className?: string;
@@ -9,10 +10,17 @@ interface TabBarProps {
 const TabBar: FC<TabBarProps> = ({ className }) => {
   const location = useLocation();
   const navigate = useNavigate();
+  
+  // При использовании HashRouter, pathname будет без #
   const currentPath = location.pathname;
   
-  // Определение активной вкладки
-  const isActive = (path: string) => currentPath === path;
+  // Определение активной вкладки по пути (без учета хэша)
+  const isActive = (path: string) => {
+    if (path === '/library' && currentPath.startsWith('/library')) {
+      return true;
+    }
+    return currentPath === path;
+  };
   
   // Обработчик перехода на вкладку
   const handleTabClick = (path: string) => {
@@ -50,9 +58,9 @@ const TabBar: FC<TabBarProps> = ({ className }) => {
       </button>
       
       <button 
-        className={`tab-item ${isActive('/schedule') ? 'active' : ''}`} 
-        onClick={() => handleTabClick('/schedule')}
-        aria-current={isActive('/schedule') ? 'page' : undefined}
+        className={`tab-item ${isActive('/calendar') ? 'active' : ''}`} 
+        onClick={() => handleTabClick('/calendar')}
+        aria-current={isActive('/calendar') ? 'page' : undefined}
         aria-label="Перейти в расписание"
       >
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">

@@ -1,0 +1,17 @@
+{
+    "mcpServers": {
+      "supabase-yoga": {
+        "command": "npx",
+        "args": [
+          "-y",
+          "@supabase/mcp-server-supabase@latest",
+          "--access-token",
+          "sbp_bf6a6c2877c97b68fca59c97e1e74b6e8c65ad6a"
+        ]
+      },
+      "vercel": {
+        "command": "npx",
+        "args": ["vercel-mcp VERCEL_API_KEY=GQk5oVi32SlOb6kMnmlZVvNM"]
+      }
+    }
+  }

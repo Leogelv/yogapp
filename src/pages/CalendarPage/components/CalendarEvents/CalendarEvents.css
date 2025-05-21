@@ -1,0 +1,267 @@
+.calendar-events {
+  background-color: var(--calendar-card-bg);
+  border-radius: var(--calendar-radius-md);
+  overflow: hidden;
+  box-shadow: var(--calendar-shadow-sm);
+  border: 1px solid var(--calendar-border);
+  transition: var(--calendar-transition);
+  margin-bottom: 1.5rem;
+}
+
+.calendar-events:hover {
+  box-shadow: var(--calendar-shadow-md);
+}
+
+.calendar-events__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--calendar-border);
+}
+
+.calendar-events__title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--calendar-text-primary);
+  margin: 0;
+}
+
+.highlighted-date {
+  color: var(--calendar-accent);
+  font-weight: 700;
+}
+
+.calendar-events__add-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: var(--calendar-accent);
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: var(--calendar-transition);
+  box-shadow: var(--calendar-shadow-sm);
+}
+
+.calendar-events__add-btn:hover,
+.calendar-events__add-btn:focus {
+  background-color: var(--calendar-accent-hover);
+  transform: translateY(-2px);
+  box-shadow: var(--calendar-shadow-md);
+}
+
+.calendar-events__content {
+  min-height: 200px;
+}
+
+/* Состояние загрузки */
+.calendar-events__loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: var(--calendar-text-tertiary);
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  border-top-color: var(--calendar-accent);
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Пустое состояние */
+.calendar-events__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 250px;
+  padding: 2rem;
+  text-align: center;
+}
+
+.calendar-events__empty-icon {
+  margin-bottom: 1rem;
+  color: var(--calendar-text-tertiary);
+  opacity: 0.7;
+}
+
+.calendar-events__empty-text {
+  margin-bottom: 1.5rem;
+  color: var(--calendar-text-secondary);
+  font-size: 0.95rem;
+}
+
+.calendar-events__add-event-btn {
+  padding: 0.75rem 1.25rem;
+  border-radius: var(--calendar-radius-sm);
+  background-color: var(--calendar-accent);
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: var(--calendar-transition);
+  box-shadow: var(--calendar-shadow-sm);
+}
+
+.calendar-events__add-event-btn:hover,
+.calendar-events__add-event-btn:focus {
+  background-color: var(--calendar-accent-hover);
+  transform: translateY(-2px);
+  box-shadow: var(--calendar-shadow-md);
+}
+
+/* Список событий */
+.calendar-events__list {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Стили для отдельного события */
+.event-item {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  border-radius: var(--calendar-radius-sm);
+  background-color: var(--calendar-item-bg);
+  transition: var(--calendar-transition);
+  position: relative;
+  overflow: hidden;
+  border-left: 4px solid var(--event-color, var(--calendar-accent));
+}
+
+.event-item::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--event-color, var(--calendar-accent));
+  opacity: 0.04;
+  pointer-events: none;
+}
+
+.event-item:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--calendar-shadow-md);
+}
+
+.event-item__time {
+  min-width: 50px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--event-color, var(--calendar-accent));
+  margin-right: 1rem;
+}
+
+.event-item__content {
+  flex: 1;
+  margin-right: 0.5rem;
+}
+
+.event-item__title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--calendar-text-primary);
+  margin-bottom: 0.35rem;
+}
+
+.event-item__details {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.event-item__type {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--event-color, var(--calendar-accent));
+  background-color: color-mix(in srgb, var(--event-color, var(--calendar-accent)) 10%, transparent);
+  padding: 0.2rem 0.5rem;
+  border-radius: 12px;
+}
+
+.event-item__duration {
+  font-size: 0.75rem;
+  color: var(--calendar-text-tertiary);
+}
+
+.event-item__action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: transparent;
+  border: none;
+  color: var(--calendar-text-tertiary);
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 50%;
+  transition: var(--calendar-transition);
+}
+
+.event-item__action-btn:hover,
+.event-item__action-btn:focus {
+  background-color: var(--calendar-item-bg);
+  color: var(--calendar-accent);
+}
+
+/* Медиа-запросы для мобильных устройств */
+@media (max-width: 380px) {
+  .calendar-events__header {
+    padding: 0.75rem 1rem;
+  }
+  
+  .calendar-events__title {
+    font-size: 1.1rem;
+  }
+  
+  .event-item {
+    padding: 0.75rem;
+  }
+  
+  .event-item__time {
+    font-size: 0.875rem;
+    min-width: 45px;
+  }
+  
+  .event-item__title {
+    font-size: 0.9rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .calendar-events {
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  .calendar-events__list {
+    padding: 1.25rem;
+    gap: 1rem;
+  }
+  
+  .event-item {
+    padding: 1.25rem;
+  }
+}

@@ -1,0 +1,121 @@
+.calendar-header {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1.5rem;
+  position: relative;
+}
+
+.calendar-header__title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--calendar-text-primary);
+  margin: 0 0 1.25rem;
+}
+
+.calendar-header__controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  position: relative;
+}
+
+.calendar-header__current-month {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  min-width: 120px;
+}
+
+.month-name {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--calendar-text-primary);
+  margin-bottom: 0.25rem;
+}
+
+.year-number {
+  font-size: 0.875rem;
+  color: var(--calendar-text-secondary);
+}
+
+.calendar-header__arrow-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: var(--calendar-item-bg);
+  border: 1px solid var(--calendar-border);
+  color: var(--calendar-text-primary);
+  cursor: pointer;
+  transition: var(--calendar-transition);
+  box-shadow: var(--calendar-shadow-sm);
+}
+
+.calendar-header__arrow-btn:hover, 
+.calendar-header__arrow-btn:focus {
+  background-color: var(--calendar-accent);
+  border-color: var(--calendar-accent);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: var(--calendar-shadow-md);
+}
+
+.calendar-header__today-btn {
+  position: absolute;
+  right: 0;
+  top: 0;
+  padding: 0.5rem 1rem;
+  border-radius: var(--calendar-radius-sm);
+  background-color: var(--calendar-accent);
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: var(--calendar-transition);
+  box-shadow: var(--calendar-shadow-sm);
+}
+
+.calendar-header__today-btn:hover,
+.calendar-header__today-btn:focus {
+  background-color: var(--calendar-accent-hover);
+  transform: translateY(-2px);
+  box-shadow: var(--calendar-shadow-md);
+}
+
+/* Медиа-запросы для адаптивности */
+@media (max-width: 380px) {
+  .calendar-header__title {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .month-name {
+    font-size: 1.125rem;
+  }
+  
+  .calendar-header__arrow-btn {
+    width: 36px;
+    height: 36px;
+  }
+}
+
+@media (min-width: 768px) {
+  .calendar-header__title {
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .calendar-header__controls {
+    max-width: 500px;
+    margin: 0 auto;
+  }
+  
+  .calendar-header__today-btn {
+    top: 0.5rem;
+  }
+}

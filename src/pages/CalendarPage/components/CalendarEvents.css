@@ -1,0 +1,135 @@
+.calendar-events {
+  background-color: var(--calendar-card-bg);
+  border-radius: var(--calendar-radius-md);
+  box-shadow: var(--calendar-shadow-sm);
+  padding: 1rem;
+  margin-bottom: 4rem;
+}
+
+.selected-date {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--calendar-text-primary);
+  margin: 0 0 1rem;
+  text-transform: capitalize;
+}
+
+.events-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100px;
+  color: var(--calendar-text-tertiary);
+  font-size: 0.875rem;
+}
+
+.events-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.event-item {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem;
+  background-color: var(--calendar-item-bg);
+  border-radius: var(--calendar-radius-sm);
+  cursor: pointer;
+  transition: var(--calendar-transition);
+}
+
+.event-item:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--calendar-shadow-sm);
+}
+
+.event-time {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--calendar-text-primary);
+  min-width: 50px;
+}
+
+.event-category-marker {
+  width: 4px;
+  height: 100%;
+  min-height: 40px;
+  border-radius: 2px;
+  margin: 0 0.75rem;
+}
+
+.event-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.event-title {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--calendar-text-primary);
+  margin-bottom: 0.25rem;
+}
+
+.event-category {
+  font-size: 0.75rem;
+  color: var(--calendar-text-tertiary);
+}
+
+.no-events, .no-date-selected {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  text-align: center;
+  color: var(--calendar-text-tertiary);
+}
+
+.no-events p, .no-date-selected p {
+  margin-bottom: 1rem;
+}
+
+.add-practice-button {
+  padding: 0.5rem 1rem;
+  background-color: var(--calendar-accent);
+  color: white;
+  border: none;
+  border-radius: var(--calendar-radius-sm);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--calendar-transition);
+}
+
+.add-practice-button:hover {
+  background-color: var(--calendar-accent-hover);
+}
+
+@media (max-width: 380px) {
+  .calendar-events {
+    padding: 0.75rem;
+  }
+  
+  .selected-date {
+    font-size: 0.9rem;
+  }
+  
+  .event-item {
+    padding: 0.5rem;
+  }
+  
+  .event-time {
+    font-size: 0.8rem;
+    min-width: 40px;
+  }
+  
+  .event-title {
+    font-size: 0.8rem;
+  }
+  
+  .event-category {
+    font-size: 0.7rem;
+  }
+}

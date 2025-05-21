@@ -29,7 +29,7 @@ export const AppWrapper: FC<AppWrapperProps> = ({ children }) => {
         if (!event.data) return;
         
         const data = typeof event.data === 'string' 
-          ? JSON.parse(event.data) 
+          ? (event.data ? JSON.parse(event.data) : {}) 
           : event.data;
           
         if (data.eventType === 'safe_area_changed' && data.eventData) {

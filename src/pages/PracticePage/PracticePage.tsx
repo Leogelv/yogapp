@@ -124,6 +124,7 @@ const PlayerSelector: React.FC = () => {
         }
         
         if (contentId) {
+          console.log('Загружаем контент с ID:', contentId);
           // Запрос контента из Supabase
           const { data, error } = await supabase
             .from('contents')
@@ -135,29 +136,52 @@ const PlayerSelector: React.FC = () => {
             .single();
             
           if (error) {
+            console.error('Ошибка запроса контента:', error);
             throw error;
           }
           
           if (data) {
+            console.log('Получены данные контента:', data.title, 'kinescope_id:', data.kinescope_id);
             setContent(data);
-            setContentData(data);
+            
+            // Обогащаем данные для контекста плеера
+            const contentDataForPlayer = {
+              title: data.title,
+              description: data.description || '',
+              thumbnailUrl: data.thumbnail_url || '',
+              duration: data.duration || 0,
+              kinescopeId: data.kinescope_id || '',
+              audioPath: data.audio_file_path || '',
+              backgroundImage: data.background_image_url || ''
+            };
+            
+            setContentData(contentDataForPlayer);
+            console.log('Установлены данные контента для плеера:', contentDataForPlayer);
             
             // Определяем тип плеера на основе типа контента
             if (data.content_types?.slug === 'video' || data.content_types?.slug === 'physical' || data.content_types?.slug === 'breathing') {
+              console.log('Устанавливаем тип плеера: VIDEO');
               setActiveType(PlayerType.VIDEO);
             } else if (data.content_types?.slug === 'audio' || data.content_types?.slug === 'meditation') {
               // Проверяем, если это медитация с таймером
               if (meditationType === 'self') {
+                console.log('Устанавливаем тип плеера: TIMER');
                 setActiveType(PlayerType.TIMER);
               } else {
+                console.log('Устанавливаем тип плеера: AUDIO');
                 setActiveType(PlayerType.AUDIO);
               }
             } else {
+              console.log('Тип контента не распознан, устанавливаем тип плеера по умолчанию: VIDEO');
               setActiveType(PlayerType.VIDEO); // По умолчанию видео
             }
+          } else {
+            console.error('Данные контента не найдены');
+            setError('Контент не найден');
           }
         } else if (meditationType === 'self') {
           // Для самостоятельных медитаций не нужен контент
+          console.log('Самостоятельная медитация без контента');
           setActiveType(PlayerType.TIMER);
           setContent({
             title: 'Самостоятельная медитация',
@@ -169,6 +193,7 @@ const PlayerSelector: React.FC = () => {
             duration: parseInt(meditationObject?.split('-')[1] || '600', 10)
           });
         } else {
+          console.error('Не указан ID контента и это не самостоятельная медитация');
           setError('Не указан ID контента');
         }
       } catch (err: any) {
@@ -196,6 +221,8 @@ const PlayerSelector: React.FC = () => {
       </div>
     );
   }
+
+  console.log('Рендеринг плеера, тип:', state.activeType, 'контент:', content?.title);
 
   // Выбор типа плеера
   const renderPlayer = () => {

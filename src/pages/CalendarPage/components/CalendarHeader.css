@@ -1,0 +1,42 @@
+.calendar-month-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  margin-bottom: 1rem;
+}
+
+.current-month {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--calendar-text-primary);
+  margin: 0;
+  text-align: center;
+}
+
+.month-nav-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  color: var(--calendar-text-primary);
+  transition: var(--calendar-transition);
+}
+
+.month-nav-button:hover {
+  background-color: var(--calendar-item-bg);
+}
+
+.month-nav-button:active {
+  transform: scale(0.95);
+}
+
+.month-nav-button svg {
+  width: 20px;
+  height: 20px;
+}

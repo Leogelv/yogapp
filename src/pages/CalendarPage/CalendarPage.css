@@ -1,0 +1,99 @@
+/* Основные переменные стилей */
+:root {
+  --calendar-bg: var(--bg-light, #ffffff);
+  --calendar-text-primary: var(--text-primary, #1a1a1a);
+  --calendar-text-secondary: var(--text-secondary, #4a4a4a);
+  --calendar-text-tertiary: var(--text-tertiary, #6d6d6d);
+  --calendar-accent: var(--accent-color, #4e9bff);
+  --calendar-accent-hover: var(--accent-hover, #3a87ff);
+  --calendar-item-bg: var(--bg-item, #f9f9f9);
+  --calendar-card-bg: var(--bg-card, #ffffff);
+  --calendar-border: var(--border-color, #f0f0f0);
+  --calendar-shadow-sm: var(--shadow-sm, 0 2px 8px rgba(0, 0, 0, 0.03));
+  --calendar-shadow-md: var(--shadow-md, 0 8px 16px rgba(0, 0, 0, 0.04));
+  --calendar-radius-sm: var(--border-radius-sm, 0.5rem);
+  --calendar-radius-md: var(--border-radius-md, 0.875rem);
+  --calendar-radius-lg: var(--border-radius-lg, 1.25rem);
+  --calendar-transition: var(--transition-standard, all 0.3s cubic-bezier(0.4, 0, 0.2, 1));
+  
+  /* Цвета типов событий */
+  --calendar-event-practice: #4CAF50; /* Зеленый для практик */
+  --calendar-event-broadcast: #2196F3; /* Синий для эфиров */
+  --calendar-event-reminder: #FF9800; /* Оранжевый для напоминаний */
+  --calendar-event-community: #9C27B0; /* Фиолетовый для событий сообщества */
+}
+
+/* Темная тема */
+:root.dark {
+  --calendar-bg: #1a202c;
+  --calendar-text-primary: #f7fafc;
+  --calendar-text-secondary: #e2e8f0;
+  --calendar-text-tertiary: #a0aec0;
+  --calendar-item-bg: #2d3748;
+  --calendar-card-bg: #2d3748;
+  --calendar-border: #4a5568;
+}
+
+/* Контейнер календаря */
+.calendar-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 100%;
+  background-color: var(--calendar-bg);
+  overflow-y: auto;
+  padding: 16px 16px 80px;
+  box-sizing: border-box;
+  animation: fadeIn 0.3s ease-out forwards;
+  position: relative;
+  max-width: 100vw;
+  overflow-x: hidden;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+  color: var(--calendar-text-primary);
+}
+
+.calendar-container.content-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Анимации */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Медиа-запросы для адаптивности */
+@media (max-width: 380px) {
+  .calendar-container {
+    padding: 1rem 1rem 5rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .calendar-container {
+    padding: 2rem 2rem 5rem;
+    max-width: 768px;
+    margin: 0 auto;
+  }
+}

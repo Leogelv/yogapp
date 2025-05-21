@@ -16,9 +16,9 @@ if (import.meta.env.DEV) {
       link_color: '#6ab3f3',
       secondary_bg_color: '#232e3c',
       section_bg_color: '#17212b',
-      section_header_text_color: '#6ab3f3',
-      subtitle_text_color: '#708499',
-      text_color: '#f5f5f5',
+      section_header_text_color: '#000000',
+      subtitle_text_color: '#000000',
+      text_color: '#000000',
     } as const;
     const noInsets = { left: 0, top: 0, bottom: 0, right: 0 } as const;
 
