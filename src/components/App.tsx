@@ -1,9 +1,12 @@
 import { useMemo } from 'react';
-import { RouterProvider } from 'react-router-dom';
+import { HashRouter, Route, Routes, Navigate } from 'react-router-dom';
 import { retrieveLaunchParams, useSignal, isMiniAppDark } from '@telegram-apps/sdk-react';
 import { AppRoot } from '@telegram-apps/telegram-ui';
+import { PlayerProvider } from '@/contexts/PlayerContext';
+import { QuizProvider } from '@/contexts/QuizContext';
 
-import { router } from '@/navigation/routes.tsx';
+import { routes } from '@/navigation/routes.tsx';
+import AppWrapper from '@/pages/AppWrapper';
 
 export function App() {
   const lp = useMemo(() => retrieveLaunchParams(), []);
@@ -14,7 +17,24 @@ export function App() {
       appearance={isDark ? 'dark' : 'light'}
       platform={['macos', 'ios'].includes(lp.tgWebAppPlatform) ? 'ios' : 'base'}
     >
-      <RouterProvider router={router} />
+      <PlayerProvider>
+        <QuizProvider>
+          <HashRouter>
+            <Routes>
+              <Route element={<AppWrapper />}>
+                {routes.map((route) => (
+                  <Route 
+                    key={route.path} 
+                    path={route.path} 
+                    element={<route.Component />} 
+                  />
+                ))}
+                <Route path="*" element={<Navigate to="/" />} />
+              </Route>
+            </Routes>
+          </HashRouter>
+        </QuizProvider>
+      </PlayerProvider>
     </AppRoot>
   );
 }

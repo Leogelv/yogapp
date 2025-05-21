@@ -1,5 +1,4 @@
 import type { ComponentType, JSX } from 'react';
-import { createHashRouter } from 'react-router-dom';
 
 import { IndexPage } from '@/pages/IndexPage/IndexPage';
 import { InitDataPage } from '@/pages/InitDataPage';
@@ -10,8 +9,12 @@ import { TONConnectPage } from '@/pages/TONConnectPage/TONConnectPage';
 import { DiagnosticsPage } from '@/pages/DiagnosticsPage/DiagnosticsPage';
 import { MainScreen } from '@/pages/MainScreen/MainScreen';
 import { QuizFlow } from '@/pages/QuizFlow/QuizFlow';
-import PracticePage from '@/pages/PracticePage/PracticePage';
+import EnhancedPracticePageWrapper from '@/pages/PracticePage/EnhancedPracticePageWrapper';
 import AdminPage from '@/pages/AdminPage/AdminPage';
+import LibraryPage from '@/pages/LibraryPage';
+import CategoryPage from '@/pages/LibraryPage/CategoryPage';
+import FavoritesPage from '@/pages/LibraryPage/FavoritesPage';
+import CalendarPage from '@/pages/CalendarPage';
 
 interface Route {
   path: string;
@@ -24,11 +27,20 @@ export const routes: Route[] = [
   // Основной экран для телеграм мини-аппа
   { path: '/', Component: MainScreen },
   
+  // Библиотека практик
+  { path: '/library', Component: LibraryPage, title: 'Библиотека' },
+  { path: '/library/favorites', Component: FavoritesPage, title: 'Избранное' },
+  { path: '/library/category/:categorySlug', Component: CategoryPage },
+  
+  // Календарь
+  { path: '/calendar', Component: CalendarPage, title: 'Календарь' },
+  
   // Новый квиз для выбора практики
   { path: '/quiz', Component: QuizFlow, title: 'Выбор практики' },
+  { path: '/quiz/*', Component: QuizFlow, title: 'Выбор практики' },
   
-  // Страница практики
-  { path: '/practice/:contentId', Component: PracticePage, title: 'Практика' },
+  // Страница практики - путь упрощен для единообразия
+  { path: '/practice/:contentId', Component: EnhancedPracticePageWrapper, title: 'Практика' },
   
   // Админ панель
   { path: '/admin', Component: AdminPage, title: 'Админ панель' },
@@ -66,58 +78,3 @@ export const routes: Route[] = [
   },
   { path: '/diagnostics', Component: DiagnosticsPage },
 ];
-
-export const router = createHashRouter([
-  {
-    path: '/',
-    element: <MainScreen />
-  },
-  {
-    path: '/quiz',
-    element: <QuizFlow />
-  },
-  {
-    path: '/practice/:contentId',
-    element: <PracticePage />
-  },
-  {
-    path: '/practice/meditation/:meditationType/:meditationObject',
-    element: <PracticePage />
-  },
-  {
-    path: '/practice/:contentId/:meditationType',
-    element: <PracticePage />
-  },
-  {
-    path: '/admin',
-    element: <AdminPage />
-  },
-  {
-    path: '/old-index',
-    element: <IndexPage />
-  },
-  {
-    path: '/init-data',
-    element: <InitDataPage />
-  },
-  {
-    path: '/launch-params',
-    element: <LaunchParamsPage />
-  },
-  {
-    path: '/theme-params',
-    element: <ThemeParamsPage />
-  },
-  {
-    path: '/profile',
-    element: <ProfilePage />
-  },
-  {
-    path: '/ton-connect',
-    element: <TONConnectPage />
-  },
-  {
-    path: '/diagnostics',
-    element: <DiagnosticsPage />
-  }
-]);
