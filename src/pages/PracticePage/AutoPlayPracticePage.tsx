@@ -119,26 +119,24 @@ const AutoPlayPracticePage: React.FC = () => {
   const userId = supabaseUser?.id || null;
   const favorites = useFavorites(userId);
   const { isFavorite } = favorites;
-  
-  // Получаем данные о контенте
-  useEffect(() => {
-    const fetchContent = async () => {
-      if (!contentId) {
-        setError('ID контента не указан');
-        setLoading(false);
-        return;
+  console.log(isFavorite)
+  const fetchContent = async () => {
+    if (!contentId) {
+      setError('ID контента не указан');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      console.log('AutoPlayPracticePage: Загружаем контент с ID:', contentId);
+
+      // Получаем данные контента
+      if (!supabase) {
+        throw new Error('Supabase клиент не инициализирован');
       }
-      
-      try {
-        setLoading(true);
-        console.log('AutoPlayPracticePage: Загружаем контент с ID:', contentId);
-        
-        // Получаем данные контента
-        if (!supabase) {
-          throw new Error('Supabase клиент не инициализирован');
-        }
-        
-        const { data, error } = await supabase
+
+      const { data, error } = await supabase
           .from('contents')
           .select(`
             *,
@@ -153,68 +151,73 @@ const AutoPlayPracticePage: React.FC = () => {
           `)
           .eq('id', contentId)
           .single();
-          
-        if (error) {
-          console.error('AutoPlayPracticePage: Ошибка запроса контента:', error);
-          throw error;
-        }
-        
-        if (!data) {
-          console.error('AutoPlayPracticePage: Данные контента не найдены');
-          setError('Контент не найден');
-          setLoading(false);
-          return;
-        }
-        
-        console.log('AutoPlayPracticePage: Получены данные контента:', data.title, 'kinescope_id:', data.kinescope_id);
-        setContent(data);
-        
-        // Определяем тип плеера на основе данных практики
-        let playerType: PlayerType = PlayerType.VIDEO;
-        
-        if (data.content_types?.slug === 'audio') {
-          console.log('AutoPlayPracticePage: Устанавливаем тип плеера: AUDIO');
-          playerType = PlayerType.AUDIO;
-        } else if (data.content_types?.slug === 'timer') {
-          console.log('AutoPlayPracticePage: Устанавливаем тип плеера: TIMER');
-          playerType = PlayerType.TIMER;
-        } else {
-          console.log('AutoPlayPracticePage: Устанавливаем тип плеера: VIDEO');
-        }
-        
-        // Устанавливаем данные для плеера
-        setActiveType(playerType);
-        
-        // Обогащаем данные для контекста плеера
-        const contentDataForPlayer = {
-          title: data.title,
-          description: data.description || '',
-          thumbnailUrl: data.thumbnail_url || '',
-          duration: data.duration || 0,
-          kinescopeId: data.kinescope_id || '',
-          audioPath: data.audio_file_path || '',
-          backgroundImage: data.background_image_url || ''
-        };
-        
-        setContentData(contentDataForPlayer);
-        console.log('AutoPlayPracticePage: Установлены данные контента для плеера:', contentDataForPlayer);
-        
-        // Автоматически начинаем воспроизведение
-        setTimeout(() => {
-          console.log('AutoPlayPracticePage: Автоматический запуск воспроизведения');
-          play();
-        }, 500);
-        
-      } catch (err: any) {
-        console.error('AutoPlayPracticePage: Ошибка загрузки контента:', err);
-        setError(err.message || 'Ошибка загрузки контента');
-      } finally {
-        setLoading(false);
+
+      if (error) {
+        console.error('AutoPlayPracticePage: Ошибка запроса контента:', error);
+        throw error;
       }
-    };
+
+      if (!data) {
+        console.error('AutoPlayPracticePage: Данные контента не найдены');
+        setError('Контент не найден');
+        setLoading(false);
+        return;
+      }
+
+      console.log('AutoPlayPracticePage: Получены данные контента:', data.title, 'kinescope_id:', data.kinescope_id);
+      setContent(data);
+
+      // Определяем тип плеера на основе данных практики
+      let playerType: PlayerType = PlayerType.VIDEO;
+
+      if (data.content_types?.slug === 'audio') {
+        console.log('AutoPlayPracticePage: Устанавливаем тип плеера: AUDIO');
+        playerType = PlayerType.AUDIO;
+      } else if (data.content_types?.slug === 'timer') {
+        console.log('AutoPlayPracticePage: Устанавливаем тип плеера: TIMER');
+        playerType = PlayerType.TIMER;
+      } else {
+        console.log('AutoPlayPracticePage: Устанавливаем тип плеера: VIDEO');
+      }
+
+      // Устанавливаем данные для плеера
+      setActiveType(playerType);
+
+      // Обогащаем данные для контекста плеера
+      const contentDataForPlayer = {
+        title: data.title,
+        description: data.description || '',
+        thumbnailUrl: data.thumbnail_url || '',
+        duration: data.duration || 0,
+        kinescopeId: data.kinescope_id || '',
+        audioPath: data.audio_file_path || '',
+        backgroundImage: data.background_image_url || ''
+      };
+
+      setContentData(contentDataForPlayer);
+      console.log('AutoPlayPracticePage: Установлены данные контента для плеера:', contentDataForPlayer);
+
+      // Автоматически начинаем воспроизведение
+      setTimeout(() => {
+        console.log('AutoPlayPracticePage: Автоматический запуск воспроизведения');
+        play();
+      }, 500);
+
+    } catch (err: any) {
+      console.error('AutoPlayPracticePage: Ошибка загрузки контента:', err);
+      setError(err.message || 'Ошибка загрузки контента');
+    } finally {
+      setLoading(false);
+    }
+  };
+  // Получаем данные о контенте
+  useEffect(() => {
+
     
-    fetchContent();
-  }, [contentId, setActiveType, setContentData, play, isFavorite, userId]);
+    if(contentId){
+      fetchContent();
+    }
+  }, [contentId]);
   
   // Обработка загрузки
   if (loading) {
