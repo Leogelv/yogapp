@@ -32,6 +32,10 @@ interface PageProps {
    * True if the page should display the SafeAreaFade at the top.
    */
   showSafeAreaFade?: boolean;
+  /**
+   * Custom back button handler. If not provided, uses navigate(-1).
+   */
+  onBackClick?: () => void;
 }
 
 export function Page({ 
@@ -39,6 +43,7 @@ export function Page({
   back = true, 
   showTabBar = true,
   showSafeAreaFade = true,
+  onBackClick,
 }: PropsWithChildren<PageProps>) {
   const navigate = useNavigate();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -47,11 +52,15 @@ export function Page({
     if (back) {
       showBackButton();
       return onBackButtonClick(() => {
-        navigate(-1);
+        if (onBackClick) {
+          onBackClick();
+        } else {
+          navigate(-1);
+        }
       });
     }
     hideBackButton();
-  }, [back, navigate]);
+  }, [back, navigate, onBackClick]);
 
   // Повторно запрашиваем safe area при монтировании страницы
   useEffect(() => {
@@ -68,7 +77,7 @@ export function Page({
   // Добавляем отступ снизу, если показываем TabBar
   const containerStyle = {
     ...safeAreaStyle,
-    paddingBottom: showTabBar ? 'calc(56px + env(safe-area-inset-bottom, 0) + 5px)' : 'var(--safe-area-bottom, 0px)',
+    paddingBottom: showTabBar ? 'calc(70px + env(safe-area-inset-bottom, 0) + 8px)' : 'var(--safe-area-bottom, 0px)',
   };
 
   return (

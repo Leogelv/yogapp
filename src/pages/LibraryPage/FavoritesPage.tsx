@@ -144,33 +144,32 @@ const FavoritesPage: React.FC = () => {
             <p>Нет избранных практик в выбранной категории</p>
           </div>
         ) : (
-          <div className="favorites-list">
+          <div className="favorites-grid">
             {filteredFavorites.map((item: ContentItem) => (
               <div 
                 key={item.id} 
-                className="favorite-card"
+                className="favorite-square-card"
                 onClick={() => handleSelectFavorite(item)}
               >
                 <div 
-                  className="favorite-thumbnail" 
+                  className="favorite-square-thumbnail" 
                   style={{ backgroundImage: `url(${item.thumbnail_url || '/img/practice-default.jpg'})` }}
                 >
-                  <div className="favorite-difficulty">
-                    {item.difficulty || '2'} силы
-                  </div>
-                </div>
-                <div className="favorite-info">
-                  <div className="favorite-duration-type">
-                    {Math.floor(item.duration / 60)}:{(item.duration % 60).toString().padStart(2, '0')} • {item.content_type?.name || 'Видео'}
-                  </div>
-                  <h3 className="favorite-title">{item.title}</h3>
-                  <p className="favorite-description">{item.short_description || item.description}</p>
                   <button 
                     className="remove-favorite-button"
                     onClick={(e) => handleRemoveFavorite(e, item.id)}
                   >
-                    ✕
+                    ❌
                   </button>
+                  <div className="favorite-duration-badge">
+                    {Math.floor(item.duration / 60)} мин
+                  </div>
+                </div>
+                <div className="favorite-square-info">
+                  <h3 className="favorite-square-title">{item.title}</h3>
+                  <div className="favorite-difficulty-stars">
+                    {'⭐'.repeat(Number(item.difficulty) || 2)}
+                  </div>
                 </div>
               </div>
             ))}

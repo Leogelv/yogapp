@@ -6,21 +6,27 @@ import { useFavorites } from '@/lib/supabase/hooks';
 import { useSupabaseUser } from '@/lib/supabase/hooks';
 import './LibraryPage.css';
 
-// Категории в соответствии с макетом
-const categories = [
+// Основные категории для главной страницы библиотеки
+const mainCategories = [
+  { id: 'physical', name: 'Тело', icon: '🧘‍♀️', description: 'Асаны и физические практики' },
+  { id: 'meditation', name: 'Медитация', icon: '🧠', description: 'Практики осознанности' },
+  { id: 'base', name: 'База', icon: '⭐', description: 'Основы и базовые навыки' },
+  { id: 'breathing', name: 'Дыхание', icon: '🌬️', description: 'Дыхательные техники' }
+];
+
+// Все категории включая фильтры
+const allCategories = [
   { id: 'all', name: 'Все' },
-  { id: 'physical', name: 'Тело' },
-  { id: 'meditation', name: 'Медитация' },
-  { id: 'base', name: 'База' },
-  { id: 'breathing', name: 'Дыхание' }
+  ...mainCategories
 ];
 
 const LibraryPage: React.FC = () => {
   const navigate = useNavigate();
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null); // null = главная страница
   const [timeFilter, setTimeFilter] = useState<string | null>(null);
   const [showTimeFilter, setShowTimeFilter] = useState(false);
   const [contentVisible, setContentVisible] = useState(false);
+  const [currentSlide, setCurrentSlide] = useState(0);
 
   // Получаем пользователя
   const { supabaseUser } = useSupabaseUser(undefined);
@@ -29,11 +35,15 @@ const LibraryPage: React.FC = () => {
   // Получаем избранное
   const { isFavorite, addToFavorites, removeFromFavorites } = useFavorites(userId);
 
-  // Получаем контент с учетом выбранной категории
-  const { contents, loading, error } = useContents({
-    categorySlug: selectedCategory !== 'all' ? selectedCategory : undefined,
+  // Получаем контент только если выбрана конкретная категория
+  const { contents, loading, error } = useContents(selectedCategory !== null ? {
+    categorySlug: selectedCategory && selectedCategory !== 'all' ? selectedCategory : undefined,
     duration: timeFilter ? getDurationRange(timeFilter) : undefined
-  });
+  } : {});
+
+  // Получаем последние практики для слайдера "Новое" (только для главной страницы)
+  const shouldLoadLatest = selectedCategory === null;
+  const { contents: latestContents, loading: latestLoading } = useContents(shouldLoadLatest ? {} : { search: 'NEVER_MATCH_ANYTHING_XYZ' }); // Hack: используем поиск который ничего не найдет для отключения загрузки
 
   // Применяем анимацию появления контента
   useEffect(() => {
@@ -42,6 +52,17 @@ const LibraryPage: React.FC = () => {
     }, 100);
     return () => clearTimeout(timer);
   }, []);
+
+  // Автопроигрывание слайдера (только для главной страницы)
+  useEffect(() => {
+    if (selectedCategory === null && latestContents.length > 1) {
+      const interval = setInterval(() => {
+        setCurrentSlide(prev => (prev + 1) % Math.min(latestContents.length, 3));
+      }, 5000); // Смена слайда каждые 5 секунд
+      
+      return () => clearInterval(interval);
+    }
+  }, [selectedCategory, latestContents.length]);
 
   // Функция для получения диапазона длительности исходя из фильтра
   function getDurationRange(timeFilter: string): { min: number, max: number } | undefined {
@@ -65,9 +86,21 @@ const LibraryPage: React.FC = () => {
     }
   }
 
-  // Обработчик выбора категории
-  const handleCategorySelect = (categoryId: string) => {
+  // Обработчик выбора основной категории (переход к списку практик)
+  const handleMainCategorySelect = (categoryId: string) => {
     setSelectedCategory(categoryId);
+  };
+
+  // Обработчик выбора подкатегории в фильтрах
+  const handleSubCategorySelect = (categoryId: string) => {
+    setSelectedCategory(categoryId);
+  };
+
+  // Возврат к главной странице библиотеки
+  const handleBackToMain = () => {
+    setSelectedCategory(null);
+    setTimeFilter(null);
+    setShowTimeFilter(false);
   };
 
   // Обработчик перехода к конкретной практике
@@ -103,11 +136,93 @@ const LibraryPage: React.FC = () => {
     setShowTimeFilter(false);
   };
 
+  // Если категория не выбрана, показываем главную страницу
+  if (selectedCategory === null) {
+    return (
+      <Page back={false}>
+        <div className={`library-container ${contentVisible ? 'content-visible' : ''}`}>
+          <div className="library-header">
+            <h1 className="library-title">Библиотека</h1>
+          </div>
+          
+          {/* Слайдер "Новое" */}
+          <div className="latest-section">
+            <h2 className="section-title">Новое</h2>
+            {latestLoading ? (
+              <div className="latest-loading">Загрузка...</div>
+            ) : latestContents.length > 0 ? (
+              <div className="latest-slider-container">
+                <div className="latest-card-full" onClick={() => handlePracticeSelect(latestContents[currentSlide])}>
+                  <div 
+                    className="latest-card-image" 
+                    style={{ backgroundImage: `url(${latestContents[currentSlide]?.thumbnail_url || '/img/practice-default.jpg'})` }}
+                  >
+                    <button 
+                      className={`latest-favorite-btn ${isFavorite(latestContents[currentSlide]?.id) ? 'active' : ''}`}
+                      onClick={(e) => handleToggleFavorite(e, latestContents[currentSlide]?.id)}
+                    >
+                      {isFavorite(latestContents[currentSlide]?.id) ? '❤️' : '🤍'}
+                    </button>
+                  </div>
+                  <div className="latest-card-content">
+                    <div className="latest-meta">
+                      {Math.floor(latestContents[currentSlide]?.duration / 60)} мин • {latestContents[currentSlide]?.categories?.name || 'Практика'}
+                    </div>
+                    <h3 className="latest-card-title">{latestContents[currentSlide]?.title}</h3>
+                    <p className="latest-description">
+                      {latestContents[currentSlide]?.short_description || latestContents[currentSlide]?.description}
+                    </p>
+                  </div>
+                </div>
+                
+                {/* Пагинация точками */}
+                {latestContents.slice(0, 3).length > 1 && (
+                  <div className="slider-dots">
+                    {latestContents.slice(0, 3).map((_, index) => (
+                      <button
+                        key={index}
+                        className={`slider-dot ${index === currentSlide ? 'active' : ''}`}
+                        onClick={() => setCurrentSlide(index)}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : null}
+          </div>
+          
+          {/* Главные категории */}
+          <div className="main-categories">
+            {mainCategories.map(category => (
+              <div 
+                key={category.id}
+                className="main-category-card"
+                onClick={() => handleMainCategorySelect(category.id)}
+              >
+                <div className="category-icon">{category.icon}</div>
+                <h3 className="category-name">{category.name}</h3>
+                <p className="category-description">{category.description}</p>
+              </div>
+            ))}
+          </div>
+          
+          {/* Кнопка избранного */}
+          <button className="favorites-main-button" onClick={handleFavoritesClick}>
+            ❤️ Избранное
+          </button>
+        </div>
+      </Page>
+    );
+  }
+
+  // Страница выбранной категории с практиками
   return (
-    <Page back={false}>
+    <Page back={true} onBackClick={handleBackToMain}>
       <div className={`library-container ${contentVisible ? 'content-visible' : ''}`}>
         <div className="library-header">
-          <h1 className="library-title">Библиотека</h1>
+          <h1 className="library-title">
+            {allCategories.find(cat => cat.id === selectedCategory)?.name || 'Категория'}
+          </h1>
           <div className="time-filter-toggle" onClick={toggleTimeFilter}>
             {timeFilter ? getTimeFilterLabel(timeFilter) : 'Время'} {showTimeFilter ? '▲' : '▼'}
           </div>
@@ -146,13 +261,13 @@ const LibraryPage: React.FC = () => {
           </div>
         )}
         
-        {/* Категории */}
+        {/* Подкатегории */}
         <div className="category-tabs">
-          {categories.map(cat => (
+          {allCategories.map(cat => (
             <button
               key={cat.id}
               className={`category-tab ${selectedCategory === cat.id ? 'active' : ''}`}
-              onClick={() => handleCategorySelect(cat.id)}
+              onClick={() => handleSubCategorySelect(cat.id)}
             >
               {cat.name}
             </button>
@@ -172,43 +287,37 @@ const LibraryPage: React.FC = () => {
                 : 'В этой категории пока нет практик'}
             </div>
           ) : (
-            <div className="library-items">
+            <div className="practice-grid">
               {contents.map((item: ContentItem) => (
                 <div 
                   key={item.id} 
-                  className="practice-card"
+                  className="practice-square-card"
                   onClick={() => handlePracticeSelect(item)}
                 >
                   <div 
-                    className="practice-thumbnail" 
+                    className="practice-square-thumbnail" 
                     style={{ backgroundImage: `url(${item.thumbnail_url || '/img/practice-default.jpg'})` }}
                   >
-                    <div className="practice-difficulty">
-                      {item.difficulty || '2'} силы
-                    </div>
-                  </div>
-                  <div className="practice-info">
-                    <div className="practice-duration-type">
-                      {Math.floor(item.duration / 60)}:{(item.duration % 60).toString().padStart(2, '0')} • {item.content_type?.name || 'Видео'}
-                    </div>
-                    <h3 className="practice-title">{item.title}</h3>
-                    <p className="practice-description">{item.short_description || item.description}</p>
                     <button 
-                      className={`favorite-button ${isFavorite(item.id) ? 'active' : ''}`}
+                      className={`square-favorite-button ${isFavorite(item.id) ? 'active' : ''}`}
                       onClick={(e) => handleToggleFavorite(e, item.id)}
                     >
-                      {isFavorite(item.id) ? '★' : '☆'}
+                      {isFavorite(item.id) ? '❤️' : '🤍'}
                     </button>
+                    <div className="practice-duration-badge">
+                      {Math.floor(item.duration / 60)} мин
+                    </div>
+                  </div>
+                  <div className="practice-square-info">
+                    <h3 className="practice-square-title">{item.title}</h3>
+                    <div className="practice-difficulty-stars">
+                      {'⭐'.repeat(Number(item.difficulty) || 2)}
+                    </div>
                   </div>
                 </div>
               ))}
             </div>
           )}
-          
-          {/* Кнопка перехода к избранному */}
-          <button className="favorites-button" onClick={handleFavoritesClick}>
-            Избранное
-          </button>
         </div>
       </div>
     </Page>
