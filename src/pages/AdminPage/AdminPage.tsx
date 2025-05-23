@@ -681,7 +681,7 @@ const EditPracticeModal: React.FC<{
   error: string | null;
 }> = ({ practice, categories, contentTypes, onClose, onSave, saving, error }) => {
   console.log('EditPracticeModal рендеринг, форма:', practice);
-  const [form, setForm] = useState<any>({ ...practice });
+  const [form, setForm] = useState<any>({ ...practice, category: undefined });
   const [thumbPreview, setThumbPreview] = useState<string>(practice.thumbnail_url || '');
   const [audioPreview, setAudioPreview] = useState<string>(practice.audio_file_path || '');
   const [uploading, setUploading] = useState(false);
