@@ -1,0 +1,53 @@
+/* Стили для примера UI Kit */
+
+.ui-kit-example {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 24px;
+  font-family: 'RF Dewi', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.ui-kit-section {
+  margin-bottom: 48px;
+}
+
+.ui-kit-section h2 {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 24px;
+  color: #191919;
+}
+
+.ui-kit-section h3 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 24px 0 16px 0;
+  color: #191919;
+}
+
+.ui-kit-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.ui-kit-composition {
+  max-width: 375px;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .ui-kit-example {
+    padding: 16px;
+  }
+  
+  .ui-kit-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .ui-kit-section {
+    margin-bottom: 32px;
+  }
+} 

@@ -17,7 +17,8 @@ import {
   EditPracticeModal,
   CategoriesManager,
   QuizManager,
-  UsersManager
+  UsersManager,
+  EventsManager
 } from './components';
 
 // Импорт типов
@@ -259,6 +260,12 @@ const AdminPage: React.FC = () => {
             >
               Пользователи
             </button>
+            <button
+              className={`admin-tab ${activeTab === 'events' ? 'active' : ''}`}
+              onClick={() => handleTabChange('events')}
+            >
+              События
+            </button>
           </div>
           
           {/* Контент вкладок */}
@@ -271,6 +278,10 @@ const AdminPage: React.FC = () => {
             {activeTab === 'categories' && <CategoriesManager />}
             {activeTab === 'quiz' && <QuizManager />}
             {activeTab === 'users' && <UsersManager />}
+            {activeTab === 'events' && <EventsManager 
+              categories={categories}
+              contentTypes={contentTypes}
+            />}
           </div>
 
           {/* Попап предпросмотра видео */}

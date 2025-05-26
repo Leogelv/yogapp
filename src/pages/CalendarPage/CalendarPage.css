@@ -1,99 +1,325 @@
-/* Основные переменные стилей */
-:root {
-  --calendar-bg: var(--bg-light, #ffffff);
-  --calendar-text-primary: var(--text-primary, #1a1a1a);
-  --calendar-text-secondary: var(--text-secondary, #4a4a4a);
-  --calendar-text-tertiary: var(--text-tertiary, #6d6d6d);
-  --calendar-accent: var(--accent-color, #4e9bff);
-  --calendar-accent-hover: var(--accent-hover, #3a87ff);
-  --calendar-item-bg: var(--bg-item, #f9f9f9);
-  --calendar-card-bg: var(--bg-card, #ffffff);
-  --calendar-border: var(--border-color, #f0f0f0);
-  --calendar-shadow-sm: var(--shadow-sm, 0 2px 8px rgba(0, 0, 0, 0.03));
-  --calendar-shadow-md: var(--shadow-md, 0 8px 16px rgba(0, 0, 0, 0.04));
-  --calendar-radius-sm: var(--border-radius-sm, 0.5rem);
-  --calendar-radius-md: var(--border-radius-md, 0.875rem);
-  --calendar-radius-lg: var(--border-radius-lg, 1.25rem);
-  --calendar-transition: var(--transition-standard, all 0.3s cubic-bezier(0.4, 0, 0.2, 1));
-  
-  /* Цвета типов событий */
-  --calendar-event-practice: #4CAF50; /* Зеленый для практик */
-  --calendar-event-broadcast: #2196F3; /* Синий для эфиров */
-  --calendar-event-reminder: #FF9800; /* Оранжевый для напоминаний */
-  --calendar-event-community: #9C27B0; /* Фиолетовый для событий сообщества */
+.calendar-page {
+  padding: 16px;
+  max-width: 100vw;
+  overflow-x: hidden;
+  background: var(--tg-theme-bg-color, #ffffff);
+  color: var(--tg-theme-text-color, #000000);
+  min-height: 100vh;
+  padding-bottom: 80px;
+}
+
+/* Заголовок календаря */
+.calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding: 0 8px;
+}
+
+.nav-button {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: var(--tg-theme-text-color, #000000);
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease;
+}
+
+.nav-button:hover {
+  background-color: var(--tg-theme-button-color, rgba(0, 0, 0, 0.1));
+}
+
+.month-year {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0;
+  color: var(--tg-theme-text-color, #000000);
+}
+
+/* Календарная сетка */
+.calendar-grid {
+  background: #000000;
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 24px;
+}
+
+.weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.weekday {
+  text-align: center;
+  font-size: 12px;
+  color: #999999;
+  text-transform: uppercase;
+  font-weight: 500;
+  padding: 8px 0;
+}
+
+.days-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+}
+
+.day-button {
+  position: relative;
+  background: none;
+  border: none;
+  padding: 12px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+}
+
+.day-button:disabled {
+  cursor: default;
+  opacity: 0.3;
+}
+
+.day-button.other-month {
+  color: #666666;
+}
+
+.day-button.today {
+  background-color: #333333;
+  font-weight: 600;
+}
+
+.day-button.selected {
+  background-color: #ee7943;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.day-button:hover:not(:disabled):not(.selected) {
+  background-color: #333333;
+}
+
+.day-number {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.event-dot {
+  width: 4px;
+  height: 4px;
+  background-color: #ee7943;
+  border-radius: 50%;
+  margin-top: 2px;
+}
+
+.day-button.selected .event-dot {
+  background-color: #ffffff;
+}
+
+/* Секция событий */
+.events-section {
+  margin-top: 8px;
+}
+
+.selected-date {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0 0 16px 0;
+  color: var(--tg-theme-text-color, #000000);
+}
+
+.events-loading {
+  text-align: center;
+  padding: 32px;
+  color: var(--tg-theme-hint-color, #999999);
+}
+
+.no-events {
+  text-align: center;
+  padding: 32px;
+  color: var(--tg-theme-hint-color, #999999);
+}
+
+.no-events p {
+  margin: 0;
+  font-size: 16px;
+}
+
+/* Список событий */
+.events-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.event-card {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  background: var(--tg-theme-secondary-bg-color, #f8f9fa);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.event-card:hover {
+  background: var(--tg-theme-button-color, rgba(0, 0, 0, 0.05));
+  transform: translateY(-2px);
+}
+
+.event-image {
+  width: 60px;
+  height: 60px;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-right: 16px;
+  flex-shrink: 0;
+}
+
+.event-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.event-placeholder {
+  width: 100%;
+  height: 100%;
+  background: var(--tg-theme-button-color, #007aff);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 600;
+  color: #ffffff;
+  text-transform: uppercase;
+}
+
+.event-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.event-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 4px 0;
+  color: var(--tg-theme-text-color, #000000);
+  line-height: 1.3;
+}
+
+.event-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.event-type {
+  background: #ee7943;
+  color: #ffffff;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: lowercase;
+}
+
+.event-time {
+  font-size: 14px;
+  color: var(--tg-theme-hint-color, #999999);
+  font-weight: 500;
+}
+
+.event-instructor {
+  margin: 0;
+  font-size: 14px;
+  color: var(--tg-theme-hint-color, #999999);
+  line-height: 1.3;
 }
 
 /* Темная тема */
-:root.dark {
-  --calendar-bg: #1a202c;
-  --calendar-text-primary: #f7fafc;
-  --calendar-text-secondary: #e2e8f0;
-  --calendar-text-tertiary: #a0aec0;
-  --calendar-item-bg: #2d3748;
-  --calendar-card-bg: #2d3748;
-  --calendar-border: #4a5568;
-}
-
-/* Контейнер календаря */
-.calendar-container {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  min-height: 100%;
-  background-color: var(--calendar-bg);
-  overflow-y: auto;
-  padding: 16px 16px 80px;
-  box-sizing: border-box;
-  animation: fadeIn 0.3s ease-out forwards;
-  position: relative;
-  max-width: 100vw;
-  overflow-x: hidden;
-  opacity: 0;
-  transform: translateY(10px);
-  transition: opacity 0.4s ease, transform 0.4s ease;
-  color: var(--calendar-text-primary);
-}
-
-.calendar-container.content-visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* Анимации */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
+@media (prefers-color-scheme: dark) {
+  .calendar-page {
+    background: var(--tg-theme-bg-color, #1a1a1a);
+    color: var(--tg-theme-text-color, #ffffff);
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+  
+  .calendar-grid {
+    background: #2a2a2a;
+  }
+  
+  .day-button {
+    color: #ffffff;
+  }
+  
+  .day-button.other-month {
+    color: #666666;
+  }
+  
+  .day-button.today {
+    background-color: #444444;
+  }
+  
+  .day-button:hover:not(:disabled):not(.selected) {
+    background-color: #444444;
+  }
+  
+  .event-card {
+    background: var(--tg-theme-secondary-bg-color, #2a2a2a);
+  }
+  
+  .event-card:hover {
+    background: var(--tg-theme-button-color, rgba(255, 255, 255, 0.1));
   }
 }
 
-@keyframes pulse {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.05);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-
-/* Медиа-запросы для адаптивности */
+/* Адаптивность */
 @media (max-width: 380px) {
-  .calendar-container {
-    padding: 1rem 1rem 5rem;
+  .calendar-page {
+    padding: 12px;
   }
-}
-
-@media (min-width: 768px) {
-  .calendar-container {
-    padding: 2rem 2rem 5rem;
-    max-width: 768px;
-    margin: 0 auto;
+  
+  .calendar-grid {
+    padding: 12px;
+  }
+  
+  .day-button {
+    padding: 8px 4px;
+    min-height: 36px;
+  }
+  
+  .day-number {
+    font-size: 12px;
+  }
+  
+  .event-card {
+    padding: 12px;
+  }
+  
+  .event-image {
+    width: 50px;
+    height: 50px;
+    margin-right: 12px;
+  }
+  
+  .event-title {
+    font-size: 14px;
   }
 }

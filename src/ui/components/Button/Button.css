@@ -1,0 +1,145 @@
+/* Стили кнопки на основе дизайна Figma */
+
+.ui-button {
+  /* Базовые стили */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  font-family: 'RF Dewi', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 500;
+  line-height: 1.01;
+  letter-spacing: -7%;
+  text-decoration: none;
+  outline: none;
+  user-select: none;
+  position: relative;
+  overflow: hidden;
+
+  /* Фокус */
+  &:focus-visible {
+    outline: 2px solid #9747FF;
+    outline-offset: 2px;
+  }
+
+  /* Эффект нажатия */
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+/* Размеры кнопок */
+.ui-button--s {
+  height: 40px;
+  padding: 8px 16px;
+  font-size: 14px;
+  border-radius: 32px;
+}
+
+.ui-button--m {
+  height: 56px;
+  padding: 20px 8px;
+  font-size: 16px;
+  border-radius: 32px;
+}
+
+/* Варианты кнопок */
+.ui-button--default {
+  background-color: #191919;
+  color: #FFFFFF;
+}
+
+.ui-button--default:hover {
+  background-color: #313133;
+}
+
+.ui-button--accent {
+  background: linear-gradient(135deg, #9747FF 0%, #BB60A2 100%);
+  color: #FFFFFF;
+}
+
+.ui-button--accent:hover {
+  background: linear-gradient(135deg, #8247F8 0%, #9747FF 100%);
+}
+
+.ui-button--inverted {
+  background-color: #FFFFFF;
+  color: #191919;
+  border: 1px solid #191919;
+}
+
+.ui-button--inverted:hover {
+  background-color: #F1F1F1;
+}
+
+/* Полная ширина */
+.ui-button--full-width {
+  width: 100%;
+}
+
+/* Состояние загрузки */
+.ui-button--loading {
+  pointer-events: none;
+  color: transparent;
+}
+
+.ui-button__spinner {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: ui-button-spin 1s linear infinite;
+}
+
+.ui-button--loading .ui-button__spinner {
+  color: #FFFFFF;
+}
+
+.ui-button--inverted.ui-button--loading .ui-button__spinner {
+  color: #191919;
+}
+
+/* Отключенное состояние */
+.ui-button--disabled {
+  opacity: 0.5;
+  pointer-events: none;
+  cursor: not-allowed;
+}
+
+/* Иконка и текст */
+.ui-button__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ui-button__text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Анимация спиннера */
+@keyframes ui-button-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Адаптивность */
+@media (max-width: 375px) {
+  .ui-button--m {
+    height: 52px;
+    padding: 16px 8px;
+    font-size: 15px;
+  }
+} 

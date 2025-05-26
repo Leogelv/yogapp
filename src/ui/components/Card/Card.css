@@ -1,0 +1,280 @@
+/* Стили карточки на основе дизайна Figma */
+
+.ui-card {
+  position: relative;
+  background: #FFFFFF;
+  border-radius: 16px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.14);
+}
+
+.ui-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.ui-card:active {
+  transform: translateY(0);
+}
+
+/* Заблокированная карточка */
+.ui-card--locked {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.ui-card--locked:hover {
+  transform: none;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.14);
+}
+
+/* Варианты карточек */
+
+/* Library Card */
+.ui-card--library {
+  width: 100%;
+  max-width: 375px;
+  min-height: 200px;
+  border: 1px solid #191919;
+  border-top: none;
+  border-bottom: 1px solid #191919;
+}
+
+.ui-card--library .ui-card__content {
+  padding: 16px 12px 24px;
+  gap: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Content Card */
+.ui-card--content {
+  width: 100%;
+  max-width: 375px;
+  border-bottom: 1px solid #191919;
+}
+
+.ui-card--content .ui-card__content {
+  padding: 16px 12px;
+  gap: 12px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Favourite Card */
+.ui-card--favourite {
+  width: 100%;
+  max-width: 375px;
+  height: 260px;
+  border: none;
+  box-shadow: none;
+  position: relative;
+}
+
+.ui-card--favourite .ui-card__background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.ui-card--favourite .ui-card__background::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(180deg, rgba(25, 25, 25, 0) 0%, rgba(25, 25, 25, 0.5) 50%, rgba(25, 25, 25, 1) 100%);
+}
+
+.ui-card--favourite .ui-card__content {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 12px;
+  color: #FFFFFF;
+  z-index: 2;
+}
+
+/* Изображение карточки */
+.ui-card__image {
+  position: relative;
+  width: 100%;
+  height: 197px;
+  overflow: hidden;
+}
+
+.ui-card__image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background-color: #D9D9D9;
+}
+
+/* Иконки на изображении */
+.ui-card__content-type {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #191919;
+}
+
+.ui-card__lock {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  width: 32px;
+  height: 32px;
+  background: rgba(25, 25, 25, 0.8);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #FFFFFF;
+}
+
+/* Контент карточки */
+.ui-card__content {
+  position: relative;
+  z-index: 1;
+}
+
+.ui-card__meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.ui-card__duration {
+  font-family: 'RF Dewi', sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  color: #191919;
+  background: #F1F1F1;
+  padding: 4px 8px;
+  border-radius: 8px;
+}
+
+.ui-card--favourite .ui-card__duration {
+  color: #FFFFFF;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.ui-card__difficulty {
+  font-family: 'RF Dewi', sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  color: #FFFFFF;
+  background: #414141;
+  border: 1px solid #191919;
+  padding: 4px 8px;
+  border-radius: 8px;
+}
+
+.ui-card__title {
+  font-family: 'RF Dewi', sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.01;
+  letter-spacing: -7%;
+  color: #FFFFFF;
+  margin: 0;
+  max-width: 250px;
+}
+
+.ui-card--library .ui-card__title,
+.ui-card--content .ui-card__title {
+  color: #191919;
+  font-size: 18px;
+}
+
+.ui-card__description {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.18;
+  letter-spacing: -6%;
+  color: #191919;
+  margin: 0;
+}
+
+.ui-card--favourite .ui-card__description {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.ui-card__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: auto;
+}
+
+/* Кнопка избранного */
+.ui-card__favourite {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  z-index: 3;
+  color: #191919;
+}
+
+.ui-card__favourite:hover {
+  background: #FFFFFF;
+  transform: scale(1.1);
+}
+
+.ui-card__favourite svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Состояние избранного */
+.ui-card__favourite[aria-label*="Убрать"] {
+  background: rgba(231, 76, 60, 0.9);
+  color: #FFFFFF;
+}
+
+.ui-card__favourite[aria-label*="Убрать"]:hover {
+  background: #e74c3c;
+}
+
+/* Адаптивность */
+@media (max-width: 375px) {
+  .ui-card {
+    margin: 0 -12px;
+    border-radius: 0;
+  }
+  
+  .ui-card--library,
+  .ui-card--content,
+  .ui-card--favourite {
+    max-width: none;
+    width: calc(100% + 24px);
+  }
+} 

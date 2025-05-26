@@ -45,6 +45,9 @@ export const routes: Route[] = [
   // Страница таймера для самостоятельных медитаций
   { path: '/practice/timer', Component: EnhancedPracticePageWrapper, title: 'Медитация' },
   
+  // Страница события из календаря
+  { path: '/practice/event/:eventId', Component: EnhancedPracticePageWrapper, title: 'Событие' },
+  
   // Админ панель
   { path: '/admin', Component: AdminPage, title: 'Админ панель' },
   

@@ -90,8 +90,9 @@ const CriteriaPopup = ({ criteria }: { criteria: PracticeCriteria }) => {
 
 // Основной компонент
 const AutoPlayPracticePage: React.FC = () => {
-  const { contentId } = useParams<{
+  const { contentId, eventId } = useParams<{
     contentId?: string;
+    eventId?: string;
   }>();
   
   const navigate = useNavigate();
@@ -211,6 +212,96 @@ const AutoPlayPracticePage: React.FC = () => {
       setLoading(false);
     }
   };
+
+  const fetchEvent = async () => {
+    if (!eventId) {
+      setError('ID события не указан');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      console.log('AutoPlayPracticePage: Загружаем событие с ID:', eventId);
+
+      if (!supabase) {
+        throw new Error('Supabase клиент не инициализирован');
+      }
+
+      const { data, error } = await supabase
+          .from('events')
+          .select(`
+            *,
+            content_types (
+              name,
+              slug
+            ),
+            categories (
+              name,
+              slug
+            )
+          `)
+          .eq('id', eventId)
+          .single();
+
+      if (error) {
+        console.error('AutoPlayPracticePage: Ошибка запроса события:', error);
+        throw error;
+      }
+
+      if (!data) {
+        console.error('AutoPlayPracticePage: Данные события не найдены');
+        setError('Событие не найдено');
+        setLoading(false);
+        return;
+      }
+
+      console.log('AutoPlayPracticePage: Получены данные события:', data.title, 'kinescope_id:', data.kinescope_id);
+      setContent(data);
+
+      // Определяем тип плеера на основе данных события
+      let playerType: PlayerType = PlayerType.VIDEO;
+
+      if (data.content_types?.slug === 'audio') {
+        console.log('AutoPlayPracticePage: Устанавливаем тип плеера: AUDIO');
+        playerType = PlayerType.AUDIO;
+      } else if (data.content_types?.slug === 'timer') {
+        console.log('AutoPlayPracticePage: Устанавливаем тип плеера: TIMER');
+        playerType = PlayerType.TIMER;
+      } else {
+        console.log('AutoPlayPracticePage: Устанавливаем тип плеера: VIDEO');
+      }
+
+      // Устанавливаем данные для плеера
+      setActiveType(playerType);
+
+      // Обогащаем данные для контекста плеера
+      const contentDataForPlayer = {
+        title: data.title,
+        description: data.description || '',
+        thumbnailUrl: data.thumbnail_url || '',
+        duration: data.duration || 0,
+        kinescopeId: data.kinescope_id || '',
+        audioPath: data.audio_file_path || '',
+        backgroundImage: data.background_image_url || ''
+      };
+
+      setContentData(contentDataForPlayer);
+      console.log('AutoPlayPracticePage: Установлены данные события для плеера:', contentDataForPlayer);
+
+      // Автоматически начинаем воспроизведение
+      setTimeout(() => {
+        console.log('AutoPlayPracticePage: Автоматический запуск воспроизведения события');
+        play();
+      }, 500);
+
+    } catch (err: any) {
+      console.error('AutoPlayPracticePage: Ошибка загрузки события:', err);
+      setError(err.message || 'Ошибка загрузки события');
+    } finally {
+      setLoading(false);
+    }
+  };
   // Получаем данные о контенте
   useEffect(() => {
     // Проверяем, если это роут таймера с данными из квиза
@@ -255,10 +346,17 @@ const AutoPlayPracticePage: React.FC = () => {
       return;
     }
     
+    // Проверяем, если это событие
+    if (eventId) {
+      fetchEvent();
+      return;
+    }
+    
+    // Иначе загружаем обычный контент
     if(contentId && contentId !== 'timer'){
       fetchContent();
     }
-  }, [contentId, location.state]);
+  }, [contentId, eventId, location.state]);
   
   // Обработка загрузки
   if (loading) {

@@ -1,0 +1,100 @@
+/* Стили тега на основе дизайна Figma */
+
+.ui-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border-radius: 8px;
+  font-family: 'RF Dewi', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 400;
+  line-height: 1.01;
+  letter-spacing: -7%;
+  white-space: nowrap;
+  transition: all 0.2s ease-in-out;
+  border: none;
+  outline: none;
+}
+
+/* Размеры */
+.ui-tag--sm {
+  padding: 2px 6px;
+  font-size: 12px;
+}
+
+.ui-tag--md {
+  padding: 4px 8px;
+  font-size: 14px;
+}
+
+/* Варианты */
+.ui-tag--default {
+  background-color: #F1F1F1;
+  color: #191919;
+}
+
+.ui-tag--difficulty {
+  background-color: #414141;
+  color: #FFFFFF;
+  border: 1px solid #191919;
+}
+
+.ui-tag--duration {
+  background-color: #F1F1F1;
+  color: #191919;
+}
+
+/* Кликабельные теги */
+.ui-tag--clickable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.ui-tag--clickable:hover {
+  transform: translateY(-1px);
+  box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.ui-tag--clickable:active {
+  transform: translateY(0);
+}
+
+.ui-tag--clickable:focus-visible {
+  outline: 2px solid #9747FF;
+  outline-offset: 2px;
+}
+
+/* Активное состояние */
+.ui-tag--active {
+  background-color: #9747FF;
+  color: #FFFFFF;
+  font-weight: 500;
+}
+
+.ui-tag--active:hover {
+  background-color: #8247F8;
+}
+
+/* Специальные стили для разных вариантов в активном состоянии */
+.ui-tag--difficulty.ui-tag--active {
+  background-color: #9747FF;
+  border-color: #9747FF;
+}
+
+.ui-tag--duration.ui-tag--active {
+  background-color: #9747FF;
+  color: #FFFFFF;
+}
+
+/* Адаптивность */
+@media (max-width: 375px) {
+  .ui-tag--md {
+    padding: 3px 6px;
+    font-size: 13px;
+  }
+  
+  .ui-tag--sm {
+    padding: 2px 4px;
+    font-size: 11px;
+  }
+} 
