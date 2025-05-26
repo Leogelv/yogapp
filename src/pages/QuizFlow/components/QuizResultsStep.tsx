@@ -36,6 +36,12 @@ const QuizResultsStep: React.FC = () => {
         setLoading(true);
         setError(null);
         
+        // Для самостоятельных медитаций не ищем рекомендации - используем таймер
+        if (state.practiceType === 'meditation' && state.approach === 'self') {
+          setLoading(false);
+          return;
+        }
+        
         if (!supabase || !state.practiceType) {
           throw new Error('Отсутствуют необходимые параметры для поиска рекомендации');
         }
@@ -164,15 +170,24 @@ const QuizResultsStep: React.FC = () => {
   }, [state.practiceType, state.duration, state.goal, state.approach]);
 
   const handleStartPractice = () => {
+    // Для самостоятельных медитаций переходим напрямую на таймер без поиска рекомендаций
+    if (state.practiceType === 'meditation' && state.approach === 'self' && state.selfMeditationSettings) {
+      const { object, duration } = state.selfMeditationSettings;
+      // Переходим прямо на плеер с типом timer и передаем настройки
+      navigate(`/practice/timer`, { 
+        state: { 
+          duration, 
+          object, 
+          fromQuiz: true,
+          practiceType: 'meditation'
+        } 
+      });
+      return;
+    }
+    
+    // Для всех остальных практик (видео, аудио) переходим по ID контента
     if (recommendation) {
-      // Для обычных практик переходим по ID контента
-      if (state.practiceType !== 'meditation' || state.approach !== 'self') {
-        navigate(`/practice/${recommendation.id}`);
-      } else if (state.selfMeditationSettings) {
-        // Для самостоятельных медитаций включаем объект и длительность в URL
-        const { object, duration } = state.selfMeditationSettings;
-        navigate(`/practice/meditation/self/${object}-${duration}`);
-      }
+      navigate(`/practice/${recommendation.id}`);
     }
   };
 
@@ -224,6 +239,51 @@ const QuizResultsStep: React.FC = () => {
               <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>{JSON.stringify(quizParams, null, 2)}</pre>
             </div>
           )}
+        </div>
+      </div>
+    );
+  }
+
+  // Специальный рендеринг для самостоятельных медитаций
+  if (state.practiceType === 'meditation' && state.approach === 'self' && state.selfMeditationSettings) {
+    const { object, duration } = state.selfMeditationSettings;
+    
+    // Получаем название объекта концентрации
+    const getObjectName = (obj: string) => {
+      switch (obj) {
+        case 'breath': return 'дыхании';
+        case 'thought': return 'мыслях';
+        case 'body': return 'теле';
+        case 'none': return 'ощущениях';
+        default: return 'выбранном объекте';
+      }
+    };
+    
+    return (
+      <div className="quiz-step-content">
+        <h2 className="quiz-question">Ваша медитация готова</h2>
+        <p className="quiz-description">Настройки для самостоятельной практики</p>
+        
+        <div className="quiz-recommendation">
+          <div className="recommendation-details">
+            <h3 className="recommendation-title">Самостоятельная медитация</h3>
+            <div className="recommendation-meta">
+              <span className="recommendation-type">Медитация</span>
+              <span className="recommendation-duration">{formatDuration(duration)}</span>
+            </div>
+            <p className="recommendation-description">
+              Сосредоточьтесь на {getObjectName(object)} в течение выбранного времени
+            </p>
+          </div>
+          
+          <div className="recommendation-actions">
+            <button className="quiz-start-btn" onClick={handleStartPractice}>
+              Начать медитацию
+            </button>
+            <button className="quiz-retry-btn" onClick={handleRetakeQuiz}>
+              Выбрать другие параметры
+            </button>
+          </div>
         </div>
       </div>
     );

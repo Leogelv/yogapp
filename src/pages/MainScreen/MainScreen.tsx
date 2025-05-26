@@ -74,6 +74,8 @@ export const MainScreen: FC = () => {
 
   // Обработчик для кнопки выбора практики
   const handleSelectPractice = () => {
+    // Сбрасываем состояние квиза перед переходом
+    localStorage.removeItem('quizState');
     navigate('/quiz');
   };
 

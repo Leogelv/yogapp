@@ -42,6 +42,9 @@ export const routes: Route[] = [
   // Страница практики - путь упрощен для единообразия
   { path: '/practice/:contentId', Component: EnhancedPracticePageWrapper, title: 'Практика' },
   
+  // Страница таймера для самостоятельных медитаций
+  { path: '/practice/timer', Component: EnhancedPracticePageWrapper, title: 'Медитация' },
+  
   // Админ панель
   { path: '/admin', Component: AdminPage, title: 'Админ панель' },
   

@@ -69,10 +69,6 @@ const FavoritesPage: React.FC = () => {
     removeFromFavorites(itemId);
   };
 
-  const handleBackClick = () => {
-    navigate('/library');
-  };
-
   // Обработчик выбора категории
   const handleCategorySelect = (categoryId: string) => {
     setSelectedCategory(categoryId);
@@ -90,12 +86,9 @@ const FavoritesPage: React.FC = () => {
   };
 
   return (
-    <Page>
+    <Page back={true} onBackClick={() => navigate('/library')}>
       <div className="favorites-page">
         <div className="favorites-header">
-          <button onClick={handleBackClick} className="back-button">
-            <span>←</span>
-          </button>
           <h1>Избранное</h1>
           <div className="time-filter-toggle" onClick={toggleTimeFilter}>
             Время {showTimeFilter ? '▲' : '▼'}

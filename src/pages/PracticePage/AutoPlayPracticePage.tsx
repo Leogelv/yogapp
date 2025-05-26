@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { usePlayer, PlayerType } from '@/contexts/PlayerContext';
 import VideoPlayer from '@/components/Player/VideoPlayer';
 import AudioPlayer from '@/components/Player/AudioPlayer';
@@ -95,6 +95,7 @@ const AutoPlayPracticePage: React.FC = () => {
   }>();
   
   const navigate = useNavigate();
+  const location = useLocation();
   const { state, setActiveType, setContentData, play } = usePlayer();
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -212,12 +213,52 @@ const AutoPlayPracticePage: React.FC = () => {
   };
   // Получаем данные о контенте
   useEffect(() => {
-
+    // Проверяем, если это роут таймера с данными из квиза
+    const locationState = location.state as { 
+      duration?: number; 
+      object?: string; 
+      fromQuiz?: boolean; 
+      practiceType?: string;
+    } | null;
     
-    if(contentId){
+    if (contentId === 'timer' && locationState?.fromQuiz) {
+      // Это таймер из квиза - настраиваем его
+      setActiveType(PlayerType.TIMER);
+      
+      const timerData = {
+        title: 'Самостоятельная медитация',
+        description: 'Сконцентрируйтесь на выбранном объекте',
+        thumbnailUrl: '',
+        duration: locationState.duration || 600,
+        kinescopeId: '',
+        audioPath: '',
+        backgroundImage: '',
+        meditationObject: locationState.object || 'breath'
+      };
+      
+      setContentData(timerData);
+      setContent({
+        title: timerData.title,
+        description: timerData.description,
+        duration: timerData.duration,
+        content_types: { slug: 'timer' },
+        meditation_object: locationState.object
+      });
+      
+      setLoading(false);
+      
+      // Автоматически начинаем
+      setTimeout(() => {
+        play();
+      }, 500);
+      
+      return;
+    }
+    
+    if(contentId && contentId !== 'timer'){
       fetchContent();
     }
-  }, [contentId]);
+  }, [contentId, location.state]);
   
   // Обработка загрузки
   if (loading) {
@@ -261,12 +302,25 @@ const AutoPlayPracticePage: React.FC = () => {
           duration = content.duration;
         }
         
+        // Получаем объект концентрации и переводим на русский
+        const getObjectName = (obj: string) => {
+          switch (obj) {
+            case 'breath': return 'Дыхание';
+            case 'thought': return 'Мысли';
+            case 'body': return 'Тело';
+            case 'none': return 'Ощущения';
+            default: return 'Дыхание';
+          }
+        };
+        
+        const meditationObject = getObjectName(content.meditation_object || 'breath');
+        
         return (
           <TimerPlayer
             duration={duration}
             title={content.title || 'Самостоятельная медитация'}
-            meditationObject="Дыхание"
-            instructions={content.description || 'Сконцентрируйтесь на своем дыхании и следуйте инструкциям'}
+            meditationObject={meditationObject}
+            instructions={content.description || `Сконцентрируйтесь на своем объекте медитации`}
           />
         );
       default:
@@ -279,7 +333,10 @@ const AutoPlayPracticePage: React.FC = () => {
     try {
       setLoading(true);
       
-      // Вместо получения рекомендации, просто перенаправляем на страницу квиза
+      // Сбрасываем состояние квиза перед переходом
+      localStorage.removeItem('quizState');
+      
+      // Перенаправляем на страницу квиза для получения новой рекомендации
       console.log('Перенаправляем на страницу квиза для получения новой рекомендации');
       navigate('/quiz');
       
@@ -304,7 +361,7 @@ const AutoPlayPracticePage: React.FC = () => {
         <div className="practice-actions">
           <button className="refresh-button" onClick={handleRefreshPractice}>
             <RefreshIcon />
-            Другая практика
+            {content?.content_types?.slug === 'timer' ? 'Выбрать другую цель' : 'Другая практика'}
           </button>
           
           <button 
