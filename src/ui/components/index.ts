@@ -13,5 +13,9 @@ export type { CardProps } from './Card/Card';
 export { Tag } from './Tag/Tag';
 export type { TagProps } from './Tag/Tag';
 
+// Анимированные компоненты
+export { AnimatedCircles } from './AnimatedCircles';
+export type { AnimatedCirclesProps } from './AnimatedCircles';
+
 // Переэкспорт токенов для удобства
 export * from '../tokens'; 

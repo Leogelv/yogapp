@@ -1,12 +1,13 @@
 .practice-page {
-  width: 100%;
-  min-height: calc(100vh - 56px);
-  padding: 16px;
-  box-sizing: border-box;
-  background-color: var(--tgui-bg-color);
   display: flex;
   flex-direction: column;
-  align-items: center;
+  width: 100%;
+  height: 100vh;
+  background: #ffffff;
+  color: #191919;
+  padding: 0;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .practice-content {
@@ -16,12 +17,225 @@
   padding-bottom: 20px;
 }
 
-.practice-actions {
-  margin: 16px 0;
+/* Navigation Bar по дизайну Figma */
+.practice-navigation {
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  border-bottom: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+}
+
+.practice-status-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 16px;
+  min-height: 44px;
+}
+
+.practice-time {
+  font-family: 'SF Pro Text', sans-serif;
+  font-weight: 600;
+  font-size: 15px;
+  line-height: 1.19;
+  letter-spacing: -2%;
+  color: #ffffff;
+}
+
+.practice-status-icons {
+  /* Место для иконок статуса */
+}
+
+.practice-nav-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 16px;
+}
+
+.practice-nav-button {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 10px 2px 2px;
+  background: rgba(49, 49, 51, 0.5);
+  border: none;
+  border-radius: 32px;
+  color: #ffffff;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 12px;
+  line-height: 1.21;
+  letter-spacing: 1%;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.practice-nav-button:hover {
+  background: rgba(49, 49, 51, 0.7);
+}
+
+.practice-nav-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.practice-control-btn {
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 44px;
+  height: 44px;
+  background: rgba(49, 49, 51, 0.5);
+  border: none;
+  border-radius: 32px;
+  color: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 2px 4px;
+}
+
+.practice-control-btn:hover {
+  background: rgba(49, 49, 51, 0.7);
+}
+
+/* Контейнер плеера */
+.player-container {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Информация о практике */
+.practice-info {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.6));
+  color: #ffffff;
+  padding: 40px 12px 20px;
+  z-index: 5;
+}
+
+.practice-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.practice-tags {
+  display: flex;
   gap: 8px;
+  align-items: center;
+}
+
+.practice-tag {
+  padding: 4px 8px;
+  background: #414141;
+  border: 1px solid #191919;
+  border-radius: 0;
+  font-family: 'RF Dewi', sans-serif;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 1.01;
+  letter-spacing: -7%;
+  color: #ffffff;
+}
+
+.practice-bookmark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.practice-bookmark:hover {
+  transform: scale(1.1);
+}
+
+.practice-title {
+  font-family: 'RF Dewi', sans-serif;
+  font-weight: 700;
+  font-size: 24px;
+  line-height: 1.01;
+  letter-spacing: -7%;
+  color: #ffffff;
+  margin: 0 0 8px;
+}
+
+.practice-description {
+  font-family: 'IBM Plex Mono', sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 1.4;
+  letter-spacing: -6%;
+  color: #ffffff;
+  margin: 0 0 24px;
+}
+
+.practice-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  width: 100%;
+}
+
+.practice-action-btn {
+  width: 100%;
+  padding: 20px 8px;
+  border: none;
+  font-family: 'RF Dewi', sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 1.01;
+  letter-spacing: -7%;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-bottom: 1px solid #191919;
+}
+
+.practice-other-btn {
+  background: #191919;
+  color: #ffffff;
+}
+
+.practice-about-btn {
+  background: transparent;
+  color: #191919;
+  border-bottom: none;
+}
+
+.practice-action-btn:hover {
+  background: rgba(25, 25, 25, 0.8);
+  color: #ffffff;
+}
+
+/* Home indicator */
+.practice-home-indicator {
+  position: absolute;
+  bottom: 21px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 134px;
+  height: 5px;
+  background: #242424;
+  border-radius: 100px;
+  z-index: 6;
 }
 
 .back-button {
@@ -90,31 +304,9 @@
 }
 
 /* Стили для кнопки "Получить другую практику" и мини-попапа с критериями */
-.refresh-button {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background-color: var(--tg-theme-button-color);
-  color: var(--tg-theme-button-text-color);
-  border: none;
-  padding: 10px 16px;
-  border-radius: 8px;
-  font-weight: 500;
-  cursor: pointer;
-}
+/* Убираем старые стили refresh-button */
 
-.criteria-button {
-  background-color: transparent;
-  color: var(--tg-theme-hint-color);
-  border: none;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-}
+/* Убираем старые стили criteria-button */
 
 .criteria-popup {
   position: absolute;

@@ -11,24 +11,7 @@ import { useSupabaseUser } from '@/lib/supabase/hooks/useSupabaseUser';
 import { initDataState as _initDataState, useSignal } from '@telegram-apps/sdk-react';
 import { useFavorites } from '@/lib/supabase/hooks/useFavorites';
 
-// SVG иконка информации для критериев
-const InfoIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M12 16V12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M12 8H12.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>
-);
-
-// SVG иконка обновления для кнопки
-const RefreshIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M21 3V8H16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M3 16V21H8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M18.5 8C17.6797 6.13033 16.1123 4.66053 14.1334 3.86301C12.1546 3.06548 9.9379 3.00208 7.9162 3.68259C5.8945 4.36311 4.20129 5.74065 3.13134 7.56327C2.06138 9.38589 1.69482 11.5325 2.09 13.61L3 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M21 13C21.1747 13.6991 21.26 14.4143 21.255 15.131C21.2505 15.7545 21.1915 16.3763 21.079 16.988C20.636 19.379 19.254 21.499 17.222 22.883C15.19 24.267 12.695 24.793 10.276 24.349C7.85707 23.9051 5.7371 22.5228 4.35297 20.4908C2.96883 18.4587 2.44315 15.9636 2.887 13.545" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>
-);
+// Убираем старые иконки - теперь SVG инлайн в JSX
 
 // Компонент для отображения критериев в попапе
 const CriteriaPopup = ({ criteria }: { criteria: PracticeCriteria }) => {
@@ -448,37 +431,87 @@ const AutoPlayPracticePage: React.FC = () => {
   
   return (
     <div className="practice-page">
+      {/* Navigation Bar по дизайну Figma */}
+      <div className="practice-navigation">
+        <div className="practice-status-bar">
+          <div className="practice-time">9:41</div>
+          <div className="practice-status-icons">
+            {/* WiFi, сигнал, батарея иконки */}
+          </div>
+        </div>
+        
+        <div className="practice-nav-controls">
+          <button className="practice-nav-button" onClick={() => navigate(-1)}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            <span>Назад</span>
+          </button>
+          
+          <div className="practice-nav-right">
+            <button className="practice-control-btn">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path d="M7 14l5-5 5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
+            <button className="practice-control-btn">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path d="M12 13a1 1 0 100-2 1 1 0 000 2zM19 13a1 1 0 100-2 1 1 0 000 2zM5 13a1 1 0 100-2 1 1 0 000 2z" fill="currentColor"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Основной контент с плеером */}
       <div className="player-container">
         {renderPlayer()}
       </div>
       
+      {/* Информация о практике и теги */}
       <div className="practice-info">
-        <h1 className="practice-title">{content?.title || 'Практика'}</h1>
-        <p className="practice-description">{content?.description || ''}</p>
-        
-        <div className="practice-actions">
-          <button className="refresh-button" onClick={handleRefreshPractice}>
-            <RefreshIcon />
-            {content?.content_types?.slug === 'timer' ? 'Выбрать другую цель' : 'Другая практика'}
-          </button>
+        <div className="practice-meta">
+          <div className="practice-tags">
+            <span className="practice-tag">2 силы</span>
+            <span className="practice-tag">до 7 минут</span>
+            <span className="practice-tag">ноги</span>
+          </div>
           
           <button 
-            className="criteria-button" 
+            className="practice-bookmark" 
             onClick={() => setShowCriteria(!showCriteria)}
-            aria-label="Показать критерии"
+            aria-label="Добавить в закладки"
           >
-            <InfoIcon />
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M19 21L12 16L5 21V5C5 4.46957 5.21071 3.96086 5.58579 3.58579C5.96086 3.21071 6.46957 3 7 3H17C17.5304 3 18.0391 3.21071 18.4142 3.58579C18.7893 3.96086 19 4.46957 19 5V21Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+        </div>
+        
+        <h1 className="practice-title">{content?.title || 'практика'}</h1>
+        <p className="practice-description">{content?.description || 'Описание практики'}</p>
+        
+        <div className="practice-actions">
+          <button className="practice-action-btn practice-other-btn" onClick={handleRefreshPractice}>
+            другая практика
           </button>
           
-          {/* Попап с критериями */}
-          {showCriteria && (
-            <>
-              <div className="popup-backdrop" onClick={() => setShowCriteria(false)} />
-              <CriteriaPopup criteria={criteria} />
-            </>
-          )}
+          <button className="practice-action-btn practice-about-btn">
+            о направлении
+          </button>
         </div>
+        
+        {/* Попап с критериями */}
+        {showCriteria && (
+          <>
+            <div className="popup-backdrop" onClick={() => setShowCriteria(false)} />
+            <CriteriaPopup criteria={criteria} />
+          </>
+        )}
       </div>
+      
+      {/* Home indicator */}
+      <div className="practice-home-indicator"></div>
     </div>
   );
 };

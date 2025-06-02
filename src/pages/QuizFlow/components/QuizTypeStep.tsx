@@ -1,5 +1,5 @@
 import React from 'react';
-import { useQuiz, PracticeType } from '../../../contexts/QuizContext';
+import { useQuiz } from '../../../contexts/QuizContext';
 import { useQuizStepsRealtime } from '../../../contexts/QuizContext';
 
 const QuizTypeStep: React.FC = () => {
@@ -7,37 +7,51 @@ const QuizTypeStep: React.FC = () => {
   const { steps, loading } = useQuizStepsRealtime();
 
   // Находим шаг с type === 'practice_type'
-  const practiceTypeStep = steps.find((step) => step.type === 'practice_type');
-  const options = practiceTypeStep?.answers || [];
+  const typeStep = steps.find((step) => step.type === 'practice_type');
+  const options = typeStep?.answers || [];
 
   // Обработчик выбора типа практики
-  const handleSelectType = (type: string) => {
-    setPracticeType(type as PracticeType);
-    // Переход к следующему шагу происходит в QuizFlow по изменению state.practiceType
+  const handleSelectType = (value: string) => {
+    setPracticeType(value as any);
   };
+
+  if (loading) {
+    return (
+      <div className="quiz-loading">
+        <div className="quiz-loading-spinner"></div>
+        <p>Загрузка типов практик...</p>
+      </div>
+    );
+  }
+
+  if (options.length === 0) {
+    return (
+      <div className="quiz-error">
+        <h3>Ошибка загрузки</h3>
+        <p>Нет доступных типов практик</p>
+      </div>
+    );
+  }
 
   return (
     <div className="quiz-step-content">
-      <h2 className="quiz-question">Какой тип практики вы хотите?</h2>
-      <p className="quiz-description">Выберите наиболее подходящий для вас тип</p>
       <div className="quiz-options-list">
-        {loading ? (
-          <div className="quiz-option-placeholder">Загрузка...</div>
-        ) : options.length === 0 ? (
-          <div className="quiz-option-placeholder">Нет доступных типов практик</div>
-        ) : (
-          options
-            .sort((a, b) => (a.order || 0) - (b.order || 0))
-            .map((option) => (
+        {options
+          .sort((a, b) => (a.order || 0) - (b.order || 0))
+          .map((option) => {
+            const selected = state.practiceType === option.value;
+            
+            return (
               <button
-                key={option.value}
-                className={`quiz-option${state.practiceType === option.value ? ' selected' : ''}`}
+                key={option.id}
+                className={`quiz-option ${selected ? 'selected' : ''}`}
                 onClick={() => handleSelectType(option.value)}
               >
                 {option.label}
               </button>
-            ))
-        )}
+            );
+          })
+        }
       </div>
     </div>
   );

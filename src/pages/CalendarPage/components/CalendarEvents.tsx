@@ -1,10 +1,10 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import "./CalendarEvents.css";
-import { CalendarEvent } from "../CalendarPage";
+import { Event } from "@/lib/supabase/types/events";
 
 interface CalendarEventsProps {
-  events: CalendarEvent[];
+  events: Event[];
   isLoading: boolean;
   selectedDate: Date;
 }
@@ -31,36 +31,27 @@ const CalendarEvents: React.FC<CalendarEventsProps> = ({
 
   // Format time for display (HH:MM)
   const formatTime = (timeString: string) => {
-    const date = new Date(timeString);
-    return date.toLocaleTimeString("ru-RU", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    const [hours, minutes] = timeString.split(':');
+    return `${hours}:${minutes}`;
   };
 
-  // Get color based on event type
-  const getEventColor = (eventType: string, defaultColor?: string) => {
-    if (defaultColor) return defaultColor;
-
-    switch (eventType) {
-      case "practice":
+  // Get color based on difficulty level
+  const getEventColor = (difficultyLevel?: string) => {
+    switch (difficultyLevel) {
+      case "beginner":
         return "#4caf50"; // Green
-      case "broadcast":
-        return "#2196f3"; // Blue
-      case "reminder":
+      case "intermediate":
         return "#ff9800"; // Orange
-      case "community":
-        return "#9c27b0"; // Purple
+      case "advanced":
+        return "#f44336"; // Red
       default:
-        return "#757575"; // Gray
+        return "#2196f3"; // Blue
     }
   };
 
   // Handle click on event to navigate to practice
-  const handleEventClick = (event: CalendarEvent) => {
-    if (event.content_id) {
-      navigate(`/practice/${event.content_id}/video`);
-    }
+  const handleEventClick = (event: Event) => {
+    navigate(`/practice/event/${event.id}`);
   };
 
   return (
@@ -81,20 +72,17 @@ const CalendarEvents: React.FC<CalendarEventsProps> = ({
               <div
                 className="event-category-marker"
                 style={{
-                  backgroundColor: getEventColor(event.event_type, event.color),
+                  backgroundColor: getEventColor(event.difficulty_level),
                 }}
               ></div>
               <div className="event-details">
                 <div className="event-title">{event.title}</div>
                 <div className="event-category">
-                  {event.event_type === "practice"
-                    ? "Практика"
-                    : event.event_type === "broadcast"
-                      ? "Трансляция"
-                      : event.event_type === "reminder"
-                        ? "Напоминание"
-                        : "Сообщество"}
+                  {event.categories?.name || "Практика"}
                 </div>
+                {event.instructor_name && (
+                  <div className="event-instructor">{event.instructor_name}</div>
+                )}
               </div>
             </div>
           ))}

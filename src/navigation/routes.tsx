@@ -15,6 +15,7 @@ import LibraryPage from '@/pages/LibraryPage';
 import CategoryPage from '@/pages/LibraryPage/CategoryPage';
 import FavoritesPage from '@/pages/LibraryPage/FavoritesPage';
 import CalendarPage from '@/pages/CalendarPage';
+import { LandingPage } from '@/pages/LandingPage/LandingPage';
 
 interface Route {
   path: string;
@@ -24,6 +25,9 @@ interface Route {
 }
 
 export const routes: Route[] = [
+  // Лендинг курса GenAI Engineer
+  { path: '/landing', Component: LandingPage, title: 'Курс GenAI Engineer' },
+  
   // Основной экран для телеграм мини-аппа
   { path: '/', Component: MainScreen },
   

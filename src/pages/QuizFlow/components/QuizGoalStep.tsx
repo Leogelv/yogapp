@@ -10,45 +10,48 @@ const QuizGoalStep: React.FC = () => {
   const goalStep = steps.find((step) => step.type === 'goal');
   const options = goalStep?.answers || [];
 
-  const handleSelectGoal = (goal: string) => {
-    setGoal(goal as any); // Приводим к PracticeGoal, если нужно
+  // Обработчик выбора цели
+  const handleSelectGoal = (value: string) => {
+    setGoal(value as any);
   };
 
-  // Получение названия для заголовка в зависимости от типа практики
-  const getQuestionText = () => {
-    switch (state.practiceType) {
-      case 'short': return 'Какая ваша цель сейчас?';
-      case 'physical': return 'На какую часть тела сфокусироваться?';
-      case 'breathing': return 'Какой результат вы хотите?';
-      case 'meditation': return 'На чем сфокусировать практику?';
-      default: return 'Какая ваша цель?';
-    }
-  };
+  if (loading) {
+    return (
+      <div className="quiz-loading">
+        <div className="quiz-loading-spinner"></div>
+        <p>Загрузка целей...</p>
+      </div>
+    );
+  }
+
+  if (options.length === 0) {
+    return (
+      <div className="quiz-error">
+        <h3>Ошибка загрузки</h3>
+        <p>Нет доступных целей</p>
+      </div>
+    );
+  }
 
   return (
     <div className="quiz-step-content">
-      <h2 className="quiz-question">{goalStep?.title || getQuestionText()}</h2>
-      <p className="quiz-description">Выберите наиболее важную для вас цель</p>
-      <div className="quiz-options">
-        {loading ? (
-          <div className="quiz-loading">Загрузка вариантов целей...</div>
-        ) : options.length > 0 ? (
-          options.map((option) => (
-            <button
-              key={option.value}
-              className={`quiz-option ${state.goal === option.value ? 'selected' : ''}`}
-              onClick={() => handleSelectGoal(option.value)}
-            >
-              {option.icon && <span className="option-icon">{option.icon}</span>}
-              <div className="option-content">
-                <span className="option-text">{option.label}</span>
-                {/* {option.description && <span className="option-description">{option.description}</span>} */}
-              </div>
-            </button>
-          ))
-        ) : (
-          <div className="quiz-empty">Нет доступных вариантов целей для выбранных параметров</div>
-        )}
+      <div className="quiz-options-list">
+        {options
+          .sort((a, b) => (a.order || 0) - (b.order || 0))
+          .map((option) => {
+            const selected = state.goal === option.value;
+            
+            return (
+              <button
+                key={option.id}
+                className={`quiz-option ${selected ? 'selected' : ''}`}
+                onClick={() => handleSelectGoal(option.value)}
+              >
+                {option.label}
+              </button>
+            );
+          })
+        }
       </div>
     </div>
   );

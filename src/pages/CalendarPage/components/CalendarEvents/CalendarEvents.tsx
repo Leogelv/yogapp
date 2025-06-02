@@ -1,48 +1,44 @@
 import { FC } from "react";
 import "./CalendarEvents.css";
-import { CalendarEvent } from "../../CalendarPage";
+import { Event } from "@/lib/supabase/types/events";
 import { formatTime, formatRelativeDate } from "@/utils/date-utils";
 
 interface CalendarEventsProps {
-  events: CalendarEvent[];
+  events: Event[];
   isLoading: boolean;
   selectedDate: Date;
 }
 
 // Компонент для отображения одного события
-const EventItem: FC<{ event: CalendarEvent }> = ({ event }) => {
+const EventItem: FC<{ event: Event }> = ({ event }) => {
   const startTime = formatTime(event.start_time);
-  const endTime = formatTime(event.end_time);
+  const endTime = event.end_time ? formatTime(event.end_time) : null;
 
   // Функция получения цвета в зависимости от типа события
-  const getEventTypeColor = (type: string) => {
-    switch (type) {
-      case "practice":
-        return "var(--calendar-event-practice)"; // Зеленый для практик
-      case "broadcast":
-        return "var(--calendar-event-broadcast)"; // Синий для эфиров
-      case "reminder":
-        return "var(--calendar-event-reminder)"; // Оранжевый для напоминаний
-      case "community":
-        return "var(--calendar-event-community)"; // Фиолетовый для событий сообщества
+  const getEventTypeColor = (difficultyLevel?: string) => {
+    switch (difficultyLevel) {
+      case "beginner":
+        return "var(--calendar-event-practice)"; // Зеленый для начинающих
+      case "intermediate":
+        return "var(--calendar-event-broadcast)"; // Синий для среднего уровня
+      case "advanced":
+        return "var(--calendar-event-reminder)"; // Оранжевый для продвинутых
       default:
         return "var(--calendar-text-tertiary)"; // Серый для прочих типов
     }
   };
 
-  // Перевод типа события на русский
-  const getEventTypeText = (type: string) => {
-    switch (type) {
-      case "practice":
-        return "Практика";
-      case "broadcast":
-        return "Эфир";
-      case "reminder":
-        return "Напоминание";
-      case "community":
-        return "Событие сообщества";
+  // Перевод уровня сложности на русский
+  const getDifficultyText = (difficultyLevel?: string) => {
+    switch (difficultyLevel) {
+      case "beginner":
+        return "Начинающий";
+      case "intermediate":
+        return "Средний";
+      case "advanced":
+        return "Продвинутый";
       default:
-        return "Событие";
+        return "Практика";
     }
   };
 
@@ -51,7 +47,7 @@ const EventItem: FC<{ event: CalendarEvent }> = ({ event }) => {
       className="event-item"
       style={
         {
-          "--event-color": getEventTypeColor(event.event_type),
+          "--event-color": getEventTypeColor(event.difficulty_level),
         } as React.CSSProperties
       }
     >
@@ -60,10 +56,10 @@ const EventItem: FC<{ event: CalendarEvent }> = ({ event }) => {
         <div className="event-item__title">{event.title}</div>
         <div className="event-item__details">
           <span className="event-item__type">
-            {getEventTypeText(event.event_type)}
+            {getDifficultyText(event.difficulty_level)}
           </span>
           <span className="event-item__duration">
-            {startTime} – {endTime}
+            {startTime}{endTime ? ` – ${endTime}` : ''}
           </span>
         </div>
       </div>
@@ -212,10 +208,17 @@ const CalendarEvents: FC<CalendarEventsProps> = ({
                 id: "1",
                 title: "Утренняя йога",
                 description: "Мягкая практика для начала дня",
-                event_type: "practice",
-                start_time: `${selectedDate.toISOString().split("T")[0]}T08:00:00`,
-                end_time: `${selectedDate.toISOString().split("T")[0]}T08:45:00`,
-                thumbnail_url: "",
+                duration: 45,
+                difficulty_level: "beginner",
+                event_date: selectedDate.toISOString().split("T")[0],
+                start_time: "08:00:00",
+                end_time: "08:45:00",
+                is_premium: false,
+                is_featured: false,
+                is_recurring: false,
+                event_status: "active" as const,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
               }}
             />
             <EventItem
@@ -223,10 +226,17 @@ const CalendarEvents: FC<CalendarEventsProps> = ({
                 id: "2",
                 title: "Медитация осознанности",
                 description: "Групповая медитация с инструктором",
-                event_type: "broadcast",
-                start_time: `${selectedDate.toISOString().split("T")[0]}T12:30:00`,
-                end_time: `${selectedDate.toISOString().split("T")[0]}T13:15:00`,
-                thumbnail_url: "",
+                duration: 45,
+                difficulty_level: "intermediate",
+                event_date: selectedDate.toISOString().split("T")[0],
+                start_time: "12:30:00",
+                end_time: "13:15:00",
+                is_premium: false,
+                is_featured: false,
+                is_recurring: false,
+                event_status: "active" as const,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
               }}
             />
             <EventItem
@@ -234,10 +244,17 @@ const CalendarEvents: FC<CalendarEventsProps> = ({
                 id: "3",
                 title: "Дыхательные практики",
                 description: "Разбор различных техник для начинающих",
-                event_type: "community",
-                start_time: `${selectedDate.toISOString().split("T")[0]}T18:00:00`,
-                end_time: `${selectedDate.toISOString().split("T")[0]}T19:00:00`,
-                thumbnail_url: "",
+                duration: 60,
+                difficulty_level: "advanced",
+                event_date: selectedDate.toISOString().split("T")[0],
+                start_time: "18:00:00",
+                end_time: "19:00:00",
+                is_premium: false,
+                is_featured: false,
+                is_recurring: false,
+                event_status: "active" as const,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
               }}
             />
             {/* Здесь будут реальные события из БД */}

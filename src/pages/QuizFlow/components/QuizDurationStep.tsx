@@ -6,7 +6,7 @@ const QuizDurationStep: React.FC = () => {
   const { state, setDuration } = useQuiz();
   const { steps, loading } = useQuizStepsRealtime();
 
-  // Находим шаг с type === 'duration' (и, если нужно, practiceType)
+  // Находим шаг с type === 'duration'
   const durationStep = steps.find((step) => step.type === 'duration');
   const options = durationStep?.answers || [];
 
@@ -17,44 +17,44 @@ const QuizDurationStep: React.FC = () => {
     setDuration({ min, max });
   };
 
-  // Получение названия типа практики для отображения
-  const getPracticeTypeName = () => {
-    switch (state.practiceType) {
-      case 'short': return 'короткой практики';
-      case 'physical': return 'телесной практики';
-      case 'breathing': return 'дыхательной практики';
-      case 'meditation': return 'медитации';
-      default: return 'практики';
-    }
-  };
+  if (loading) {
+    return (
+      <div className="quiz-loading">
+        <div className="quiz-loading-spinner"></div>
+        <p>Загрузка вариантов длительности...</p>
+      </div>
+    );
+  }
+
+  if (options.length === 0) {
+    return (
+      <div className="quiz-error">
+        <h3>Ошибка загрузки</h3>
+        <p>Нет доступных вариантов длительности</p>
+      </div>
+    );
+  }
 
   return (
     <div className="quiz-step-content">
-      <h2 className="quiz-question">{durationStep?.title || 'Какая длительность подходит для вас?'}</h2>
-      <p className="quiz-description">Выберите комфортную длительность {getPracticeTypeName()}</p>
-      <div className="quiz-options">
-        {loading ? (
-          <div className="quiz-loading">Загрузка вариантов длительности...</div>
-        ) : options.length > 0 ? (
-          options.map((option) => {
+      <div className="quiz-duration-options">
+        {options
+          .sort((a, b) => (a.order || 0) - (b.order || 0))
+          .map((option) => {
             const [min, max] = option.value.split('-').map(Number);
             const selected = state.duration?.min === min && state.duration?.max === max;
+            
             return (
               <button
                 key={option.id}
-                className={`quiz-option ${selected ? 'selected' : ''}`}
+                className={`quiz-duration-option ${selected ? 'selected' : ''}`}
                 onClick={() => handleSelectDuration(option.value)}
               >
-                {option.icon && <span className="option-icon">{option.icon}</span>}
-                <div className="option-content">
-                  <span className="option-text">{option.label}</span>
-                </div>
+                {option.label}
               </button>
             );
           })
-        ) : (
-          <div className="quiz-empty">Нет доступных вариантов длительности для этого типа практики</div>
-        )}
+        }
       </div>
     </div>
   );

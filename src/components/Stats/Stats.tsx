@@ -1,4 +1,5 @@
 import { FC } from "react";
+import { AnimatedCircles } from "@/ui";
 import "./Stats.css";
 
 interface StatsProps {
@@ -10,6 +11,7 @@ interface StatsProps {
 }
 
 const Stats: FC<StatsProps> = ({
+  strength,
   practiceMinutes,
   daysInFlow,
   onSelectPractice,
@@ -21,47 +23,50 @@ const Stats: FC<StatsProps> = ({
       aria-label="Статистика практики"
     >
       <div className="meditation-image-container" aria-hidden="true">
+        <div className="animated-circles-wrapper">
+          <AnimatedCircles streakLevel={daysInFlow} size={260} />
+        </div>
+        
         <img
-          src="/mediman.png"
+          src="/assets/images/main-avatar.png"
           alt="Медитирующий человек"
           className="meditation-image"
           loading="eager"
         />
       </div>
 
-      <div className="stats-card">
-        <div className="stats-row">
-          <div className="stats-item">
-            <div className="stats-value">{practiceMinutes}</div>
-            <div
-              className="stats-label"
-              aria-label={`Минут практики: ${practiceMinutes}`}
-            >
-              минут практики
-            </div>
-          </div>
+      {/* Кнопка выбрать практику прямо под картинкой */}
+      <button
+        className="practice-button"
+        onClick={onSelectPractice}
+        aria-label="Выбрать практику"
+      >
+        <span>выбрать практику</span>
+      </button>
 
-          <div className="stats-item">
-            <div className="stats-value">{daysInFlow}</div>
-            <div
-              className="stats-label"
-              aria-label={`Дней в потоке: ${daysInFlow}`}
-            >
-              дней в потоке
-            </div>
+      {/* Статистика внизу в виде карточек */}
+      <div className="stats-grid">
+        <div className="stats-item">
+          <div className="stats-value">{daysInFlow}</div>
+          <div className="stats-label">дней в потоке</div>
+          <div className="strength-progress">
+            <div className="strength-bar"></div>
+          </div>
+          <div className="strength-numbers">
+            <span>0</span>
+            <span>3</span>
           </div>
         </div>
-
-        <button
-          className="practice-button"
-          onClick={onSelectPractice}
-          aria-label="Выбрать практику"
-        >
-          <span>Выбрать практику</span>
-          <span className="arrow-icon" aria-hidden="true">
-            →
-          </span>
-        </button>
+        
+        <div className="stats-item">
+          <div className="stats-value">{practiceMinutes}</div>
+          <div className="stats-label">минут практики</div>
+        </div>
+        
+        <div className="stats-item">
+          <div className="stats-value">{strength}</div>
+          <div className="stats-label">уровень силы</div>
+        </div>
       </div>
     </section>
   );

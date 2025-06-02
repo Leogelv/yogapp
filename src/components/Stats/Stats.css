@@ -4,9 +4,9 @@
   --stats-text-secondary: var(--text-secondary, #4a4a4a);
   --stats-item-bg: var(--bg-item, #f9f9f9);
   --stats-value-color: var(--accent-color, #4e9bff);
-  --stats-button-bg: #f3f8ff;
-  --stats-button-hover: #e5f1ff;
-  --stats-button-text: var(--text-primary, #1a1a1a);
+  --stats-button-bg: #191919;
+  --stats-button-hover: #333333;
+  --stats-button-text: #ffffff;
   --stats-shadow: var(--shadow-md, 0 6px 16px rgba(0, 0, 0, 0.04));
   --stats-item-shadow: var(--shadow-sm, 0 2px 6px rgba(0, 0, 0, 0.03));
   --stats-transition: var(--transition-standard, all 0.3s cubic-bezier(0.4, 0, 0.2, 1));
@@ -19,9 +19,9 @@
   --stats-text-secondary: var(--text-secondary, #e2e8f0);
   --stats-item-bg: #3a4556;
   --stats-value-color: var(--accent-color, #63b3ed);
-  --stats-button-bg: #3a4556;
-  --stats-button-hover: #4a5568;
-  --stats-button-text: var(--text-primary, #f7fafc);
+  --stats-button-bg: #ffffff;
+  --stats-button-hover: #f0f0f0;
+  --stats-button-text: #191919;
   --stats-shadow: var(--shadow-md, 0 10px 25px rgba(0, 0, 0, 0.25));
   --stats-item-shadow: var(--shadow-sm, 0 4px 6px rgba(0, 0, 0, 0.15));
 }
@@ -42,46 +42,43 @@
 .meditation-image-container {
   position: relative;
   width: 100%;
-  max-width: 260px;
-  margin-bottom: 0.5rem;
+  max-width: 320px;
+  margin-bottom: 1rem;
   aspect-ratio: 1/1;
-  border-radius: var(--stats-border-radius);
-  overflow: hidden;
-  box-shadow: var(--stats-shadow);
-  transform: perspective(1000px) rotateX(2deg);
-  transition: var(--stats-transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
 }
 
-.meditation-image-container:hover {
-  transform: perspective(1000px) rotateX(0deg) scale(1.02);
-  box-shadow: var(--shadow-lg, 0 12px 24px rgba(0, 0, 0, 0.05));
+/* Обертка для анимированных кругов */
+.animated-circles-wrapper {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+  pointer-events: none;
 }
 
 .meditation-image {
-  width: 100%;
-  height: 100%;
+  width: 220px;
+  height: 255px;
   object-fit: contain;
   display: block;
+  position: relative;
+  z-index: 2;
   transition: var(--stats-transition);
+  border-radius: 0;
+  box-shadow: 0px 4px 12px 0px rgba(0, 0, 0, 0.14);
 }
 
-.stats-card {
+.stats-grid {
   width: 100%;
-  border-radius: var(--stats-border-radius);
-  padding: 1.25rem;
-  background-color: var(--stats-bg);
-  box-shadow: var(--stats-shadow);
   display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  transform: translateY(-1rem);
-  color: var(--stats-text-primary);
-  transition: var(--stats-transition);
-}
-
-.stats-card:hover {
-  transform: translateY(-2.25rem);
-  box-shadow: var(--shadow-lg, 0 20px 30px rgba(0, 0, 0, 0.12));
+  justify-content: stretch;
+  gap: 0;
+  margin-top: 1rem;
 }
 
 .stats-strength {
@@ -98,17 +95,7 @@
   letter-spacing: -0.03em;
 }
 
-.stats-card:hover .stats-header {
-  transform: scale(1.05);
-}
-
-.stats-row {
-  display: flex;
-  justify-content: space-between;
-  width: 100%;
-  gap: 1rem;
-  margin: 0;
-}
+/* Убираем старый stats-row, теперь используем stats-grid */
 
 .stats-item {
   display: flex;
@@ -116,12 +103,54 @@
   align-items: center;
   justify-content: center;
   flex: 1;
-  padding: 0.875rem 0.5rem;
-  border-radius: var(--stats-border-radius);
-  background-color: var(--stats-item-bg);
-  transition: var(--stats-transition);
-  box-shadow: var(--stats-item-shadow);
+  padding: 16px;
+  background-color: #ffffff;
+  border: 1px solid #191919;
   position: relative;
+  transition: var(--stats-transition);
+}
+
+.stats-item:first-child {
+  border-right: none;
+  border-radius: 0;
+}
+
+.stats-item:nth-child(2) {
+  border-left: 1px solid #191919;
+  border-right: 1px solid #191919;
+  border-radius: 0;
+}
+
+.stats-item:last-child {
+  border-left: none;
+  border-radius: 0;
+}
+
+/* Прогресс бар для первой карточки */
+.strength-progress {
+  width: 100%;
+  height: 14px;
+  background-color: #E7E7E7;
+  position: relative;
+  margin-bottom: 8px;
+}
+
+.strength-bar {
+  width: 259px; /* ширина заполненной части */
+  height: 100%;
+  background: linear-gradient(90deg, #E8E8E8 0%, #F08F67 100%);
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.strength-numbers {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  font-size: 0.875rem;
+  color: rgba(25, 25, 25, 0.4);
+  font-family: 'IBM Plex Mono', monospace;
 }
 
 .stats-item::before {
@@ -148,11 +177,11 @@
 }
 
 .stats-value {
-  font-size: 2rem;
+  font-size: 1.5rem;
   font-weight: 700;
   line-height: 1;
-  color: var(--stats-value-color);
-  margin-bottom: 0.375rem;
+  color: #191919;
+  margin-bottom: 0.25rem;
   transition: var(--stats-transition);
 }
 
@@ -161,33 +190,39 @@
 }
 
 .stats-label {
-  font-size: 0.75rem;
-  color: var(--stats-text-secondary);
+  font-size: 0.875rem;
+  color: rgba(25, 25, 25, 0.4);
   text-align: center;
-  text-transform: uppercase;
-  margin-top: 0.125rem;
-  letter-spacing: 0.05em;
-  font-weight: 500;
+  text-transform: none;
+  margin-bottom: 0.5rem;
+  letter-spacing: -6%;
+  font-weight: 400;
+  font-family: 'IBM Plex Mono', monospace;
+  line-height: 1.18;
 }
 
 .practice-button {
   width: 100%;
-  padding: 0.875rem 1.25rem;
-  margin-top: 0.25rem;
-  border-radius: var(--stats-border-radius);
-  font-weight: 600;
-  font-size: 0.95rem;
+  max-width: 375px;
+  padding: 20px 8px;
+  margin: 0;
+  background-color: #191919;
+  color: #ffffff;
+  border: none;
+  border-radius: 0;
+  font-family: 'RF Dewi', sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 1.01;
+  letter-spacing: -7%;
   transition: var(--stats-transition);
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  border: none;
-  background-color: var(--stats-button-bg);
-  color: var(--stats-button-text);
-  box-shadow: var(--stats-item-shadow);
+  justify-content: center;
   cursor: pointer;
   overflow: hidden;
   position: relative;
+  text-transform: lowercase;
 }
 
 .practice-button::after {
@@ -198,19 +233,19 @@
   width: 100%;
   height: 100%;
   background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.1) 50%,
-    rgba(255, 255, 255, 0) 100%
+    45deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0.05) 50%,
+    rgba(255, 255, 255, 0.1) 100%
   );
   transform: translateX(-100%);
-  transition: transform 0.5s ease;
+  transition: transform 0.6s ease;
 }
 
 .practice-button:hover {
   background-color: var(--stats-button-hover);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
 
 .practice-button:hover::after {
@@ -219,47 +254,35 @@
 
 .practice-button:active {
   transform: translateY(-1px);
-  box-shadow: var(--stats-item-shadow);
-}
-
-.arrow-icon {
-  font-size: 1.25rem;
-  transition: transform 0.3s ease;
-}
-
-.practice-button:hover .arrow-icon {
-  transform: translateX(4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 @media (max-width: 380px) {
   .stats-container {
-    padding: 0 0.25rem;
+    max-width: 100%;
+    margin-bottom: 0.75rem;
   }
-  
+
   .meditation-image-container {
-    max-width: 240px;
+    max-width: 280px;
   }
-  
-  .stats-card {
-    padding: 1rem;
-    transform: translateY(-0.75rem);
+
+  .meditation-image {
+    width: 200px;
+    height: 230px;
   }
-  
-  .stats-header {
-    font-size: 2.5rem;
-  }
-  
+
   .stats-value {
-    font-size: 1.75rem;
+    font-size: 1.25rem;
   }
-  
+
   .stats-item {
-    padding: 0.75rem 0.5rem;
+    padding: 12px;
   }
 
   .practice-button {
-    padding: 0.75rem 1rem;
-    font-size: 0.875rem;
+    padding: 18px 8px;
+    font-size: 14px;
   }
 }
 
@@ -270,7 +293,6 @@
 
   .stats-card {
     padding: 1.5rem;
-    gap: 1.25rem;
   }
 
   .stats-header {
@@ -280,9 +302,10 @@
   .stats-value {
     font-size: 2.25rem;
   }
-  
+
   .practice-button {
-    padding: 1rem 1.5rem;
+    padding: 1.125rem 1.5rem;
+    font-size: 1.1rem;
   }
 }
 
@@ -290,11 +313,10 @@
   background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 60%);
 }
 
-/* Support for the existing animation in MainScreen.css */
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(20px);
   }
   to {
     opacity: 1;

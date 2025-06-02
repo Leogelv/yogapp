@@ -10,40 +10,48 @@ const QuizApproachStep: React.FC = () => {
   const approachStep = steps.find((step) => step.type === 'approach');
   const options = approachStep?.answers || [];
 
-  const handleSelectApproach = (approach: string) => {
-    setApproach(approach as any); // Приводим к MeditationApproach, если нужно
+  // Обработчик выбора подхода
+  const handleSelectApproach = (value: string) => {
+    setApproach(value as any);
   };
+
+  if (loading) {
+    return (
+      <div className="quiz-loading">
+        <div className="quiz-loading-spinner"></div>
+        <p>Загрузка подходов...</p>
+      </div>
+    );
+  }
+
+  if (options.length === 0) {
+    return (
+      <div className="quiz-error">
+        <h3>Ошибка загрузки</h3>
+        <p>Нет доступных подходов</p>
+      </div>
+    );
+  }
 
   return (
     <div className="quiz-step-content">
-      <h2 className="quiz-question">{approachStep?.title || 'Какой формат медитации предпочитаете?'}</h2>
-      <p className="quiz-description">Выберите наиболее комфортный для вас подход</p>
-      <div className="quiz-options">
-        {loading ? (
-          <div className="quiz-loading">Загрузка вариантов подхода...</div>
-        ) : options.length > 0 ? (
-          options.map((option) => (
-            <button
-              key={option.value}
-              className={`quiz-option ${state.approach === option.value ? 'selected' : ''}`}
-              onClick={() => handleSelectApproach(option.value)}
-            >
-              {option.icon && <span className="option-icon">{option.icon}</span>}
-              <div className="option-content">
-                <span className="option-text">{option.label}</span>
-                {/* {option.description && <span className="option-description">{option.description}</span>} */}
-              </div>
-            </button>
-          ))
-        ) : (
-          <div className="quiz-empty">Нет доступных вариантов подхода</div>
-        )}
-      </div>
-      <div className="quiz-info">
-        <p>
-          Самостоятельные медитации идут с таймером и инструкциями.
-          Для медитации с голосовым сопровождением выберите "С сопровождением".
-        </p>
+      <div className="quiz-options-list">
+        {options
+          .sort((a, b) => (a.order || 0) - (b.order || 0))
+          .map((option) => {
+            const selected = state.approach === option.value;
+            
+            return (
+              <button
+                key={option.id}
+                className={`quiz-option ${selected ? 'selected' : ''}`}
+                onClick={() => handleSelectApproach(option.value)}
+              >
+                {option.label}
+              </button>
+            );
+          })
+        }
       </div>
     </div>
   );

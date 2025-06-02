@@ -144,8 +144,7 @@ export const QuizProvider: React.FC<{children: ReactNode}> = ({ children }) => {
       goal: undefined,
       approach: undefined,
       selfMeditationSettings: undefined,
-      contentId: undefined,
-      step: 1
+      contentId: undefined
     }));
   };
 
@@ -154,16 +153,14 @@ export const QuizProvider: React.FC<{children: ReactNode}> = ({ children }) => {
     setState(prev => ({ 
       ...prev, 
       duration,
-      goal: undefined,
-      step: prev.step + 1
+      goal: undefined
     }));
   };
 
   const setGoal = (goal: PracticeGoal) => {
     setState(prev => ({ 
       ...prev, 
-      goal,
-      step: prev.step + 1
+      goal
     }));
   };
 
@@ -172,24 +169,21 @@ export const QuizProvider: React.FC<{children: ReactNode}> = ({ children }) => {
       ...prev, 
       approach,
       goal: undefined,
-      selfMeditationSettings: undefined,
-      step: prev.step + 1
+      selfMeditationSettings: undefined
     }));
   };
 
   const setSelfMeditationSettings = (settings: SelfMeditationSettings) => {
     setState(prev => ({ 
       ...prev, 
-      selfMeditationSettings: settings,
-      step: prev.step + 1
+      selfMeditationSettings: settings
     }));
   };
 
   const setContentId = (contentId: string) => {
     setState(prev => ({ 
       ...prev, 
-      contentId,
-      step: prev.step + 1
+      contentId
     }));
   };
 
@@ -209,6 +203,59 @@ export const QuizProvider: React.FC<{children: ReactNode}> = ({ children }) => {
     }
   };
 
+  // Логика для определения возможности перехода к следующему шагу
+  const getCanGoNext = (): boolean => {
+    switch (state.step) {
+      case 0:
+        // Первый шаг - выбор типа практики
+        return !!state.practiceType;
+      
+      case 1:
+        if (state.practiceType === 'short' || state.practiceType === 'breathing') {
+          // Для коротких практик и дыхательных - нужна цель
+          return !!state.goal;
+        } else if (state.practiceType === 'physical') {
+          // Для телесных практик - нужна длительность
+          return !!state.duration;
+        } else if (state.practiceType === 'meditation') {
+          // Для медитаций - нужен подход
+          return !!state.approach;
+        }
+        break;
+      
+      case 2:
+        if (state.practiceType === 'short' || state.practiceType === 'breathing') {
+          // Это уже результаты, переход не нужен
+          return false;
+        } else if (state.practiceType === 'physical') {
+          // Для телесных практик - нужна цель
+          return !!state.goal;
+        } else if (state.practiceType === 'meditation') {
+          if (state.approach === 'self') {
+            // Для самостоятельной медитации - нужны настройки
+            return !!state.selfMeditationSettings?.object;
+          } else if (state.approach === 'guided') {
+            // Для медитации с сопровождением - нужна цель
+            return !!state.goal;
+          }
+        }
+        break;
+      
+      case 3:
+        // Это результаты для большинства путей
+        return false;
+      
+      case 4:
+        // Это результаты
+        return false;
+      
+      default:
+        return false;
+    }
+    
+    return false;
+  };
+
   return (
     <QuizContext.Provider
       value={{
@@ -224,7 +271,7 @@ export const QuizProvider: React.FC<{children: ReactNode}> = ({ children }) => {
         goBack,
         goNext,
         canGoBack: state.step > 0,
-        canGoNext: state.step < state.maxStep,
+        canGoNext: getCanGoNext(),
       }}
     >
       {children}

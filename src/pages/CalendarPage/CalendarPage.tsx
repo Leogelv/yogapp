@@ -35,7 +35,7 @@ const CalendarPage: FC = () => {
         const { data, error } = await supabase
           .from("events")
           .select(`
-            id, event_date, start_time, title,
+            *,
             content_types (name, slug),
             categories (name, slug)
           `)
@@ -97,7 +97,7 @@ const CalendarPage: FC = () => {
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "events" },
-        (payload: any) => {
+        () => {
           const now = Date.now();
           if (now - lastUpdateTimeRef.current < 200) return;
 
@@ -116,7 +116,11 @@ const CalendarPage: FC = () => {
               // Обновляем события месяца
               const { data: monthData } = await supabase
                 .from("events")
-                .select("id, event_date, start_time, title")
+                .select(`
+                  *,
+                  content_types (name, slug),
+                  categories (name, slug)
+                `)
                 .gte("event_date", firstDay.toISOString().split('T')[0])
                 .lte("event_date", lastDay.toISOString().split('T')[0])
                 .eq("event_status", "active");

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuiz } from '../../../contexts/QuizContext';
 import { supabase } from '../../../lib/supabase/client';
+import { Button } from '../../../ui/components/Button/Button';
 
 // Структура контента из Supabase
 interface ContentData {
@@ -115,28 +116,15 @@ const QuizResultsStep: React.FC = () => {
           if (fallbackError) throw fallbackError;
           
           if (!fallbackData || fallbackData.length === 0) {
-            // Логируем параметры квиза для анализа дыр
-            const quizParams = {
-              practiceType: state.practiceType,
-              duration: state.duration,
-              goal: state.goal,
-              approach: state.approach,
-              selfMeditationSettings: state.selfMeditationSettings,
-            };
-            console.error('Нет подходящих практик для параметров:', quizParams);
-            // TODO: отправлять эти данные в Supabase для сбора статистики дыр
             throw new Error('Не найдены подходящие практики для ваших параметров');
           }
           
           // Выбираем случайный элемент из подходящих
           const randomIndex = Math.floor(Math.random() * fallbackData.length);
-          // @ts-ignore - Временно игнорируем проверку типов
-          const selectedItem = fallbackData[randomIndex];
-          // @ts-ignore - Временно игнорируем проверку типов
+          const selectedItem = fallbackData[randomIndex] as any;
           setRecommendation(selectedItem.contents);
         } else {
           // Выбираем случайный элемент из топ-приоритетных результатов
-          // Сначала группируем по priority
           const byPriority: Record<number, QuizLogicItem[]> = {};
           
           data.forEach((item: any) => {
@@ -153,9 +141,7 @@ const QuizResultsStep: React.FC = () => {
           
           // Выбираем случайный элемент из топ-приоритетных
           const randomIndex = Math.floor(Math.random() * topPriorityItems.length);
-          // @ts-ignore - Временно игнорируем проверку типов
-          const selectedItem = topPriorityItems[randomIndex];
-          // @ts-ignore - Временно игнорируем проверку типов
+          const selectedItem = topPriorityItems[randomIndex] as any;
           setRecommendation(selectedItem.contents);
         }
       } catch (error: any) {
@@ -173,7 +159,6 @@ const QuizResultsStep: React.FC = () => {
     // Для самостоятельных медитаций переходим напрямую на таймер без поиска рекомендаций
     if (state.practiceType === 'meditation' && state.approach === 'self' && state.selfMeditationSettings) {
       const { object, duration } = state.selfMeditationSettings;
-      // Переходим прямо на плеер с типом timer и передаем настройки
       navigate(`/practice/timer`, { 
         state: { 
           duration, 
@@ -195,94 +180,65 @@ const QuizResultsStep: React.FC = () => {
     navigate('/quiz');
   };
 
-  // Форматирование длительности
-  const formatDuration = (seconds: number) => {
-    const minutes = Math.floor(seconds / 60);
-    return `${minutes} мин`;
+  const handleOtherPractice = () => {
+    navigate('/');
   };
 
   if (loading) {
     return (
-      <div className="quiz-step-content">
-        <div className="quiz-loading-results">
-          <div className="quiz-loading-spinner"></div>
-          <p>Подбираем идеальную практику для вас...</p>
-        </div>
+      <div className="quiz-loading">
+        <div className="quiz-loading-spinner"></div>
+        <p>Подбираем идеальную практику для вас...</p>
       </div>
     );
   }
 
   if (error) {
-    // Показываем параметры квиза в UI если включён режим админа (например, localStorage.adminMode === 'true')
-    let quizParams = null;
-    try {
-      quizParams = {
-        practiceType: state.practiceType,
-        duration: state.duration,
-        goal: state.goal,
-        approach: state.approach,
-        selfMeditationSettings: state.selfMeditationSettings,
-      };
-    } catch {}
-    const isAdmin = localStorage.getItem('adminMode') === 'true' || window.location.search.includes('admin=1');
     return (
-      <div className="quiz-step-content">
-        <div className="quiz-error">
-          <h3>Произошла ошибка</h3>
-          <p>{error}</p>
-          <button className="quiz-retry-btn" onClick={handleRetakeQuiz}>
-            Начать заново
-          </button>
-          {isAdmin && quizParams && (
-            <div style={{ marginTop: 16, background: '#fff3cd', color: '#856404', padding: 12, borderRadius: 8, fontSize: 14 }}>
-              <b>Параметры квиза:</b>
-              <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>{JSON.stringify(quizParams, null, 2)}</pre>
-            </div>
-          )}
-        </div>
+      <div className="quiz-error">
+        <h3>Произошла ошибка</h3>
+        <p>{error}</p>
+        <Button onClick={handleRetakeQuiz} fullWidth>
+          Начать заново
+        </Button>
       </div>
     );
   }
 
   // Специальный рендеринг для самостоятельных медитаций
   if (state.practiceType === 'meditation' && state.approach === 'self' && state.selfMeditationSettings) {
-    const { object, duration } = state.selfMeditationSettings;
-    
-    // Получаем название объекта концентрации
-    const getObjectName = (obj: string) => {
-      switch (obj) {
-        case 'breath': return 'дыхании';
-        case 'thought': return 'мыслях';
-        case 'body': return 'теле';
-        case 'none': return 'ощущениях';
-        default: return 'выбранном объекте';
-      }
-    };
-    
     return (
       <div className="quiz-step-content">
-        <h2 className="quiz-question">Ваша медитация готова</h2>
-        <p className="quiz-description">Настройки для самостоятельной практики</p>
-        
         <div className="quiz-recommendation">
+          <div className="recommendation-image">
+            <img src="/assets/images/meditation-placeholder.jpg" alt="Самостоятельная медитация" />
+          </div>
+          
           <div className="recommendation-details">
-            <h3 className="recommendation-title">Самостоятельная медитация</h3>
+            <h3 className="recommendation-title">телесная практика</h3>
             <div className="recommendation-meta">
-              <span className="recommendation-type">Медитация</span>
-              <span className="recommendation-duration">{formatDuration(duration)}</span>
+              <span className="recommendation-type">2 силы</span>
+              <span className="recommendation-duration">до 7 минут</span>
+              <span className="recommendation-category">йога</span>
             </div>
             <p className="recommendation-description">
-              Сосредоточьтесь на {getObjectName(object)} в течение выбранного времени
+              Идеально подходит, чтобы начать заниматься регулярно или вернуться в ритм. Когда тебя давно не было, тебе открыты только 7ми минутные практики, чтобы мягко включиться в процесс. Если есть желание сделать более длительную и плотную практику: выполняй 7ми минутку, и тебе откроется доступ к другим.
+            </p>
+            <p className="recommendation-description">
+              Разнообразный и богатый опыт говорит нам, что реализация намеченных плановых заданий прекрасно подходит для реализации инновационных методов управления процессами.
             </p>
           </div>
           
           <div className="recommendation-actions">
-            <button className="quiz-start-btn" onClick={handleStartPractice}>
-              Начать медитацию
-            </button>
-            <button className="quiz-retry-btn" onClick={handleRetakeQuiz}>
-              Выбрать другие параметры
-            </button>
+            <Button onClick={handleStartPractice} fullWidth>
+              выбрать практику
+            </Button>
+            <Button onClick={handleOtherPractice} variant="inverted" fullWidth>
+              другая практика
+            </Button>
+            <Button onClick={handleRetakeQuiz} variant="inverted" fullWidth>
+              о направлении
+            </Button>
           </div>
         </div>
       </div>
@@ -291,9 +247,6 @@ const QuizResultsStep: React.FC = () => {
 
   return (
     <div className="quiz-step-content">
-      <h2 className="quiz-question">Вот ваша рекомендация</h2>
-      <p className="quiz-description">На основе ваших ответов мы подобрали оптимальную практику</p>
-      
       {recommendation && (
         <div className="quiz-recommendation">
           {recommendation.thumbnail_url && (
@@ -308,9 +261,11 @@ const QuizResultsStep: React.FC = () => {
               <span className="recommendation-type">
                 {recommendation.content_type?.name || 'Практика'}
               </span>
-              <span className="recommendation-duration">
-                {recommendation.duration ? formatDuration(recommendation.duration) : ''}
-              </span>
+              {recommendation.duration && (
+                <span className="recommendation-duration">
+                  {Math.floor(recommendation.duration / 60)} мин
+                </span>
+              )}
             </div>
             {recommendation.description && (
               <p className="recommendation-description">{recommendation.description}</p>
@@ -318,12 +273,15 @@ const QuizResultsStep: React.FC = () => {
           </div>
           
           <div className="recommendation-actions">
-            <button className="quiz-start-btn" onClick={handleStartPractice}>
-              Начать практику
-            </button>
-            <button className="quiz-retry-btn" onClick={handleRetakeQuiz}>
-              Подобрать другую
-            </button>
+            <Button onClick={handleStartPractice} fullWidth>
+              выбрать практику
+            </Button>
+            <Button onClick={handleOtherPractice} variant="inverted" fullWidth>
+              другая практика
+            </Button>
+            <Button onClick={handleRetakeQuiz} variant="inverted" fullWidth>
+              о направлении
+            </Button>
           </div>
         </div>
       )}

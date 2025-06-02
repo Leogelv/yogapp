@@ -45,7 +45,7 @@ const EventsManager: React.FC<EventsManagerProps> = ({ categories, contentTypes 
     is_recurring: false,
     recurring_pattern: null,
     event_status: 'active',
-    max_participants: null,
+    max_participants: undefined,
     instructor_name: '',
     location: ''
   });
@@ -92,7 +92,7 @@ const EventsManager: React.FC<EventsManagerProps> = ({ categories, contentTypes 
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'events' },
-        (payload: any) => {
+        () => {
           const now = Date.now();
           if (now - lastUpdateTimeRef.current < 200) return;
 
@@ -133,7 +133,7 @@ const EventsManager: React.FC<EventsManagerProps> = ({ categories, contentTypes 
         kinescope_id: formData.kinescope_id || null,
         audio_file_path: formData.audio_file_path || null,
         end_time: formData.end_time || null,
-        max_participants: formData.max_participants || null,
+        max_participants: formData.max_participants || undefined,
         instructor_name: formData.instructor_name || null,
         location: formData.location || null,
         display_order: formData.display_order || 0
@@ -179,7 +179,7 @@ const EventsManager: React.FC<EventsManagerProps> = ({ categories, contentTypes 
         is_recurring: false,
         recurring_pattern: null,
         event_status: 'active',
-        max_participants: null,
+        max_participants: undefined,
         instructor_name: '',
         location: ''
       });
@@ -238,7 +238,7 @@ const EventsManager: React.FC<EventsManagerProps> = ({ categories, contentTypes 
       is_recurring: event.is_recurring,
       recurring_pattern: event.recurring_pattern,
       event_status: event.event_status,
-      max_participants: event.max_participants || null,
+      max_participants: event.max_participants || undefined,
       instructor_name: event.instructor_name || '',
       location: event.location || ''
     });
@@ -306,7 +306,7 @@ const EventsManager: React.FC<EventsManagerProps> = ({ categories, contentTypes 
               is_recurring: false,
               recurring_pattern: null,
               event_status: 'active',
-              max_participants: null,
+              max_participants: undefined,
               instructor_name: '',
               location: ''
             });

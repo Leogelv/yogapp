@@ -1,6 +1,5 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Page } from '@/components/Page';
 import { QuizProvider, useQuiz } from '@/contexts/QuizContext';
 import './QuizFlow.css';
 
@@ -12,24 +11,28 @@ import QuizApproachStep from './components/QuizApproachStep';
 import QuizMeditationObjectStep from './components/QuizMeditationObjectStep';
 import QuizResultsStep from './components/QuizResultsStep';
 
-// Компонент для отображения прогресса квиза
-const QuizProgress: React.FC<{ currentStep: number, maxStep: number }> = ({ currentStep, maxStep }) => {
-  return (
-    <div className="quiz-progress">
-      {Array.from({ length: maxStep + 1 }).map((_, index) => (
-        <div 
-          key={index} 
-          className={`quiz-progress-step ${index < currentStep ? 'completed' : index === currentStep ? 'active' : ''}`}
-        />
-      ))}
-    </div>
-  );
-};
+// Убираем QuizProgress - в новом дизайне нет прогресс бара
 
 // Основной компонент с навигацией между шагами
 const QuizFlowContent: React.FC = () => {
-  const { state, goBack, resetQuiz } = useQuiz();
+  const { state, goBack, goNext, resetQuiz, canGoNext } = useQuiz();
   const navigate = useNavigate();
+
+  // Автосброс квиза при каждом заходе
+  useEffect(() => {
+    resetQuiz();
+  }, [resetQuiz]);
+
+  // Автопереход по шагам с задержкой
+  useEffect(() => {
+    if (canGoNext && state.step < getTotalSteps() - 1) {
+      const timer = setTimeout(() => {
+        goNext();
+      }, 800); // Задержка 800мс для плавности
+
+      return () => clearTimeout(timer);
+    }
+  }, [canGoNext, state.step, goNext]);
 
   // Обработчик кнопки назад
   const handleBack = () => {
@@ -40,9 +43,69 @@ const QuizFlowContent: React.FC = () => {
     }
   };
 
-  // Функция для получения заголовка текущего шага
+  // Получение общего количества шагов
+  const getTotalSteps = () => {
+    if (!state.practiceType) return 5;
+    
+    switch (state.practiceType) {
+      case 'short':
+      case 'breathing':
+        return 3; // Тип -> Цель -> Результат
+      case 'physical':
+        return 4; // Тип -> Длительность -> Цель -> Результат
+      case 'meditation':
+        if (state.approach === 'self') {
+          return 5; // Тип -> Подход -> Объект -> Длительность -> Результат
+        } else if (state.approach === 'guided') {
+          return 4; // Тип -> Подход -> Цель -> Результат
+        }
+        return 3; // Тип -> Подход -> ...
+      default:
+        return 5;
+    }
+  };
+
+  // Получение заголовка текущего шага по дизайну Figma
   const getStepTitle = () => {
-    return `${state.step + 1}/${state.maxStep + 1}`;
+    switch (state.step) {
+      case 0:
+        return 'выбери практику';
+      case 1:
+        if (state.practiceType === 'short' || state.practiceType === 'breathing') {
+          return 'выбери цель';
+        } else if (state.practiceType === 'physical') {
+          return 'выбери время';
+        } else if (state.practiceType === 'meditation') {
+          return 'выбери подход';
+        }
+        break;
+      case 2:
+        if (state.practiceType === 'short' || state.practiceType === 'breathing') {
+          return 'рекомендация';
+        } else if (state.practiceType === 'physical') {
+          return 'выбери цель';
+        } else if (state.practiceType === 'meditation') {
+          if (state.approach === 'self') {
+            return 'выбери объект для концентрации';
+          } else if (state.approach === 'guided') {
+            return 'выбери тему';
+          }
+        }
+        break;
+      case 3:
+        if (state.practiceType === 'physical' || 
+            (state.practiceType === 'meditation' && state.approach === 'guided')) {
+          return 'рекомендация';
+        } else if (state.practiceType === 'meditation' && state.approach === 'self') {
+          return 'выбери время медитации';
+        }
+        break;
+      case 4:
+        return 'рекомендация';
+      default:
+        return 'квиз';
+    }
+    return 'квиз';
   };
 
   // Определение компонента для текущего шага
@@ -77,13 +140,12 @@ const QuizFlowContent: React.FC = () => {
             (state.practiceType === 'meditation' && state.approach === 'guided')) {
           return <QuizResultsStep />;
         } else if (state.practiceType === 'meditation' && state.approach === 'self') {
-          return <QuizResultsStep />;
+          return <QuizDurationStep />;
         }
         break;
       case 4:
         return <QuizResultsStep />;
       default:
-        // Если что-то пошло не так, показываем стартовый экран
         resetQuiz();
         return <QuizTypeStep />;
     }
@@ -91,24 +153,39 @@ const QuizFlowContent: React.FC = () => {
 
   return (
     <div className="quiz-container">
-      <QuizProgress currentStep={state.step} maxStep={state.maxStep} />
-      
-      <div className="quiz-content">
-        <div className="quiz-header">
+      {/* Кнопка назад только если не первый шаг */}
+      {state.step > 0 && (
+        <div className="quiz-back-container">
           <button className="quiz-back-button" onClick={handleBack}>
-            ←
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            Назад
           </button>
-          <div className="quiz-step">
-            {getStepTitle()}
-          </div>
         </div>
-        
+      )}
+
+      {/* Заголовок квиза */}
+      <div className="quiz-title">
+        {getStepTitle()}
+      </div>
+      
+      {/* Контент шага */}
+      <div className="quiz-step-container">
         {renderStepComponent()}
       </div>
-      
-      <div className="quiz-info">
-        <p>На основе ваших ответов мы подберем индивидуальную практику, наиболее подходящую для ваших целей и уровня опыта.</p>
-      </div>
+
+      {/* Кнопка "как это работает?" для первого шага */}
+      {state.step === 0 && (
+        <div className="quiz-how-it-works-container">
+          <button className="quiz-how-it-works">
+            как это работает?
+          </button>
+        </div>
+      )}
+
+      {/* Home indicator */}
+      <div className="quiz-home-indicator"></div>
     </div>
   );
 };
@@ -116,10 +193,8 @@ const QuizFlowContent: React.FC = () => {
 // Главный компонент с провайдером контекста
 export const QuizFlow: React.FC = () => {
   return (
-    <Page>
-      <QuizProvider>
-        <QuizFlowContent />
-      </QuizProvider>
-    </Page>
+    <QuizProvider>
+      <QuizFlowContent />
+    </QuizProvider>
   );
 }; 

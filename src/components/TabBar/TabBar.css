@@ -3,14 +3,14 @@
   bottom: 0;
   left: 0;
   right: 0;
-  height: 70px;
+  height: 60px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: var(--tgui-surface);
-  border-top: 1px solid var(--tgui-border);
-  padding-left: calc(env(safe-area-inset-left, 0px) + 8px);
-  padding-right: calc(env(safe-area-inset-right, 0px) + 8px);
+  background-color: var(--tgui-surface, #ffffff);
+  border-top: 1px solid var(--tgui-border, #f0f0f0);
+  padding-left: calc(env(safe-area-inset-left, 0px) + 16px);
+  padding-right: calc(env(safe-area-inset-right, 0px) + 16px);
   padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 8px);
   padding-top: 8px;
   z-index: 1000;
@@ -28,7 +28,7 @@
   flex: 1;
   min-width: 0;
   height: 100%;
-  padding: 6px 4px;
+  padding: 8px 12px;
   transition: all 0.2s ease;
   user-select: none;
   background: transparent;
@@ -36,39 +36,37 @@
   outline: none;
   cursor: pointer;
   color: var(--tgui-text-secondary, #8E8E93);
-  font-size: 10px;
+  font-size: 16px;
+  font-weight: 400;
   box-sizing: border-box;
   overflow: visible;
-  gap: 4px;
-}
-
-.tab-item svg {
-  width: 24px;
-  height: 24px;
-  flex-shrink: 0;
-  display: block;
+  border-radius: 12px;
+  margin: 0 4px;
 }
 
 .tab-item span {
-  font-size: 12px;
-  font-weight: 500;
+  font-size: 16px;
+  font-weight: 400;
   white-space: nowrap;
   text-align: center;
   max-width: 100%;
   line-height: 1.2;
   display: block;
+  text-transform: lowercase;
 }
 
 .tab-item.active {
-  color: var(--tgui-accent, #007AFF);
-}
-
-.tab-item.active svg {
-  transform: scale(1.1);
+  color: var(--tgui-text, #000000);
+  background-color: rgba(0, 0, 0, 0.03);
 }
 
 .tab-item.active span {
-  font-weight: 600;
+  font-weight: 700;
+}
+
+/* Удаляем стили для SVG, так как иконок больше нет */
+.tab-item svg {
+  display: none;
 }
 
 /* Индикатор для iOS устройств */
@@ -83,6 +81,23 @@
   border-radius: 2.5px;
   opacity: 0.2;
   z-index: 1001;
+}
+
+/* Адаптивность для маленьких экранов */
+@media (max-width: 380px) {
+  .tab-bar {
+    padding-left: calc(env(safe-area-inset-left, 0px) + 8px);
+    padding-right: calc(env(safe-area-inset-right, 0px) + 8px);
+  }
+  
+  .tab-item {
+    padding: 6px 8px;
+    margin: 0 2px;
+  }
+  
+  .tab-item span {
+    font-size: 14px;
+  }
 }
 
 /* Удаляем глобальное padding-bottom для body, 
