@@ -168,7 +168,16 @@ const TimerPlayer: React.FC<TimerPlayerProps> = ({
       </div>
       
       {/* Анимированная сфера таймера */}
-      <div style={{ width: '300px', height: '300px' }}>
+      <div style={{ 
+        width: '600px', 
+        height: '600px',
+        maxWidth: '90vw',
+        maxHeight: '50vh',
+        position: 'relative',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
         <TimerSphereCanvas
           isPlaying={isPlaying}
           timeLeft={timeLeft}

@@ -151,45 +151,92 @@ export function Page({
         
         setIsInTelegram(isTelegram);
         
-        // Если мы в Telegram, проверяем fullscreen
+        // Если мы в Telegram, настраиваем слушатели для fullscreen
         if (isTelegram && (window as any).Telegram?.WebApp) {
           const webApp = (window as any).Telegram.WebApp;
           
           const checkFullscreen = () => {
             // Проверяем различные признаки fullscreen режима
-            const isFS = webApp.isExpanded || webApp.viewportHeight === window.screen.height;
+            // isExpanded - это не fullscreen, а просто развернутое состояние
+            // Для fullscreen нужно слушать событие fullscreen_changed
+            const viewportHeight = webApp.viewportHeight || window.innerHeight;
+            const screenHeight = window.screen.height;
+            const isExpanded = webApp.isExpanded || false;
+            
+            // Считаем что мы в fullscreen если viewport занимает почти весь экран
+            const isFS = viewportHeight >= screenHeight * 0.9;
+            
             setIsFullscreen(isFS);
             
             // Устанавливаем CSS переменную для дополнительного отступа
             document.documentElement.style.setProperty('--fullscreen-extra-padding', isFS ? '100px' : '0px');
-            console.log('Fullscreen check:', isFS, 'viewportHeight:', webApp.viewportHeight, 'screenHeight:', window.screen.height);
+            console.log('Fullscreen check:', {
+              isFullscreen: isFS,
+              viewportHeight,
+              screenHeight,
+              isExpanded,
+              ratio: viewportHeight / screenHeight
+            });
           };
 
           // Проверяем при загрузке
           checkFullscreen();
 
-          // Слушаем изменения viewport
+          // Слушаем события изменения viewport
           const handleViewportChanged = () => {
             checkFullscreen();
           };
 
+          const handleFullscreenChanged = (event: any) => {
+            const isFS = event?.is_fullscreen || false;
+            setIsFullscreen(isFS);
+            document.documentElement.style.setProperty('--fullscreen-extra-padding', isFS ? '100px' : '0px');
+            console.log('Fullscreen changed event:', isFS);
+          };
+
+          // Подписываемся на события
           if (webApp.onEvent) {
             webApp.onEvent('viewportChanged', handleViewportChanged);
+            webApp.onEvent('fullscreen_changed', handleFullscreenChanged);
           }
 
-          // Проверяем периодически
+          // Также слушаем через postMessage для надежности
+          const handleMessage = (event: MessageEvent) => {
+            if (event.data && typeof event.data === 'string') {
+              try {
+                const message = JSON.parse(event.data);
+                if (message.eventType === 'viewport_changed') {
+                  handleViewportChanged();
+                } else if (message.eventType === 'fullscreen_changed') {
+                  handleFullscreenChanged(message.eventData);
+                }
+              } catch (e) {
+                // Ignore non-JSON messages
+              }
+            }
+          };
+
+          window.addEventListener('message', handleMessage);
+
+          // Проверяем периодически для надежности
           const interval = setInterval(checkFullscreen, 1000);
 
           return () => {
             if (webApp.offEvent) {
               webApp.offEvent('viewportChanged', handleViewportChanged);
+              webApp.offEvent('fullscreen_changed', handleFullscreenChanged);
             }
+            window.removeEventListener('message', handleMessage);
             clearInterval(interval);
           };
+        } else {
+          // Не в Telegram - устанавливаем дефолтные значения
+          document.documentElement.style.setProperty('--fullscreen-extra-padding', '0px');
         }
       } catch (error) {
         console.log('Не удалось определить окружение Telegram:', error);
         setIsInTelegram(false);
+        document.documentElement.style.setProperty('--fullscreen-extra-padding', '0px');
       }
     };
 

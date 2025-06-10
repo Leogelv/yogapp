@@ -22,16 +22,17 @@ export default function TimerSphereCanvas({
       className={className} 
       style={{ 
         width: '100%', 
-        aspectRatio: '1/1', 
-        background: 'radial-gradient(circle, rgba(20,20,25,1) 0%, rgba(10,10,15,1) 100%)',
-        borderRadius: '50%',
-        overflow: 'hidden',
+        height: '100%',
         position: 'relative'
       }}
     >
       <Canvas 
         camera={{ position: [0, 0, 3.5], fov: 65 }}
-        style={{ borderRadius: '50%' }}
+        style={{ 
+          width: '100%',
+          height: '100%',
+          background: 'transparent'
+        }}
       >
         <ambientLight intensity={0.2} />
         <pointLight position={[10, 10, 10]} intensity={0.3} />
@@ -41,43 +42,6 @@ export default function TimerSphereCanvas({
           totalDuration={totalDuration}
         />
       </Canvas>
-      
-      {/* Пульсирующее свечение */}
-      <div
-        style={{
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          width: '110%',
-          height: '110%',
-          background: `
-            radial-gradient(circle, 
-              rgba(99, 102, 241, 0.3) 0%, 
-              rgba(168, 85, 247, 0.2) 30%, 
-              rgba(236, 72, 153, 0.1) 60%, 
-              transparent 80%
-            )
-          `,
-          borderRadius: '50%',
-          animation: isPlaying ? 'breathe 4s ease-in-out infinite' : 'none',
-          pointerEvents: 'none',
-          zIndex: -1
-        }}
-      />
-      
-      <style>{`
-        @keyframes breathe {
-          0%, 100% {
-            transform: translate(-50%, -50%) scale(1);
-            opacity: 0.6;
-          }
-          50% {
-            transform: translate(-50%, -50%) scale(1.15);
-            opacity: 0.9;
-          }
-        }
-      `}</style>
     </div>
   )
 }

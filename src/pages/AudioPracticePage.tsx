@@ -84,8 +84,13 @@ export const AudioPracticePage = () => {
     return(
         <Page showTabBar={false} hideTopPadding={true}>
             <div className={'flex flex-col items-center gap-8 bg-[#191919] min-h-screen relative'}>
-                <div className={'flex-1 w-full flex justify-center items-start pt-8'}>
-                    <div className={'w-80 h-80'}>
+                <div className={'flex-1 w-full flex justify-center items-center'}>
+                    <div style={{ 
+                        width: '600px', 
+                        height: '600px',
+                        maxWidth: '90vw',
+                        maxHeight: '50vh'
+                    }}>
                         <AudioReactiveSphereCanvas 
                             audioElement={audioRef.current}
                             isPlaying={isPlaying}

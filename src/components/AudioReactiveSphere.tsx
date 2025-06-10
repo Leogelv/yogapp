@@ -20,58 +20,22 @@ export default function AudioReactiveSphereCanvas({
       className={className} 
       style={{ 
         width: '100%', 
-        aspectRatio: '1/1', 
-        background: 'radial-gradient(circle, rgba(25,25,25,1) 0%, rgba(15,15,15,1) 100%)',
-        borderRadius: '50%',
-        overflow: 'hidden',
+        height: '100%',
         position: 'relative'
       }}
     >
       <Canvas 
         camera={{ position: [0, 0, 3], fov: 75 }}
-        style={{ borderRadius: '50%' }}
+        style={{ 
+          width: '100%',
+          height: '100%',
+          background: 'transparent'
+        }}
       >
         <ambientLight intensity={0.3} />
         <pointLight position={[10, 10, 10]} intensity={0.5} />
         <AudioReactiveSphere audioElement={audioElement} isPlaying={isPlaying} />
       </Canvas>
-      
-      {/* Градиентное свечение вокруг сферы */}
-      <div
-        style={{
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          width: '120%',
-          height: '120%',
-          background: `
-            radial-gradient(circle, 
-              rgba(59, 130, 246, 0.3) 0%, 
-              rgba(147, 51, 234, 0.2) 30%, 
-              rgba(236, 72, 153, 0.1) 60%, 
-              transparent 80%
-            )
-          `,
-          borderRadius: '50%',
-          animation: isPlaying ? 'pulse 2s ease-in-out infinite alternate' : 'none',
-          pointerEvents: 'none',
-          zIndex: -1
-        }}
-      />
-      
-      <style>{`
-        @keyframes pulse {
-          0% {
-            transform: translate(-50%, -50%) scale(1);
-            opacity: 0.5;
-          }
-          100% {
-            transform: translate(-50%, -50%) scale(1.1);
-            opacity: 0.8;
-          }
-        }
-      `}</style>
     </div>
   )
 }

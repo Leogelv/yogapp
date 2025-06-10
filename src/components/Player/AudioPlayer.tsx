@@ -345,7 +345,14 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ audioUrl, title, description 
       
       {/* Аудиореактивная сфера */}
       {audioReady && !loadError && (
-        <div style={{ width: '300px', height: '300px' }}>
+        <div style={{ 
+          width: '600px', 
+          height: '600px',
+          position: 'relative',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}>
           <AudioReactiveSphereCanvas
             audioElement={audioRef.current}
             isPlaying={state.playing}
