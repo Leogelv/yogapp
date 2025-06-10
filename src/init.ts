@@ -34,7 +34,7 @@ export async function init(options: {
 
   // Telegram for macOS has a ton of bugs, including cases, when the client doesn't
   // even response to the "web_app_request_theme" method. It also generates an incorrect
-  // event for various viewport methods.
+  // event for the "web_app_request_safe_area" method.
   if (options.mockForMacOS) {
     let firstThemeSent = false;
     mockTelegramEnv({
@@ -50,8 +50,7 @@ export async function init(options: {
           return emitEvent('theme_changed', { theme_params: tp });
         }
 
-        // Мокаем safe area события для совместимости
-        if (event[0] === 'web_app_request_safe_area' || event[0] === 'web_app_request_viewport') {
+        if (event[0] === 'web_app_request_safe_area') {
           return emitEvent('safe_area_changed', { left: 0, top: 0, right: 0, bottom: 0 });
         }
 

@@ -271,26 +271,41 @@ export function Page({
   useEffect(() => {
     if (isInTelegram) {
       try {
-        // Используем новый API если доступен
-        if (viewport && viewport.mount.isAvailable()) {
-          const safeArea = viewportSafeAreaInsets();
-          if (safeArea) {
-            // Применяем safe area значения через CSS переменные
-            document.documentElement.style.setProperty('--safe-area-top', `${safeArea.top}px`);
-            document.documentElement.style.setProperty('--safe-area-right', `${safeArea.right}px`);
-            document.documentElement.style.setProperty('--safe-area-bottom', `${safeArea.bottom}px`);
-            document.documentElement.style.setProperty('--safe-area-left', `${safeArea.left}px`);
-          }
-        } else {
-          // Fallback для старых версий (только если поддерживается)
+        // Сначала пробуем новый API
+        let newApiSuccess = false;
+        
+        if (viewport && viewportSafeAreaInsets) {
           try {
-            postEvent('web_app_request_viewport');
+            const safeArea = viewportSafeAreaInsets();
+            if (safeArea) {
+              // Применяем safe area значения через CSS переменные
+              document.documentElement.style.setProperty('--safe-area-top', `${safeArea.top}px`);
+              document.documentElement.style.setProperty('--safe-area-right', `${safeArea.right}px`);
+              document.documentElement.style.setProperty('--safe-area-bottom', `${safeArea.bottom}px`);
+              document.documentElement.style.setProperty('--safe-area-left', `${safeArea.left}px`);
+              newApiSuccess = true;
+              console.log('Page: safe area получена через новый API');
+            }
           } catch (e) {
-            console.log('Viewport API не поддерживается в данной версии');
+            console.log('Page: новый safe area API недоступен');
           }
         }
+        
+        // Fallback к старому API если новый не сработал
+        if (!newApiSuccess) {
+          postEvent('web_app_request_safe_area');
+          postEvent('web_app_request_viewport');
+          console.log('Page: используем старый API');
+        }
       } catch (error) {
-        console.log('Ошибка при работе с viewport:', error);
+        console.log('Page: ошибка при работе с viewport, используем fallback:', error);
+        // Полный fallback к старому API
+        try {
+          postEvent('web_app_request_safe_area');
+          postEvent('web_app_request_viewport');
+        } catch (fallbackError) {
+          console.log('Page: fallback API тоже недоступен:', fallbackError);
+        }
       }
     }
 
