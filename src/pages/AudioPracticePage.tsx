@@ -1,5 +1,5 @@
 import {Page} from "@/components";
-import PointSphereCanvas from "@/components/AnimatedSphere.tsx";
+import AudioReactiveSphereCanvas from "@/components/AudioReactiveSphere.tsx";
 import {useParams} from "react-router-dom";
 import {supabase} from "@/lib/supabase/client.ts";
 import React, {useEffect, useRef, useState} from "react";
@@ -23,11 +23,22 @@ export const AudioPracticePage = () => {
             setDuration(audio.duration)
         }
 
+        const handlePlay = () => setIsPlaying(true)
+        const handlePause = () => setIsPlaying(false)
+        const handleEnded = () => setIsPlaying(false)
+
         audio.addEventListener('timeupdate', update)
         audio.addEventListener('loadedmetadata', update)
+        audio.addEventListener('play', handlePlay)
+        audio.addEventListener('pause', handlePause)
+        audio.addEventListener('ended', handleEnded)
+        
         return () => {
             audio.removeEventListener('timeupdate', update)
             audio.removeEventListener('loadedmetadata', update)
+            audio.removeEventListener('play', handlePlay)
+            audio.removeEventListener('pause', handlePause)
+            audio.removeEventListener('ended', handleEnded)
         }
     }, [])
 
@@ -39,7 +50,6 @@ export const AudioPracticePage = () => {
         } else {
             audio.play()
         }
-        setIsPlaying(!isPlaying)
     }
 
     const onSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -70,11 +80,17 @@ export const AudioPracticePage = () => {
                 setPractice(r.data)
         })
     }, []);
+    
     return(
         <Page showTabBar={false} hideTopPadding={true}>
             <div className={'flex flex-col items-center gap-8 bg-[#191919] min-h-screen relative'}>
-                <div className={'flex-1'}>
-                    <PointSphereCanvas className={'absolute z-[0] left-1/2 -top-[120px] -translate-x-1/2'}/>
+                <div className={'flex-1 w-full flex justify-center items-start pt-8'}>
+                    <div className={'w-80 h-80'}>
+                        <AudioReactiveSphereCanvas 
+                            audioElement={audioRef.current}
+                            isPlaying={isPlaying}
+                        />
+                    </div>
                 </div>
                 <div className={'!px-3 flex flex-col items-center gap-6 !pb-6 relative z-[2] w-full max-w-[450px] max-auto'}>
                     <div className={'flex flex-col gap-3 w-full'}>
@@ -126,7 +142,12 @@ export const AudioPracticePage = () => {
                             </svg>}
                     </button>
 
-                    <audio ref={audioRef} src={practice?.audio_file_path} preload="metadata"/>
+                    <audio 
+                        ref={audioRef} 
+                        src={practice?.audio_file_path} 
+                        preload="metadata"
+                        crossOrigin="anonymous"
+                    />
                 </div>
 
             </div>

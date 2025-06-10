@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { usePlayer } from '../../contexts/PlayerContext';
+import AudioReactiveSphereCanvas from '../AudioReactiveSphere';
 import './Player.css';
 
 interface AudioPlayerProps {
@@ -12,7 +13,6 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ audioUrl, title, description 
   const { state, play, pause, seekTo } = usePlayer();
   const audioRef = useRef<HTMLAudioElement>(null);
   const progressBarRef = useRef<HTMLDivElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isTrackingProgress] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -256,96 +256,6 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ audioUrl, title, description 
     return `${percent}%`;
   };
 
-  // Визуализация аудио
-  useEffect(() => {
-    if (!audioRef.current || !canvasRef.current) return;
-
-    const audio = audioRef.current;
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    // Создание аудио контекста
-    let audioContext: AudioContext | undefined;
-    let analyser: AnalyserNode | undefined;
-    let source: MediaElementAudioSourceNode | undefined;
-    let animationFrameId: number;
-
-    try {
-      audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-      analyser = audioContext.createAnalyser();
-      source = audioContext.createMediaElementSource(audio);
-      
-      source.connect(analyser);
-      analyser.connect(audioContext.destination);
-      
-      analyser.fftSize = 256;
-      const bufferLength = analyser.frequencyBinCount;
-      const dataArray = new Uint8Array(bufferLength);
-      
-      const render = () => {
-        if (!ctx || !analyser) return;
-        
-        animationFrameId = requestAnimationFrame(render);
-        
-        analyser.getByteFrequencyData(dataArray);
-        
-        const width = canvas.width;
-        const height = canvas.height;
-        
-        ctx.clearRect(0, 0, width, height);
-        
-        // Градиент для фона
-        const gradient = ctx.createLinearGradient(0, 0, 0, height);
-        gradient.addColorStop(0, 'rgba(59, 130, 246, 0.8)');
-        gradient.addColorStop(1, 'rgba(147, 51, 234, 0.5)');
-        
-        // Плавная цветная волна вместо баров
-        ctx.beginPath();
-        ctx.moveTo(0, height);
-        
-        const barWidth = width / bufferLength * 2.5;
-        let x = 0;
-        
-        for (let i = 0; i < bufferLength; i++) {
-          const barHeight = (dataArray[i] / 255) * height / 2;
-          
-          if (i === 0) {
-            ctx.lineTo(x, height - barHeight);
-          } else {
-            ctx.lineTo(x, height - barHeight);
-          }
-          
-          x += barWidth;
-        }
-        
-        ctx.lineTo(width, height);
-        ctx.closePath();
-        ctx.fillStyle = gradient;
-        ctx.fill();
-        
-        // Добавляем обводку для волны
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
-        ctx.lineWidth = 2;
-        ctx.stroke();
-      };
-      
-      render();
-    } catch (e) {
-      console.error('Ошибка создания аудио визуализации:', e);
-    }
-    
-    return () => {
-      if (audioContext) {
-        cancelAnimationFrame(animationFrameId);
-        if (source && analyser) {
-          source.disconnect();
-          analyser.disconnect();
-        }
-      }
-    };
-  }, []);
-
   // Обработка касаний для мобильных устройств
   useEffect(() => {
     if (!isMobile || userInteracted) return;
@@ -377,12 +287,20 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ audioUrl, title, description 
     </svg>
   );
 
-
-
   return (
     <div 
       className="audio-player-container"
       onClick={isMobile && !userInteracted ? handleFirstInteraction : undefined}
+      style={{ 
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: '2rem',
+        padding: '2rem',
+        background: '#191919',
+        minHeight: '100vh',
+        color: 'white'
+      }}
     >
       {isLoading && !loadError && (
         <div className="audio-loading">
@@ -393,7 +311,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ audioUrl, title, description 
       
       {isMobile && !userInteracted && audioReady && !loadError && (
         <div className="mobile-touch-hint">
-          <div style={{ fontSize: '24px', marginBottom: '10px' }}></div>
+          <div style={{ fontSize: '24px', marginBottom: '10px' }}>🎵</div>
           <span>Коснитесь экрана для воспроизведения</span>
         </div>
       )}
@@ -425,12 +343,22 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ audioUrl, title, description 
         </div>
       )}
       
-      <div className="audio-player-header">
-        <h2>{title}</h2>
-        {description && <p className="audio-description">{description}</p>}
+      {/* Аудиореактивная сфера */}
+      {audioReady && !loadError && (
+        <div style={{ width: '300px', height: '300px' }}>
+          <AudioReactiveSphereCanvas
+            audioElement={audioRef.current}
+            isPlaying={state.playing}
+          />
+        </div>
+      )}
+      
+      <div className="audio-player-header" style={{ textAlign: 'center', maxWidth: '400px' }}>
+        <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>{title}</h2>
+        {description && <p className="audio-description" style={{ opacity: 0.8 }}>{description}</p>}
       </div>
       
-      <div className="audio-player-wrapper">
+      <div className="audio-player-wrapper" style={{ width: '100%', maxWidth: '400px' }}>
         <audio 
           ref={audioRef} 
           src={audioUrl} 
@@ -442,30 +370,83 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ audioUrl, title, description 
         />
         
         <div className="audio-player-background">
-          <div className="audio-controls">
+          <div className="audio-controls" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             <div className="progress-container">
               <div 
                 ref={progressBarRef} 
                 className="progress-bar"
                 onClick={handleProgressBarClick}
+                style={{
+                  width: '100%',
+                  height: '6px',
+                  background: 'rgba(255, 255, 255, 0.2)',
+                  borderRadius: '3px',
+                  cursor: 'pointer',
+                  position: 'relative'
+                }}
               >
-                <div className="progress-fill" style={{ width: progressWidth() }}></div>
-                <div className="progress-handle" style={{ left: progressWidth() }}></div>
+                <div 
+                  className="progress-fill" 
+                  style={{ 
+                    width: progressWidth(), 
+                    height: '100%',
+                    background: 'linear-gradient(90deg, #3b82f6, #9333ea)',
+                    borderRadius: '3px',
+                    transition: 'width 0.1s ease'
+                  }}
+                ></div>
+                <div 
+                  className="progress-handle" 
+                  style={{ 
+                    position: 'absolute',
+                    top: '50%',
+                    left: progressWidth(),
+                    transform: 'translate(-50%, -50%)',
+                    width: '12px',
+                    height: '12px',
+                    background: 'white',
+                    borderRadius: '50%',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                  }}
+                ></div>
               </div>
-              <div className="time-display">
+              <div className="time-display" style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.5rem', fontSize: '0.875rem', opacity: 0.7 }}>
                 <span>{formatTime(state.currentTime)}</span>
                 <span>{formatTime(audioRef.current?.duration || 0)}</span>
               </div>
             </div>
             
-            <button 
-              className="play-pause-btn" 
-              onClick={handlePlayPause} 
-              disabled={!audioReady || !!loadError}
-              aria-label={state.playing ? 'Пауза' : 'Играть'}
-            >
-              {state.playing ? <PauseIcon /> : <PlayIcon />}
-            </button>
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+              <button 
+                className="play-pause-btn" 
+                onClick={handlePlayPause} 
+                disabled={!audioReady || !!loadError}
+                aria-label={state.playing ? 'Пауза' : 'Играть'}
+                style={{
+                  width: '60px',
+                  height: '60px',
+                  borderRadius: '50%',
+                  background: 'linear-gradient(135deg, #3b82f6, #9333ea)',
+                  border: 'none',
+                  color: 'white',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)',
+                  transition: 'all 0.2s ease',
+                  fontSize: '24px'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'scale(1.05)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'scale(1)';
+                }}
+              >
+                {state.playing ? <PauseIcon /> : <PlayIcon />}
+              </button>
+            </div>
           </div>
         </div>
       </div>
