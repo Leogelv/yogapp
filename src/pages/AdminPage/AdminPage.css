@@ -1,47 +1,55 @@
 /* Админ панель - основные стили */
 :root {
-  --admin-bg: #f8fafc;
+  --admin-bg: #f7fafc;
   --admin-card-bg: #ffffff;
   --admin-border: #e2e8f0;
-  --admin-text: #1a202c;
+  --admin-text: #2d3748;
   --admin-text-secondary: #718096;
-  --admin-accent: #4299e1;
-  --admin-accent-hover: #3182ce;
+  --admin-accent: #3182ce;
+  --admin-accent-hover: #2c5282;
   --admin-danger: #e53e3e;
   --admin-danger-hover: #c53030;
   --admin-success: #38a169;
   --admin-warning: #d69e2e;
-  --admin-radius: 8px;
-  --admin-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-}
-
-body.admin-mode {
+  --admin-radius: 12px;
+  --admin-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --admin-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+ }
+ 
+ body.admin-mode {
   background: var(--admin-bg);
-}
-
-.admin-page {
+ }
+ 
+ .admin-page {
   min-height: 100vh;
   background: var(--admin-bg);
   color: var(--admin-text);
-}
-
-.admin-header {
+ }
+ 
+ .admin-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px;
-  background: var(--admin-card-bg);
+  padding: 24px 32px;
+  background: linear-gradient(135deg, var(--admin-card-bg) 0%, #f8fafc 100%);
   border-bottom: 1px solid var(--admin-border);
   box-shadow: var(--admin-shadow);
-}
-
-.admin-header h1 {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+ }
+ 
+ .admin-header h1 {
   margin: 0;
-  font-size: 24px;
-  font-weight: 600;
-}
-
-.admin-logout-btn {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--admin-text);
+  letter-spacing: -0.025em;
+ }
+ 
+ .admin-logout-btn {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -53,47 +61,82 @@ body.admin-mode {
   cursor: pointer;
   font-size: 14px;
   transition: background-color 0.2s ease;
-}
-
-.admin-logout-btn:hover {
+ }
+ 
+ .admin-logout-btn:hover {
   background: var(--admin-danger-hover);
-}
-
-.admin-tabs {
+ }
+ 
+ .admin-tabs {
   display: flex;
   background: var(--admin-card-bg);
   border-bottom: 1px solid var(--admin-border);
-  padding: 0 20px;
-}
-
-.admin-tab {
-  padding: 16px 20px;
+  padding: 0 32px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+ }
+ 
+ .admin-tabs::-webkit-scrollbar {
+  display: none;
+ }
+ 
+ .admin-tab {
+  padding: 18px 24px;
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 15px;
+  font-weight: 500;
   color: var(--admin-text-secondary);
-  border-bottom: 2px solid transparent;
-  transition: all 0.2s ease;
-}
-
-.admin-tab:hover {
+  border-bottom: 3px solid transparent;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  position: relative;
+ }
+ 
+ .admin-tab:hover {
   color: var(--admin-text);
-}
-
-.admin-tab.active {
+  background: rgba(49, 130, 206, 0.05);
+ }
+ 
+ .admin-tab.active {
   color: var(--admin-accent);
   border-bottom-color: var(--admin-accent);
-}
-
-.admin-content {
-  padding: 20px;
-}
-
-/* Общие элементы форм */
-.admin-input,
-.admin-select,
-.admin-textarea {
+  background: rgba(49, 130, 206, 0.08);
+  font-weight: 600;
+  position: relative;
+ }
+ 
+ .admin-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--admin-accent);
+  border-radius: 3px 3px 0 0;
+ }
+ 
+ /* Дополнительное расстояние перед вкладкой "Пользователи" */
+ .admin-tab:nth-child(4) {
+  margin-left: 24px;
+ }
+ 
+ .admin-content {
+  padding: 32px;
+  max-width: 1400px;
+  margin: 0 auto;
+  min-height: calc(100vh - 140px);
+ }
+ 
+ /* Общие элементы форм */
+ .admin-input,
+ .admin-select,
+ .admin-textarea {
   padding: 12px;
   border: 1px solid var(--admin-border);
   border-radius: var(--admin-radius);
@@ -101,71 +144,77 @@ body.admin-mode {
   background: var(--admin-card-bg);
   color: var(--admin-text);
   transition: border-color 0.2s ease;
-}
-
-.admin-input:focus,
-.admin-select:focus,
-.admin-textarea:focus {
+ }
+ 
+ .admin-input:focus,
+ .admin-select:focus,
+ .admin-textarea:focus {
   outline: none;
   border-color: var(--admin-accent);
-}
-
-.admin-button {
-  padding: 10px 16px;
+ }
+ 
+ .admin-button {
+  padding: 12px 20px;
   border: 1px solid transparent;
   border-radius: var(--admin-radius);
   font-size: 14px;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
-}
-
-.admin-button.primary {
+  min-height: 40px;
+  text-decoration: none;
+ }
+ 
+ .admin-button.primary {
   background: var(--admin-accent);
   color: white;
   border-color: var(--admin-accent);
-}
-
-.admin-button.primary:hover {
+ }
+ 
+ .admin-button.primary:hover {
   background: var(--admin-accent-hover);
   border-color: var(--admin-accent-hover);
-}
-
-.admin-button.secondary {
+ }
+ 
+ .admin-button.secondary {
   background: transparent;
   color: var(--admin-text);
   border-color: var(--admin-border);
-}
-
-.admin-button.secondary:hover {
+ }
+ 
+ .admin-button.secondary:hover {
   background: var(--admin-bg);
-}
-
-.admin-button.danger {
+ }
+ 
+ .admin-button.danger {
   background: var(--admin-danger);
   color: white;
   border-color: var(--admin-danger);
-}
-
-.admin-button.danger:hover {
+ }
+ 
+ .admin-button.danger:hover {
   background: var(--admin-danger-hover);
   border-color: var(--admin-danger-hover);
-}
-
-.admin-button.small {
-  padding: 6px 12px;
-  font-size: 12px;
-}
-
-.admin-button:disabled {
+ }
+ 
+ .admin-button.small {
+  padding: 8px 16px;
+  font-size: 13px;
+  min-height: 36px;
+  white-space: nowrap;
+ }
+ 
+ .admin-button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-}
-
-/* Модальные окна */
-.admin-modal-backdrop {
+ }
+ 
+ /* Модальные окна */
+ .admin-modal-backdrop {
   position: fixed;
   top: 0;
   left: 0;
@@ -177,9 +226,9 @@ body.admin-mode {
   justify-content: center;
   z-index: 1000;
   padding: 20px;
-}
-
-.admin-modal {
+ }
+ 
+ .admin-modal {
   background: var(--admin-card-bg);
   border-radius: var(--admin-radius);
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
@@ -188,27 +237,27 @@ body.admin-mode {
   max-height: 90vh;
   overflow-y: auto;
   position: relative;
-}
-
-.admin-modal.large {
+ }
+ 
+ .admin-modal.large {
   max-width: 800px;
-}
-
-.admin-modal-header {
+ }
+ 
+ .admin-modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 20px;
   border-bottom: 1px solid var(--admin-border);
-}
-
-.admin-modal-header h3 {
+ }
+ 
+ .admin-modal-header h3 {
   margin: 0;
   font-size: 18px;
   font-weight: 600;
-}
-
-.admin-modal-close {
+ }
+ 
+ .admin-modal-close {
   background: none;
   border: none;
   font-size: 24px;
@@ -222,248 +271,681 @@ body.admin-mode {
   justify-content: center;
   border-radius: 50%;
   transition: background-color 0.2s ease;
-}
-
-.admin-modal-close:hover {
+ }
+ 
+ .admin-modal-close:hover {
   background: var(--admin-bg);
-}
-
-/* Сообщения */
-.admin-error {
+ }
+ 
+ /* Сообщения */
+ .admin-error {
   background: #fed7d7;
   color: #c53030;
   padding: 12px;
   border-radius: var(--admin-radius);
   margin-bottom: 16px;
   border: 1px solid #feb2b2;
-}
-
-.admin-loading {
+ }
+ 
+ .admin-loading {
   text-align: center;
-  padding: 40px;
+  padding: 60px 40px;
   color: var(--admin-text-secondary);
-}
-
-.admin-login {
+  font-size: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+ }
+ 
+ .admin-loading::after {
+  content: '';
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--admin-border);
+  border-top: 3px solid var(--admin-accent);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+ }
+ 
+ @keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+ }
+ 
+ .admin-login {
   max-width: 400px;
   margin: 100px auto;
   padding: 40px;
   background: var(--admin-card-bg);
   border-radius: var(--admin-radius);
   box-shadow: var(--admin-shadow);
-}
-
-.admin-login h1 {
+ }
+ 
+ .admin-login h1 {
   text-align: center;
   margin-bottom: 24px;
-}
-
-.admin-warning {
+ }
+ 
+ .admin-warning {
   background: #fef5e7;
   color: #744210;
   padding: 12px;
   border-radius: var(--admin-radius);
   margin-bottom: 16px;
   border: 1px solid #f6e05e;
-}
-
-/* События */
-.events-manager {
+ }
+ 
+ /* Админ секции */
+ .admin-section {
+  background: var(--admin-card-bg);
+  border-radius: var(--admin-radius);
+  box-shadow: var(--admin-shadow);
+  overflow: hidden;
+  margin-bottom: 24px;
+ }
+ 
+ .admin-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 32px;
+  border-bottom: 1px solid var(--admin-border);
+  background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+ }
+ 
+ .admin-section-header h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--admin-text);
+ }
+ 
+ .admin-table-container {
+  overflow-x: auto;
+  max-width: 100%;
+ }
+ 
+ .admin-form-section {
+  padding: 24px 32px;
+  border-bottom: 1px solid var(--admin-border);
+  background: #fafbfc;
+ }
+ 
+ .admin-form-section h3 {
+  margin: 0 0 16px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--admin-text);
+ }
+ 
+ .admin-form-section .form-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+ }
+ 
+ .admin-form-section .admin-input {
+  flex: 1;
+  min-width: 150px;
+ }
+ 
+ /* События */
+ .events-manager {
   padding: 0;
-}
-
-.events-header {
+ }
+ 
+ .events-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
-}
-
-.events-header h2 {
+ }
+ 
+ .events-header h2 {
   margin: 0;
   color: var(--admin-text);
-}
-
-.events-filters {
+ }
+ 
+ .events-filters {
   display: flex;
   gap: 12px;
   margin-bottom: 20px;
   flex-wrap: wrap;
-}
-
-.events-filters .admin-input,
-.events-filters .admin-select {
+ }
+ 
+ .events-filters .admin-input,
+ .events-filters .admin-select {
   flex: 1;
   min-width: 200px;
-}
+ }
 
-.events-list {
+ .events-list {
   margin-top: 20px;
-}
-
-.admin-table {
+ }
+ 
+ .admin-table {
   width: 100%;
   border-collapse: collapse;
   background: var(--admin-card-bg);
   border-radius: var(--admin-radius);
   overflow: hidden;
   box-shadow: var(--admin-shadow);
-}
-
-.admin-table th {
-  background: var(--admin-bg);
-  padding: 12px;
+  font-size: 15px;
+  table-layout: auto;
+  min-width: 800px;
+ }
+ 
+ .admin-table th {
+  background: linear-gradient(135deg, #f8fafc 0%, #edf2f7 100%);
+  padding: 18px 16px;
   text-align: left;
   font-weight: 600;
   color: var(--admin-text);
-  border-bottom: 1px solid var(--admin-border);
-}
-
-.admin-table td {
-  padding: 12px;
-  border-bottom: 1px solid var(--admin-border);
+  border-bottom: 2px solid var(--admin-border);
+  font-size: 14px;
+  text-transform: none;
+  letter-spacing: 0;
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+ }
+ 
+ .admin-table td {
+  padding: 16px 16px;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.6);
   color: var(--admin-text);
-}
-
-.admin-table tr:last-child td {
+  vertical-align: middle;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  line-height: 1.5;
+ }
+ 
+ .admin-table tr:last-child td {
   border-bottom: none;
-}
-
-.admin-table .subtitle {
+ }
+ 
+ .admin-table tbody tr {
+  transition: background-color 0.2s ease;
+ }
+ 
+ .admin-table tbody tr:hover {
+  background-color: rgba(49, 130, 206, 0.02);
+ }
+ 
+ /* Редактируемые ячейки */
+ .editable-cell {
+  cursor: pointer;
+  position: relative;
+  transition: background-color 0.2s ease;
+ }
+ 
+ .editable-cell:hover {
+  background-color: rgba(49, 130, 206, 0.05);
+ }
+ 
+ .editable-cell.editing {
+  background-color: rgba(49, 130, 206, 0.1);
+ }
+ 
+ .editable-cell input,
+ .editable-cell select {
+  width: 100%;
+  border: 2px solid var(--admin-accent);
+  border-radius: 4px;
+  padding: 6px 8px;
+  font-size: 14px;
+  background: white;
+ }
+ 
+ .save-flash {
+  animation: saveFlash 1s ease-out;
+ }
+ 
+ @keyframes saveFlash {
+  0% {
+    background-color: rgba(56, 161, 105, 0.3);
+  }
+  100% {
+    background-color: transparent;
+  }
+ }
+ 
+ .admin-table .subtitle {
   font-size: 12px;
   color: var(--admin-text-secondary);
   margin-top: 4px;
-}
-
-.status {
+ }
+ 
+ .status {
   padding: 4px 8px;
   border-radius: 12px;
   font-size: 12px;
   font-weight: 500;
   text-transform: capitalize;
-}
-
-.status.active {
+ }
+ 
+ .status.active {
   background: #d4edda;
   color: #155724;
-}
-
-.status.cancelled {
+ }
+ 
+ .status.cancelled {
   background: #f8d7da;
   color: #721c24;
-}
-
-.status.completed {
+ }
+ 
+ .status.completed {
   background: #d1ecf1;
   color: #0c5460;
-}
-
-.action-buttons {
+ }
+ 
+ /* Статус администратора */
+ .admin-status {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+ }
+ 
+ .admin-status.admin-yes {
+  background: #d4edda;
+  color: #155724;
+ }
+ 
+ .admin-status.admin-no {
+  background: #f8d7da;
+  color: #721c24;
+ }
+ 
+ .action-buttons {
   display: flex;
   gap: 8px;
-}
-
-/* Форма событий */
-.event-form {
+  flex-wrap: wrap;
+  min-width: 180px;
+ }
+ 
+ /* Специальные стили для таблицы практик */
+ .practices-table .admin-table th:nth-child(1) {
+  min-width: 200px;
+ } /* Название */
+ .practices-table .admin-table th:nth-child(2) {
+  min-width: 120px;
+ } /* Тип */
+ .practices-table .admin-table th:nth-child(3) {
+  min-width: 150px;
+ } /* Категория */
+ .practices-table .admin-table th:nth-child(4) {
+  min-width: 120px;
+ } /* Длительность */
+ .practices-table .admin-table th:nth-child(5) {
+  min-width: 120px;
+ } /* Обложка */
+ .practices-table .admin-table th:nth-child(6) {
+  min-width: 200px;
+ } /* Действия */
+ 
+ .practices-table .admin-table td:nth-child(1) {
+  min-width: 200px;
+ }
+ .practices-table .admin-table td:nth-child(2) {
+  min-width: 120px;
+ }
+ .practices-table .admin-table td:nth-child(3) {
+  min-width: 150px;
+ }
+ .practices-table .admin-table td:nth-child(4) {
+  min-width: 120px;
+ }
+ .practices-table .admin-table td:nth-child(5) {
+  min-width: 120px;
+ }
+ .practices-table .admin-table td:nth-child(6) {
+  min-width: 200px;
+ }
+ 
+ /* Специальные стили для таблицы пользователей */
+ .users-table .admin-table th:nth-child(1) {
+  min-width: 120px;
+ } /* ID */
+ .users-table .admin-table th:nth-child(2) {
+  min-width: 180px;
+ } /* Имя */
+ .users-table .admin-table th:nth-child(3) {
+  min-width: 120px;
+ } /* Username */
+ .users-table .admin-table th:nth-child(4) {
+  min-width: 160px;
+ } /* Дата регистрации */
+ .users-table .admin-table th:nth-child(5) {
+  min-width: 160px;
+ } /* Последний вход */
+ .users-table .admin-table th:nth-child(6) {
+  min-width: 100px;
+ } /* Админ */
+ .users-table .admin-table th:nth-child(7) {
+  min-width: 180px;
+ } /* Действия */
+ 
+ .users-table .admin-table td:nth-child(1) {
+  min-width: 120px;
+ }
+ .users-table .admin-table td:nth-child(2) {
+  min-width: 180px;
+ }
+ .users-table .admin-table td:nth-child(3) {
+  min-width: 120px;
+ }
+ .users-table .admin-table td:nth-child(4) {
+  min-width: 160px;
+ }
+ .users-table .admin-table td:nth-child(5) {
+  min-width: 160px;
+ }
+ .users-table .admin-table td:nth-child(6) {
+  min-width: 100px;
+ }
+ .users-table .admin-table td:nth-child(7) {
+  min-width: 180px;
+ }
+ 
+ /* Специальные стили для таблицы категорий */
+ .categories-table .admin-table th:nth-child(1) {
+  min-width: 180px;
+ } /* Название */
+ .categories-table .admin-table th:nth-child(2) {
+  min-width: 140px;
+ } /* Slug */
+ .categories-table .admin-table th:nth-child(3) {
+  min-width: 200px;
+ } /* Описание */
+ .categories-table .admin-table th:nth-child(4) {
+  min-width: 100px;
+ } /* Порядок */
+ .categories-table .admin-table th:nth-child(5) {
+  min-width: 200px;
+ } /* Действия */
+ 
+ .categories-table .admin-table td:nth-child(1) {
+  min-width: 180px;
+ }
+ .categories-table .admin-table td:nth-child(2) {
+  min-width: 140px;
+ }
+ .categories-table .admin-table td:nth-child(3) {
+  min-width: 200px;
+ }
+ .categories-table .admin-table td:nth-child(4) {
+  min-width: 100px;
+ }
+ .categories-table .admin-table td:nth-child(5) {
+  min-width: 200px;
+ }
+ 
+ /* Специальные стили для таблицы событий */
+ .events-list .admin-table th:nth-child(1) {
+  min-width: 200px;
+ } /* Название */
+ .events-list .admin-table th:nth-child(2) {
+  min-width: 120px;
+ } /* Дата */
+ .events-list .admin-table th:nth-child(3) {
+  min-width: 140px;
+ } /* Время */
+ .events-list .admin-table th:nth-child(4) {
+  min-width: 120px;
+ } /* Длительность */
+ .events-list .admin-table th:nth-child(5) {
+  min-width: 150px;
+ } /* Инструктор */
+ .events-list .admin-table th:nth-child(6) {
+  min-width: 120px;
+ } /* Статус */
+ .events-list .admin-table th:nth-child(7) {
+  min-width: 200px;
+ } /* Действия */
+ 
+ .events-list .admin-table td:nth-child(1) {
+  min-width: 200px;
+ }
+ .events-list .admin-table td:nth-child(2) {
+  min-width: 120px;
+ }
+ .events-list .admin-table td:nth-child(3) {
+  min-width: 140px;
+ }
+ .events-list .admin-table td:nth-child(4) {
+  min-width: 120px;
+ }
+ .events-list .admin-table td:nth-child(5) {
+  min-width: 150px;
+ }
+ .events-list .admin-table td:nth-child(6) {
+  min-width: 120px;
+ }
+ .events-list .admin-table td:nth-child(7) {
+  min-width: 200px;
+ }
+ 
+ /* Пустые таблицы */
+ .empty-table {
+  text-align: center;
+  color: var(--admin-text-secondary);
+  font-style: italic;
+  padding: 40px 20px !important;
+ }
+ 
+ /* Форма событий */
+ .event-form {
   display: flex;
   flex-direction: column;
   gap: 16px;
   max-height: 70vh;
   overflow-y: auto;
   padding: 20px;
-}
-
-.form-row {
+ }
+ 
+ .form-row {
   display: flex;
   gap: 16px;
-}
-
-.form-group {
+ }
+ 
+ .form-group {
   flex: 1;
   display: flex;
   flex-direction: column;
   gap: 6px;
-}
-
-.form-group label {
+ }
+ 
+ .form-group label {
   font-weight: 500;
   color: var(--admin-text);
   font-size: 14px;
-}
-
-.admin-textarea {
+ }
+ 
+ .admin-textarea {
   resize: vertical;
   min-height: 80px;
-}
-
-.form-actions {
+ }
+ 
+ .form-actions {
   display: flex;
   gap: 12px;
   justify-content: flex-end;
   padding-top: 16px;
   border-top: 1px solid var(--admin-border);
-}
-
-/* Медиа-запросы */
-@media (max-width: 768px) {
+ }
+ 
+ /* Медиа-запросы */
+ @media (max-width: 768px) {
   .admin-header {
-    padding: 16px;
+    padding: 20px 16px;
+    flex-direction: column;
+    gap: 16px;
+    position: relative;
   }
-  
+ 
+  .admin-header h1 {
+    font-size: 24px;
+    text-align: center;
+  }
+ 
   .admin-tabs {
-    flex-wrap: wrap;
-    gap: 8px;
     padding: 0 16px;
+    gap: 2px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    justify-content: flex-start;
+    position: relative;
   }
-  
+ 
+  .admin-tabs::before {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 20px;
+    background: linear-gradient(to left, var(--admin-card-bg), transparent);
+    pointer-events: none;
+    z-index: 5;
+  }
+ 
   .admin-tab {
-    flex: 1;
-    min-width: 80px;
-    padding: 12px 8px;
+    flex: 0 0 auto;
+    min-width: 90px;
+    max-width: 120px;
+    padding: 12px 6px;
     font-size: 12px;
+    text-align: center;
+    white-space: nowrap;
+    border-radius: 8px 8px 0 0;
   }
-  
+ 
+  /* Уменьшаем отступ на мобильных */
+  .admin-tab:nth-child(4) {
+    margin-left: 16px;
+  }
+ 
   .admin-content {
-    padding: 16px;
+    padding: 20px 16px;
   }
-  
+ 
   .admin-modal {
     margin: 20px;
     max-height: calc(100vh - 40px);
   }
-  
+ 
   .admin-modal.large {
     width: calc(100vw - 40px);
   }
-  
+ 
   .form-row {
     flex-direction: column;
   }
-  
+ 
   .events-filters {
     flex-direction: column;
   }
-  
+ 
   .events-filters .admin-input,
   .events-filters .admin-select {
     min-width: auto;
   }
-  
+ 
   .admin-table {
-    font-size: 12px;
+    font-size: 13px;
+    min-width: 600px;
   }
-  
+ 
   .admin-table th,
   .admin-table td {
-    padding: 8px;
+    padding: 12px 8px;
   }
-  
+ 
+  .admin-table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+ 
+  /* Упрощаем колонки для мобильных */
+  .practices-table .admin-table th,
+  .practices-table .admin-table td,
+  .users-table .admin-table th,
+  .users-table .admin-table td,
+  .categories-table .admin-table th,
+  .categories-table .admin-table td,
+  .events-list .admin-table th,
+  .events-list .admin-table td {
+    min-width: 100px !important;
+  }
+ 
   .action-buttons {
     flex-direction: column;
+    gap: 6px;
   }
-  
+ 
+  .admin-section-header {
+    padding: 16px 20px;
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+  }
+ 
+  .admin-form-section {
+    padding: 16px 20px;
+  }
+ 
+  .admin-form-section .form-row {
+    flex-direction: column;
+    gap: 8px;
+  }
+ 
+  .admin-form-section .admin-input {
+    min-width: auto;
+  }
+ 
   .admin-login {
     margin: 20px;
     padding: 24px;
   }
-}
+ }
+ 
+ /* Дополнительные стили для очень маленьких экранов */
+ @media (max-width: 480px) {
+  .admin-tab {
+    min-width: 70px;
+    max-width: 90px;
+    padding: 10px 4px;
+    font-size: 11px;
+  }
+ 
+  .admin-header h1 {
+    font-size: 20px;
+  }
+ 
+  .admin-content {
+    padding: 16px 12px;
+  }
+ 
+  .admin-section-header {
+    padding: 12px 16px;
+  }
+ 
+  .admin-section-header h2 {
+    font-size: 18px;
+  }
+ 
+  /* Минимальный отступ на очень маленьких экранах */
+  .admin-tab:nth-child(4) {
+    margin-left: 12px;
+  }
+ }
+ 
+ 

@@ -60,7 +60,17 @@ export async function init(options: {
   }
 
   // Mount all components used in the project.
-  mountBackButton.ifAvailable();
+  console.log('🔧 Инициализация компонентов SDK...');
+  
+  // Инициализируем кнопку назад
+  if (mountBackButton.isAvailable()) {
+    console.log('🔙 Кнопка назад доступна, монтируем...');
+    mountBackButton();
+    console.log('🔙 Кнопка назад успешно смонтирована');
+  } else {
+    console.log('❌ Кнопка назад недоступна');
+  }
+  
   restoreInitData();
   await Promise.all([
     mountMiniApp.isAvailable() && mountMiniApp().then(() => {

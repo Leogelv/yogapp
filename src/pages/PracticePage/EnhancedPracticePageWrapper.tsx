@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect} from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Page } from '@/components/Page';
 import AutoPlayPracticePage from './AutoPlayPracticePage';
@@ -8,9 +8,10 @@ import './EnhancedPracticePageWrapper.css';
 interface EnhancedPracticePageWrapperProps {}
 
 const EnhancedPracticePageWrapper: React.FC<EnhancedPracticePageWrapperProps> = () => {
-  const { contentId } = useParams<{ contentId: string }>();
+
+  const { contentId, eventId } = useParams<{ contentId: string, eventId?: string }>();
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [, setIsLoading] = useState<boolean>(true);
   
   // Получаем пользователя
   const { supabaseUser } = useSupabaseUser(undefined);
@@ -36,7 +37,7 @@ const EnhancedPracticePageWrapper: React.FC<EnhancedPracticePageWrapperProps> = 
   const toggleFavorite = async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!contentId || !userId) return;
-    
+
     try {
       if (isFav) {
         await removeFromFavorites(contentId);
@@ -50,7 +51,7 @@ const EnhancedPracticePageWrapper: React.FC<EnhancedPracticePageWrapperProps> = 
     }
   };
   
-  if (!contentId) {
+  if (!contentId && !eventId) {
     return (
       <Page>
         <div className="practice-error">
@@ -65,11 +66,8 @@ const EnhancedPracticePageWrapper: React.FC<EnhancedPracticePageWrapperProps> = 
   return (
     <Page>
       <div className="practice-page-wrapper">
-        <div className="practice-header">
-          <button className="back-button" onClick={handleBack}>
-            <span>←</span>
-          </button>
-          
+        <div className={'hidden'} onClick={toggleFavorite}></div>
+        {/*<div className="practice-header">
           {!isLoading && userId && (
             <button 
               className={`favorite-button ${isFav ? 'is-favorite' : ''}`} 
@@ -87,7 +85,7 @@ const EnhancedPracticePageWrapper: React.FC<EnhancedPracticePageWrapperProps> = 
               )}
             </button>
           )}
-        </div>
+        </div>*/}
         
         <AutoPlayPracticePage />
       </div>

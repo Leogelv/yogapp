@@ -7,29 +7,10 @@
 
 .practice-header {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
   padding: 1rem;
   position: relative;
-}
-
-.back-button {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: rgba(0, 0, 0, 0.1);
-  color: var(--tg-theme-text-color, #000);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-  border: none;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.back-button:hover {
-  background: rgba(0, 0, 0, 0.2);
 }
 
 .favorite-button {
@@ -37,7 +18,7 @@
   height: 40px;
   border-radius: 50%;
   background: rgba(0, 0, 0, 0.1);
-  color: var(--tg-theme-text-color, #000);
+  color: #000;
   display: flex;
   align-items: center;
   justify-content: center;

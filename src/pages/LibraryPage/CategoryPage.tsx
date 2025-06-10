@@ -8,11 +8,11 @@ import { useFavorites } from '@/lib/supabase/hooks';
 import { useSupabaseUser } from '@/lib/supabase/hooks';
 
 // Функция для получения заголовка категории
-const getCategoryTitle = (categorySlug: string): string => {
+export const getCategoryTitle = (categorySlug: string): string => {
   switch (categorySlug) {
-    case 'physical': return 'Телесные';
-    case 'meditation': return 'Медитации';
-    case 'breathing': return 'Дыхание';
+    case 'physical': return 'телесные';
+    case 'meditation': return 'медитации';
+    case 'breathing': return 'дыхание';
     default: return categorySlug.charAt(0).toUpperCase() + categorySlug.slice(1);
   }
 };
@@ -56,12 +56,9 @@ const CategoryPage: React.FC = () => {
   };
   
   return (
-    <Page>
+    <Page onBackClick={handleBackClick}>
       <div className="category-page">
         <div className="category-header">
-          <button onClick={handleBackClick} className="back-button">
-            <span>←</span>
-          </button>
           <h1>{categorySlug ? getCategoryTitle(categorySlug) : 'Категория'}</h1>
         </div>
         

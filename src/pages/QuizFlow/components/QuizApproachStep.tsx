@@ -3,7 +3,7 @@ import { useQuiz } from '../../../contexts/QuizContext';
 import { useQuizStepsRealtime } from '../../../contexts/QuizContext';
 
 const QuizApproachStep: React.FC = () => {
-  const { state, setApproach } = useQuiz();
+  const { state, setApproach, setStep } = useQuiz();
   const { steps, loading } = useQuizStepsRealtime();
 
   // Находим шаг с type === 'approach'
@@ -13,6 +13,15 @@ const QuizApproachStep: React.FC = () => {
   // Обработчик выбора подхода
   const handleSelectApproach = (value: string) => {
     setApproach(value as any);
+    
+    // Определяем следующий шаг в зависимости от выбранного подхода
+    setTimeout(() => {
+      if (value === 'self') {
+        setStep(2); // Переходим к выбору объекта медитации
+      } else if (value === 'guided') {
+        setStep(2); // Переходим к выбору темы (цели)
+      }
+    }, 0);
   };
 
   if (loading) {

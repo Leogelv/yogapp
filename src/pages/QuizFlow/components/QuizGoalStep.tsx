@@ -3,7 +3,7 @@ import { useQuiz } from '../../../contexts/QuizContext';
 import { useQuizStepsRealtime } from '../../../contexts/QuizContext';
 
 const QuizGoalStep: React.FC = () => {
-  const { state, setGoal } = useQuiz();
+  const { state, setGoal, setStep } = useQuiz();
   const { steps, loading } = useQuizStepsRealtime();
 
   // Находим шаг с type === 'goal'
@@ -13,6 +13,17 @@ const QuizGoalStep: React.FC = () => {
   // Обработчик выбора цели
   const handleSelectGoal = (value: string) => {
     setGoal(value as any);
+    
+    // Определяем следующий шаг в зависимости от контекста
+    setTimeout(() => {
+      if (state.practiceType === 'short' || state.practiceType === 'breathing') {
+        setStep(2); // Переходим к результатам
+      } else if (state.practiceType === 'physical') {
+        setStep(3); // Переходим к результатам
+      } else if (state.practiceType === 'meditation' && state.approach === 'guided') {
+        setStep(3); // Переходим к результатам
+      }
+    }, 0);
   };
 
   if (loading) {

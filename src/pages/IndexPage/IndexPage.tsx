@@ -10,6 +10,7 @@ import { useSupabaseUser } from '@/lib/supabase/hooks/useSupabaseUser';
 import { supabase } from '@/lib/supabase/client';
 import { type SupabaseUser } from '@/lib/supabase/types';
 import { logger } from '@/lib/logger';
+import FavoritesDebug from '@/components/FavoritesDebug/FavoritesDebug';
 
 import tonSvg from './ton.svg';
 
@@ -260,6 +261,11 @@ export const IndexPage: FC = () => {
   return (
     <Page back={false}>
       <List>
+        {/* Компонент отладки избранного */}
+        <Section header="🔧 Отладка избранного">
+          <FavoritesDebug />
+        </Section>
+
         {/* Секция с информацией о подключении к Supabase */}
         <Section
           header="Supabase Connection Status"

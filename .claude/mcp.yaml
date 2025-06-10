@@ -1,8 +1,0 @@
-servers:
-  supabase-yo2ga:
-    command: npx
-    args:
-      - "-y"
-      - "@supabase/mcp-server-supabase@latest"
-      - "--access-token"
-      - "sbp_bf6a6c2877c97b68fca59c97e1e74b6e8c65ad6a"

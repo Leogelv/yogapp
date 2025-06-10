@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { usePlayer } from '../../contexts/PlayerContext';
 import './Player.css';
 
 interface TimerPlayerProps {
@@ -7,29 +6,86 @@ interface TimerPlayerProps {
   title: string;
   meditationObject?: string; // Объект для концентрации (мысль, дыхание, тело, без объекта)
   instructions?: string;
+  audioUrl?: string; // Фоновое аудио для медитации
+  autoStart?: boolean; // Автоматический запуск таймера
 }
 
 const TimerPlayer: React.FC<TimerPlayerProps> = ({ 
-  duration, 
-  title, 
-  meditationObject = 'Дыхание',
-  instructions = 'Закройте глаза и сфокусируйтесь на своем дыхании'
+  duration,
+  audioUrl,
+  autoStart = true // По умолчанию автозапуск включен
 }) => {
-  const { state, pause, seekTo, togglePlay } = usePlayer();
+  const [isPlaying, setIsPlaying] = useState(autoStart);
   const [timeLeft, setTimeLeft] = useState(duration);
   const timerRef = useRef<number | null>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   const startTimeRef = useRef<number | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Инициализация таймера
+  // Инициализация аудио
+  useEffect(() => {
+    console.log('🎵 TimerPlayer: Инициализация аудио...');
+    console.log('📝 Получен audioUrl:', audioUrl);
+    
+    if (audioUrl && audioRef.current) {
+      console.log('✅ Настраиваем аудио элемент...');
+      
+      // 🔧 ИСПРАВЛЕНИЕ: Добавляем https:// если URL начинается с //
+      let fullAudioUrl = audioUrl;
+      if (audioUrl.startsWith('//')) {
+        fullAudioUrl = 'https:' + audioUrl;
+        console.log('🔗 Исправлен URL с https:', fullAudioUrl);
+      }
+      
+      audioRef.current.src = fullAudioUrl;
+      audioRef.current.loop = true;
+      audioRef.current.volume = 0.3; // Тихое фоновое аудио
+      console.log('🔧 Аудио настроено: src =', audioRef.current.src, 'volume =', audioRef.current.volume);
+    } else if (!audioUrl) {
+      console.warn('⚠️ audioUrl не передан в TimerPlayer');
+    } else if (!audioRef.current) {
+      console.warn('⚠️ audioRef.current не доступен');
+    }
+  }, [audioUrl]);
+
+  // Инициализация таймера при изменении duration
   useEffect(() => {
     setTimeLeft(duration);
-    seekTo(0);
-  }, [duration, seekTo]);
+    if (autoStart) {
+      setIsPlaying(true);
+      startTimeRef.current = Date.now();
+    } else {
+      setIsPlaying(false);
+      startTimeRef.current = null;
+    }
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+  }, [duration, autoStart]);
 
   // Обработка плей/пауза
   useEffect(() => {
-    if (state.playing) {
+    if (isPlaying) {
+      console.log('▶️ Запускаем таймер и аудио...');
+      
+      // Запускаем фоновое аудио
+      if (audioRef.current && audioUrl) {
+        console.log('🎵 Пытаемся запустить аудио:', audioUrl);
+        audioRef.current.play()
+          .then(() => {
+            console.log('✅ Аудио успешно запущено');
+          })
+          .catch((error) => {
+            console.error('❌ Ошибка при запуске аудио:', error);
+          });
+      } else {
+        console.warn('⚠️ Аудио не может быть запущено:', {
+          hasAudioRef: !!audioRef.current,
+          hasAudioUrl: !!audioUrl,
+          audioUrl: audioUrl
+        });
+      }
+
       // Если таймер запускается заново
       if (startTimeRef.current === null) {
         startTimeRef.current = Date.now();
@@ -48,17 +104,27 @@ const TimerPlayer: React.FC<TimerPlayerProps> = ({
         const newTimeLeft = Math.max(0, duration - elapsedSeconds);
         
         setTimeLeft(newTimeLeft);
-        seekTo(duration - newTimeLeft);
         
         // Если таймер закончился
         if (newTimeLeft <= 0) {
           clearInterval(timerRef.current!);
           timerRef.current = null;
           startTimeRef.current = null;
-          pause();
+          
+          // Останавливаем фоновое аудио
+          if (audioRef.current) {
+            audioRef.current.pause();
+          }
+          
+          setIsPlaying(false);
         }
       }, 100);
     } else {
+      // Останавливаем фоновое аудио при паузе
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+
       if (timerRef.current !== null) {
         clearInterval(timerRef.current);
         timerRef.current = null;
@@ -70,80 +136,46 @@ const TimerPlayer: React.FC<TimerPlayerProps> = ({
         clearInterval(timerRef.current);
       }
     };
-  }, [state.playing, duration, pause, seekTo, timeLeft]);
-
-  // Отрисовка кругового таймера
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    // Размеры и центр холста
-    const width = canvas.width;
-    const height = canvas.height;
-    const centerX = width / 2;
-    const centerY = height / 2;
-    const radius = Math.min(centerX, centerY) - 10;
-
-    // Очистка холста
-    ctx.clearRect(0, 0, width, height);
-
-    // Рисуем фоновый круг
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
-    ctx.lineWidth = 10;
-    ctx.stroke();
-
-    // Рисуем прогресс
-    if (duration > 0) {
-      const progress = (duration - timeLeft) / duration;
-      const startAngle = -0.5 * Math.PI; // Начинаем с верхней точки
-      const endAngle = startAngle + (2 * Math.PI * progress);
-
-      ctx.beginPath();
-      ctx.arc(centerX, centerY, radius, startAngle, endAngle);
-      ctx.strokeStyle = 'rgba(77, 171, 247, 0.8)';
-      ctx.lineWidth = 10;
-      ctx.stroke();
-    }
-
-    // Рисуем текст с оставшимся временем
-    ctx.font = 'bold 24px Arial';
-    ctx.fillStyle = 'white';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(formatTime(timeLeft), centerX, centerY);
-  }, [timeLeft, duration]);
+  }, [isPlaying, duration, timeLeft, audioUrl]);
 
   return (
     <div className="timer-player-container">
+      {/* Скрытый аудио элемент для фонового звука */}
+      {audioUrl && (
+        <audio ref={audioRef} preload="auto" style={{ display: 'none' }} />
+      )}
+      
       <div className="timer-player-header">
-        <h2>{title}</h2>
-        <p className="meditation-object">Объект концентрации: {meditationObject}</p>
-        <p className="meditation-instructions">{instructions}</p>
+        <h2>Закройте глаза<br />и сфокусируйтесь на себе</h2>
+        <p className="meditation-instructions">
+          Расслабьтесь и закройте глаза.<br />
+          Не блокируйте телефон, чтобы услышать<br />
+          звуковой сигнал об окончании практики
+        </p>
       </div>
       
-      <div className="timer-player-wrapper" style={{ backgroundImage: state.backgroundImage ? `url(${state.backgroundImage})` : 'none' }}>
+      <div className="timer-player-wrapper">
         <div className="timer-display">
-          <canvas ref={canvasRef} width={300} height={300} className="timer-canvas"></canvas>
-          
-          <div className="timer-controls">
-            <button className="play-pause-btn" onClick={togglePlay}>
-              {state.playing ? 'Пауза' : 'Старт'}
-            </button>
-            <button className="stop-btn" onClick={() => {
-              pause();
-              setTimeLeft(duration);
-              seekTo(0);
-              startTimeRef.current = null;
-            }}>
-              Сбросить
-            </button>
+          <div className="timer-time-display">
+            {formatTime(timeLeft)}
           </div>
         </div>
+      </div>
+      
+      <div className="timer-controls">
+        <button className="stop-btn" onClick={() => {
+          // Останавливаем фоновое аудио
+          if (audioRef.current) {
+            audioRef.current.pause();
+            audioRef.current.currentTime = 0;
+          }
+          
+          setIsPlaying(false);
+          setTimeLeft(duration);
+          startTimeRef.current = null;
+        }}>
+          остановиться
+        </button>
       </div>
     </div>
   );

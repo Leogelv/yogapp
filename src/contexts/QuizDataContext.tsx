@@ -34,37 +34,50 @@ export const QuizDataProvider: React.FC<{ children: ReactNode }> = ({ children }
   useEffect(() => {
     let stepsSub: any = null;
     let answersSub: any = null;
-    let mounted = true;
 
-    async function fetchAll() {
-      if (!supabase) return;
-      setLoading(true);
-      // 1. Грузим шаги
-      const { data: stepsData, error: stepsError } = await supabase
-        .from('quiz_steps')
-        .select('*')
-        .order('order');
-      if (stepsError) {
+    const fetchAll = async () => {
+      try {
+        setLoading(true);
+        
+        if (!supabase) {
+          throw new Error('Supabase client not initialized');
+        }
+
+        // Загружаем шаги квиза
+        const { data: stepsData, error: stepsError } = await supabase
+          .from('quiz_steps')
+          .select('*')
+          .eq('is_active', true)
+          .order('order');
+
+        if (stepsError) {
+          throw stepsError;
+        }
+
+        // Загружаем варианты ответов
+        const { data: answersData, error: answersError } = await supabase
+          .from('quiz_answers')
+          .select('*')
+          .order('order');
+
+        if (answersError) {
+          throw answersError;
+        }
+
+        // Объединяем шаги с их вариантами ответов
+        const stepsWithAnswers = (stepsData || []).map(step => ({
+          ...step,
+          answers: (answersData || []).filter(answer => answer.question_id === step.id)
+        }));
+
+        setSteps(stepsWithAnswers);
+      } catch (error) {
+        console.error('Error loading quiz data:', error);
+        setSteps([]);
+      } finally {
         setLoading(false);
-        return;
       }
-      // 2. Грузим все варианты
-      const { data: answersData, error: answersError } = await supabase
-        .from('quiz_answers')
-        .select('*')
-        .order('order');
-      if (answersError) {
-        setLoading(false);
-        return;
-      }
-      // 3. Собираем структуру
-      const stepsWithAnswers = (stepsData || []).map((step: any) => ({
-        ...step,
-        answers: (answersData || []).filter((a: any) => a.question_id === step.id),
-      }));
-      if (mounted) setSteps(stepsWithAnswers);
-      setLoading(false);
-    }
+    };
 
     if (!supabase) return;
     fetchAll();
@@ -83,7 +96,6 @@ export const QuizDataProvider: React.FC<{ children: ReactNode }> = ({ children }
     }
 
     return () => {
-      mounted = false;
       if (stepsSub) stepsSub.unsubscribe();
       if (answersSub) answersSub.unsubscribe();
     };

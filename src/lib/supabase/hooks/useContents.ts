@@ -24,6 +24,8 @@ export interface ContentItem {
   content_type?: { name: string; slug: string };
   content_types?: { name: string; slug: string };
   categories?: { name: string; slug: string };
+  power_needed?: number
+  power_given?: number
   // ... другие поля по необходимости
 }
 

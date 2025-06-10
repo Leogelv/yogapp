@@ -33,6 +33,12 @@ export function useSupabaseUser(initDataRaw: TelegramInitDataType | undefined): 
 
   // Оборачиваем процесс в useCallback для предотвращения лишних ререндеров
   const processUser = useCallback(async () => {
+    logger.info('🚀 processUser started', { 
+      telegramId: telegramUserFromInitData?.id,
+      authDate: authDateFromInitData,
+      hasSupabase: !!supabase
+    });
+    
     // Проверка доступности необходимых данных
     if (!telegramUserFromInitData || typeof telegramUserFromInitData.id === 'undefined' || typeof authDateFromInitData === 'undefined') {
       logger.warn('Missing required Telegram user data');
@@ -85,6 +91,12 @@ export function useSupabaseUser(initDataRaw: TelegramInitDataType | undefined): 
         throw selectError;
       }
 
+      logger.info('🔍 User lookup result', { 
+        existingUser: !!existingUser,
+        userId: existingUser?.id,
+        selectError: selectError?.code
+      });
+
       if (existingUser) {
         logger.info('Updating existing user', { telegramId: userData.id });
         const updates: Partial<SupabaseUser> = {
@@ -107,6 +119,91 @@ export function useSupabaseUser(initDataRaw: TelegramInitDataType | undefined): 
           throw updateError;
         }
         logger.info('User updated successfully');
+        
+        // Создаем сессию аутентификации в Supabase Auth
+        // ВРЕМЕННО ОТКЛЮЧЕНО для Telegram Web Apps
+        /*
+        if (!existingUser.auth_user_id) {
+          logger.info('🔐 Starting auth session creation', { 
+            telegramId: telegramUserFromInitData.id,
+            supabaseUserId: existingUser.id 
+          });
+          
+          // Создаем уникальный email и пароль для пользователя Telegram
+          const userEmail = `telegram_${telegramUserFromInitData.id}@yoga.app`;
+          const userPassword = `telegram_${telegramUserFromInitData.id}_${authDateAsNumber}`;
+          
+          logger.info('🔐 Preparing auth credentials', { userEmail });
+          
+          try {
+            // Пытаемся войти с существующими данными
+            const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+              email: userEmail,
+              password: userPassword,
+            });
+            
+            logger.info('🔐 Sign in attempt completed', { 
+              success: !!signInData.user,
+              hasSession: !!signInData.session,
+              error: signInError?.message,
+              errorCode: signInError?.status
+            });
+            
+            if (signInError && signInError.message.includes('Invalid login credentials')) {
+              logger.info('🔐 User not found, creating new auth user');
+            
+              // Если пользователь не существует, создаем его
+              const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+                email: userEmail,
+                password: userPassword,
+                options: {
+                  data: {
+                    telegram_id: telegramUserFromInitData.id,
+                    user_id: existingUser.id,
+                    first_name: telegramUserFromInitData.first_name
+                  }
+                }
+              });
+              
+              logger.info('🔐 Sign up attempt result', { 
+                success: !!signUpData.user,
+                error: signUpError?.message,
+                userId: signUpData.user?.id,
+                needsConfirmation: !!signUpData.user && !signUpData.session
+              });
+              
+              if (signUpError) {
+                logger.error('❌ Failed to create auth user:', signUpError);
+              } else {
+                logger.info('✅ Auth user created successfully', { 
+                  authUserId: signUpData.user?.id,
+                  supabaseUserId: existingUser.id,
+                  hasSession: !!signUpData.session
+                });
+              }
+            } else if (signInError) {
+              logger.error('❌ Failed to sign in auth user:', signInError);
+            } else {
+              logger.info('✅ Auth user signed in successfully', { 
+                authUserId: signInData.user?.id,
+                supabaseUserId: existingUser.id,
+                hasSession: !!signInData.session
+              });
+            }
+            
+            // Проверяем текущую сессию после всех операций
+            const { data: currentSession } = await supabase.auth.getSession();
+            logger.info('🔐 Final session check', { 
+              hasSession: !!currentSession.session,
+              userId: currentSession.session?.user?.id,
+              userMetadata: currentSession.session?.user?.user_metadata
+            });
+            
+          } catch (authErr) {
+            logger.error('❌ Auth session creation failed:', authErr);
+          }
+        }
+        */
         
         setSupabaseUser(updatedUser);
       } else {
@@ -132,6 +229,82 @@ export function useSupabaseUser(initDataRaw: TelegramInitDataType | undefined): 
           throw insertError;
         }
         logger.info('New user created successfully');
+        
+        // Создаем сессию аутентификации в Supabase Auth
+        // ВРЕМЕННО ОТКЛЮЧЕНО для Telegram Web Apps
+        /*
+        if (!newUser.auth_user_id) {
+          logger.info('🔐 Starting auth session creation', { 
+            telegramId: telegramUserFromInitData.id,
+            supabaseUserId: newUser.id 
+          });
+          
+          // Создаем уникальный email и пароль для пользователя Telegram
+          const userEmail = `telegram_${telegramUserFromInitData.id}@yoga.app`;
+          const userPassword = `telegram_${telegramUserFromInitData.id}_${authDateAsNumber}`;
+          
+          logger.info('🔐 Preparing auth credentials', { userEmail });
+          
+          try {
+            // Пытаемся войти с существующими данными
+            const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+              email: userEmail,
+              password: userPassword,
+            });
+            
+            logger.info('🔐 Sign in attempt completed', { 
+              success: !!signInData.user,
+              hasSession: !!signInData.session,
+              error: signInError?.message,
+              errorCode: signInError?.status
+            });
+            
+            if (signInError && signInError.message.includes('Invalid login credentials')) {
+              logger.info('🔐 User not found, creating new auth user');
+            
+              // Если пользователь не существует, создаем его
+              const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+                email: userEmail,
+                password: userPassword,
+                options: {
+                  data: {
+                    telegram_id: telegramUserFromInitData.id,
+                    user_id: newUser.id,
+                    first_name: telegramUserFromInitData.first_name
+                  }
+                }
+              });
+              
+              logger.info('🔐 Sign up attempt result', { 
+                success: !!signUpData.user,
+                error: signUpError?.message,
+                userId: signUpData.user?.id,
+                needsConfirmation: !!signUpData.user && !signUpData.session
+              });
+              
+              if (signUpError) {
+                logger.error('❌ Failed to create auth user:', signUpError);
+              } else {
+                logger.info('✅ Auth user created successfully', { 
+                  authUserId: signUpData.user?.id,
+                  supabaseUserId: newUser.id,
+                  hasSession: !!signUpData.session
+                });
+              }
+            } else if (signInError) {
+              logger.error('❌ Failed to sign in auth user:', signInError);
+            } else {
+              logger.info('✅ Auth user signed in successfully', { 
+                authUserId: signInData.user?.id,
+                supabaseUserId: newUser.id,
+                hasSession: !!signInData.session
+              });
+            }
+          } catch (authErr) {
+            logger.error('❌ Auth session creation failed:', authErr);
+          }
+        }
+        */
         
         setSupabaseUser(newUser);
       }

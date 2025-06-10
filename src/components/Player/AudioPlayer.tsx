@@ -9,16 +9,123 @@ interface AudioPlayerProps {
 }
 
 const AudioPlayer: React.FC<AudioPlayerProps> = ({ audioUrl, title, description }) => {
-  const { state, play, pause, seekTo, togglePlay, setVolume } = usePlayer();
+  const { state, play, pause, seekTo } = usePlayer();
   const audioRef = useRef<HTMLAudioElement>(null);
   const progressBarRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isTrackingProgress] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [audioReady, setAudioReady] = useState(false);
+  const [userInteracted, setUserInteracted] = useState(false);
+
+  // Определяем мобильное устройство
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+  // Инициализация аудио элемента
+  useEffect(() => {
+    if (!audioRef.current) return;
+
+    const audio = audioRef.current;
+    
+    // Сброс состояний при смене URL
+    setIsLoading(true);
+    setLoadError(null);
+    setAudioReady(false);
+    setUserInteracted(false);
+
+    // Обработчики загрузки
+    const handleLoadStart = () => {
+      console.log('Начало загрузки аудио');
+      setIsLoading(true);
+      setLoadError(null);
+    };
+
+    const handleLoadedMetadata = () => {
+      console.log('Метаданные загружены');
+      setAudioReady(true);
+    };
+
+    const handleCanPlay = () => {
+      console.log('Аудио готово к воспроизведению');
+      setIsLoading(false);
+      setAudioReady(true);
+    };
+
+    const handleCanPlayThrough = () => {
+      console.log('Аудио полностью загружено');
+      setIsLoading(false);
+      setAudioReady(true);
+    };
+
+    const handleError = (e: Event) => {
+      console.error('Ошибка загрузки аудио:', e);
+      const target = e.target as HTMLAudioElement;
+      let errorMessage = 'Ошибка загрузки аудио';
+      
+      if (target.error) {
+        switch (target.error.code) {
+          case target.error.MEDIA_ERR_ABORTED:
+            errorMessage = 'Загрузка прервана';
+            break;
+          case target.error.MEDIA_ERR_NETWORK:
+            errorMessage = 'Ошибка сети';
+            break;
+          case target.error.MEDIA_ERR_DECODE:
+            errorMessage = 'Ошибка декодирования';
+            break;
+          case target.error.MEDIA_ERR_SRC_NOT_SUPPORTED:
+            errorMessage = 'Формат не поддерживается';
+            break;
+        }
+      }
+      
+      setLoadError(errorMessage);
+      setIsLoading(false);
+    };
+
+    const handleStalled = () => {
+      console.warn('Загрузка аудио приостановлена');
+    };
+
+    const handleWaiting = () => {
+      console.log('Ожидание данных...');
+    };
+
+    // Добавляем обработчики
+    audio.addEventListener('loadstart', handleLoadStart);
+    audio.addEventListener('loadedmetadata', handleLoadedMetadata);
+    audio.addEventListener('canplay', handleCanPlay);
+    audio.addEventListener('canplaythrough', handleCanPlayThrough);
+    audio.addEventListener('error', handleError);
+    audio.addEventListener('stalled', handleStalled);
+    audio.addEventListener('waiting', handleWaiting);
+
+    // Принудительная загрузка для мобильных устройств
+    if (isMobile) {
+      // Для мобильных устройств используем более мягкую загрузку
+      audio.preload = 'metadata';
+      setTimeout(() => {
+        audio.load();
+      }, 100);
+    } else {
+      audio.load();
+    }
+
+    return () => {
+      audio.removeEventListener('loadstart', handleLoadStart);
+      audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
+      audio.removeEventListener('canplay', handleCanPlay);
+      audio.removeEventListener('canplaythrough', handleCanPlayThrough);
+      audio.removeEventListener('error', handleError);
+      audio.removeEventListener('stalled', handleStalled);
+      audio.removeEventListener('waiting', handleWaiting);
+    };
+  }, [audioUrl, isMobile]);
 
   // Синхронизация с аудио элементом
   useEffect(() => {
-    if (!audioRef.current) return;
+    if (!audioRef.current || !audioReady) return;
 
     const audio = audioRef.current;
 
@@ -42,7 +149,6 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ audioUrl, title, description 
       }
     };
     const handleEnded = () => pause();
-    const handleLoaded = () => setIsLoading(false);
 
     // Добавление обработчиков
     audio.addEventListener('play', handlePlay);
@@ -50,7 +156,6 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ audioUrl, title, description 
     audio.addEventListener('timeupdate', handleTimeUpdate);
     audio.addEventListener('durationchange', handleDurationChange);
     audio.addEventListener('ended', handleEnded);
-    audio.addEventListener('canplaythrough', handleLoaded);
 
     // Очистка обработчиков
     return () => {
@@ -59,20 +164,52 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ audioUrl, title, description 
       audio.removeEventListener('timeupdate', handleTimeUpdate);
       audio.removeEventListener('durationchange', handleDurationChange);
       audio.removeEventListener('ended', handleEnded);
-      audio.removeEventListener('canplaythrough', handleLoaded);
     };
-  }, [isTrackingProgress, play, pause, seekTo]);
+  }, [isTrackingProgress, play, pause, seekTo, audioReady]);
 
-  // Управление воспроизведением
-  useEffect(() => {
-    if (!audioRef.current) return;
-
-    if (state.playing) {
-      audioRef.current.play().catch(error => console.error('Ошибка воспроизведения:', error));
-    } else {
+  // Обработка первого взаимодействия пользователя
+  const handleFirstInteraction = async () => {
+    if (!audioRef.current || userInteracted) return;
+    
+    try {
+      // Попытка воспроизведения и сразу паузы для "разблокировки" аудио
+      await audioRef.current.play();
       audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      setUserInteracted(true);
+      console.log('Аудио разблокировано для мобильного устройства');
+    } catch (error) {
+      console.log('Не удалось разблокировать аудио:', error);
     }
-  }, [state.playing]);
+  };
+
+  // Обработка клика на кнопку воспроизведения
+  const handlePlayPause = async () => {
+    if (!audioRef.current || !audioReady) return;
+
+    // Для мобильных устройств сначала разблокируем аудио
+    if (isMobile && !userInteracted) {
+      await handleFirstInteraction();
+    }
+
+    try {
+      if (state.playing) {
+        audioRef.current.pause();
+        pause();
+      } else {
+        const playPromise = audioRef.current.play();
+        if (playPromise !== undefined) {
+          await playPromise;
+          play();
+        }
+      }
+    } catch (error) {
+      console.error('Ошибка воспроизведения:', error);
+      if (error instanceof Error && error.name === 'NotAllowedError') {
+        setLoadError('Нажмите для воспроизведения');
+      }
+    }
+  };
 
   // Изменение времени воспроизведения
   useEffect(() => {
@@ -209,6 +346,24 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ audioUrl, title, description 
     };
   }, []);
 
+  // Обработка касаний для мобильных устройств
+  useEffect(() => {
+    if (!isMobile || userInteracted) return;
+
+    const handleTouch = async () => {
+      await handleFirstInteraction();
+    };
+
+    // Добавляем обработчики касаний
+    document.addEventListener('touchstart', handleTouch, { once: true });
+    document.addEventListener('click', handleTouch, { once: true });
+
+    return () => {
+      document.removeEventListener('touchstart', handleTouch);
+      document.removeEventListener('click', handleTouch);
+    };
+  }, [isMobile, userInteracted]);
+
   // Иконки для плеера
   const PlayIcon = () => (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -222,20 +377,51 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ audioUrl, title, description 
     </svg>
   );
 
-  const VolumeIcon = () => (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M11 5L6 9H2V15H6L11 19V5Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-      <path d="M15.54 8.46C16.4774 9.39764 17.0039 10.6692 17.0039 11.995C17.0039 13.3208 16.4774 14.5924 15.54 15.53" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-      <path d="M19.07 4.93C20.9447 6.80528 21.9979 9.34836 21.9979 12C21.9979 14.6516 20.9447 17.1947 19.07 19.07" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    </svg>
-  );
+
 
   return (
-    <div className="audio-player-container">
-      {isLoading && (
+    <div 
+      className="audio-player-container"
+      onClick={isMobile && !userInteracted ? handleFirstInteraction : undefined}
+    >
+      {isLoading && !loadError && (
         <div className="audio-loading">
           <div className="loading-spinner"></div>
           <span>Загрузка аудио...</span>
+        </div>
+      )}
+      
+      {isMobile && !userInteracted && audioReady && !loadError && (
+        <div className="mobile-touch-hint">
+          <div style={{ fontSize: '24px', marginBottom: '10px' }}></div>
+          <span>Коснитесь экрана для воспроизведения</span>
+        </div>
+      )}
+      
+      {loadError && (
+        <div className="audio-loading">
+          <div style={{ color: '#ff6b6b', marginBottom: '10px' }}>⚠️</div>
+          <span style={{ color: '#ff6b6b' }}>{loadError}</span>
+          <button 
+            onClick={() => {
+              if (audioRef.current) {
+                setLoadError(null);
+                setIsLoading(true);
+                audioRef.current.load();
+              }
+            }}
+            style={{
+              marginTop: '10px',
+              padding: '8px 16px',
+              background: 'rgba(255, 255, 255, 0.2)',
+              border: 'none',
+              borderRadius: '4px',
+              color: 'white',
+              cursor: 'pointer'
+            }}
+          >
+            Повторить
+          </button>
         </div>
       )}
       
@@ -248,23 +434,15 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ audioUrl, title, description 
         <audio 
           ref={audioRef} 
           src={audioUrl} 
-          preload="metadata" 
-          loop={false}
+          preload={isMobile ? "metadata" : "auto"}
+          crossOrigin="anonymous"
+          playsInline
+          controls={false}
+          muted={false}
         />
         
-        <div 
-          className="audio-player-background" 
-          style={{ 
-            backgroundImage: state.backgroundImage ? `url(${state.backgroundImage})` : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' 
-          }}
-        >
-          <canvas ref={canvasRef} className="audio-visualization" width="300" height="100"></canvas>
-          
+        <div className="audio-player-background">
           <div className="audio-controls">
-            <button className="play-pause-btn" onClick={togglePlay} aria-label={state.playing ? 'Пауза' : 'Играть'}>
-              {state.playing ? <PauseIcon /> : <PlayIcon />}
-            </button>
-            
             <div className="progress-container">
               <div 
                 ref={progressBarRef} 
@@ -280,18 +458,14 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ audioUrl, title, description 
               </div>
             </div>
             
-            <div className="volume-control">
-              <VolumeIcon />
-              <input 
-                type="range" 
-                min="0" 
-                max="1" 
-                step="0.01" 
-                value={state.volume} 
-                onChange={(e) => setVolume(parseFloat(e.target.value))} 
-                className="volume-slider"
-              />
-            </div>
+            <button 
+              className="play-pause-btn" 
+              onClick={handlePlayPause} 
+              disabled={!audioReady || !!loadError}
+              aria-label={state.playing ? 'Пауза' : 'Играть'}
+            >
+              {state.playing ? <PauseIcon /> : <PlayIcon />}
+            </button>
           </div>
         </div>
       </div>

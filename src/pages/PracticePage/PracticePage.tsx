@@ -233,7 +233,7 @@ const PlayerSelector: React.FC = () => {
     switch (state.activeType) {
       case PlayerType.VIDEO:
         return (
-          <VideoPlayer />
+          <VideoPlayer kinescopeId={content?.kinescope_id}/>
         );
       case PlayerType.AUDIO:
         return (

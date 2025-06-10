@@ -15,8 +15,12 @@ interface SafeAreaData {
 export const AppWrapper: FC<AppWrapperProps> = ({ children }) => {
   useEffect(() => {
     // Автоматически включаем полноэкранный режим на всех страницах
-    postEvent('web_app_request_fullscreen');
-    
+    try {
+      postEvent('web_app_request_fullscreen')
+    } catch (e) {
+      console.error('Fullscreen request failed:', e)
+    }
+
     // Отключаем вертикальные свайпы для закрытия приложения 
     postEvent('web_app_setup_swipe_behavior', { allow_vertical_swipe: false });
     

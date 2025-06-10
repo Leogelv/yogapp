@@ -5,6 +5,7 @@ import { InitDataPage } from '@/pages/InitDataPage';
 import { LaunchParamsPage } from '@/pages/LaunchParamsPage';
 import { ThemeParamsPage } from '@/pages/ThemeParamsPage';
 import { ProfilePage } from '@/pages/ProfilePage';
+import { SupportPage } from '@/pages/SupportPage';
 import { TONConnectPage } from '@/pages/TONConnectPage/TONConnectPage';
 import { DiagnosticsPage } from '@/pages/DiagnosticsPage/DiagnosticsPage';
 import { MainScreen } from '@/pages/MainScreen/MainScreen';
@@ -16,6 +17,7 @@ import CategoryPage from '@/pages/LibraryPage/CategoryPage';
 import FavoritesPage from '@/pages/LibraryPage/FavoritesPage';
 import CalendarPage from '@/pages/CalendarPage';
 import { LandingPage } from '@/pages/LandingPage/LandingPage';
+import {AudioPracticePage} from "@/pages/AudioPracticePage.tsx";
 
 interface Route {
   path: string;
@@ -48,6 +50,8 @@ export const routes: Route[] = [
   
   // Страница таймера для самостоятельных медитаций
   { path: '/practice/timer', Component: EnhancedPracticePageWrapper, title: 'Медитация' },
+
+  { path: '/practice/audio/:contentId', Component: AudioPracticePage, title: 'Практика'},
   
   // Страница события из календаря
   { path: '/practice/event/:eventId', Component: EnhancedPracticePageWrapper, title: 'Событие' },
@@ -63,6 +67,7 @@ export const routes: Route[] = [
   { path: '/theme-params', Component: ThemeParamsPage, title: 'Theme Params' },
   { path: '/launch-params', Component: LaunchParamsPage, title: 'Launch Params' },
   { path: '/profile', Component: ProfilePage, title: 'Профиль' },
+  { path: '/support', Component: SupportPage, title: 'Поддержка' },
   {
     path: '/ton-connect',
     Component: TONConnectPage,

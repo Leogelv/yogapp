@@ -1,7 +1,6 @@
 .calendar-grid {
   margin-bottom: 1.5rem;
   background-color: var(--calendar-card-bg);
-  border-radius: var(--calendar-radius-md);
   overflow: hidden;
   box-shadow: var(--calendar-shadow-sm);
   border: 1px solid var(--calendar-border);

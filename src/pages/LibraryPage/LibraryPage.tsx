@@ -1,22 +1,24 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect} from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Page } from '@/components/Page';
 import { useContents, ContentItem } from '@/lib/supabase/hooks/useContents';
 import { useFavorites } from '@/lib/supabase/hooks';
-import { useSupabaseUser } from '@/lib/supabase/hooks';
 import './LibraryPage.css';
-
+import {Link} from "@/components";
+import { useUser } from '@/contexts';
+import {supabase} from "@/lib/supabase/client.ts";
+import {User} from "@/pages/AdminPage/types.ts";
 // Основные категории для главной страницы библиотеки
 const mainCategories = [
-  { id: 'physical', name: 'Тело', icon: '🧘‍♀️', description: 'Асаны и физические практики' },
-  { id: 'meditation', name: 'Медитация', icon: '🧠', description: 'Практики осознанности' },
-  { id: 'base', name: 'База', icon: '⭐', description: 'Основы и базовые навыки' },
-  { id: 'breathing', name: 'Дыхание', icon: '🌬️', description: 'Дыхательные техники' }
+  { id: 'physical', name: 'тело', img: '/cat1.png', icon: '🧘‍♀️', description: 'Асаны и физические практики' },
+  { id: 'meditation', name: 'медитация', img: '/cat2.png', icon: '🧠', description: 'Практики осознанности' },
+  { id: 'base', name: 'база', icon: '⭐', img: '/cat3.png', description: 'Основы и базовые навыки' },
+  { id: 'breathing', name: 'дыхание', img: '/cat1.png', icon: '🌬️', description: 'Дыхательные техники' }
 ];
 
 // Все категории включая фильтры
 const allCategories = [
-  { id: 'all', name: 'Все' },
+  { id: 'all', name: 'все' },
   ...mainCategories
 ];
 
@@ -29,7 +31,8 @@ const LibraryPage: React.FC = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
 
   // Получаем пользователя
-  const { supabaseUser } = useSupabaseUser(undefined);
+  // const { supabaseUser } = useSupabaseUser(undefined);
+  const { user, supabaseUser } = useUser();
   const userId = supabaseUser?.id || null;
 
   // Получаем избранное
@@ -63,7 +66,14 @@ const LibraryPage: React.FC = () => {
       return () => clearInterval(interval);
     }
   }, [selectedCategory, latestContents.length]);
-
+  const [supaUser, setSupaUser] = useState<User | undefined>()
+  useEffect(() => {
+    if(user?.id){
+      supabase?.from('users').select('*').eq('telegram_id', user.id).then(r => {
+        setSupaUser(r.data![0])
+      })
+    }
+  }, [user]);
   // Функция для получения диапазона длительности исходя из фильтра
   function getDurationRange(timeFilter: string): { min: number, max: number } | undefined {
     switch (timeFilter) {
@@ -105,14 +115,22 @@ const LibraryPage: React.FC = () => {
 
   // Обработчик перехода к конкретной практике
   const handlePracticeSelect = (practice: ContentItem) => {
-    navigate(`/practice/${practice.id}`);
+    console.log(practice)
+    if(practice.audio_file_path){
+      navigate(`/practice/audio/${practice.id}`);
+      return
+    }
+
+    if(((practice?.power_needed && practice?.power_needed !== null) ? practice?.power_needed : 2) <= (supaUser?.power || -1)){
+      navigate(`/practice/${practice.id}`);
+    }
   };
 
   // Обработчик добавления/удаления из избранного
   const handleToggleFavorite = (e: React.MouseEvent, practiceId: string) => {
     e.stopPropagation();
     if (!userId) return;
-    
+
     if (isFavorite(practiceId)) {
       removeFromFavorites(practiceId);
     } else {
@@ -135,104 +153,144 @@ const LibraryPage: React.FC = () => {
     setTimeFilter(filter);
     setShowTimeFilter(false);
   };
+  // Получаем initData из Telegram SDK
+  // const initDataState = useSignal(_initDataState);
 
+  // const user = useMemo(() =>
+  //         initDataState && initDataState.user ? initDataState.user : undefined,
+  //     [initDataState]);
   // Если категория не выбрана, показываем главную страницу
   if (selectedCategory === null) {
     return (
-      <Page back={false}>
-        <div className={`library-container ${contentVisible ? 'content-visible' : ''}`}>
-          <div className="library-header">
-            <h1 className="library-title">Библиотека</h1>
-          </div>
-          
-          {/* Слайдер "Новое" */}
-          <div className="latest-section">
-            <h2 className="section-title">Новое</h2>
-            {latestLoading ? (
-              <div className="latest-loading">Загрузка...</div>
-            ) : latestContents.length > 0 ? (
-              <div className="latest-slider-container">
-                <div className="latest-card-full" onClick={() => handlePracticeSelect(latestContents[currentSlide])}>
-                  <div 
-                    className="latest-card-image" 
-                    style={{ backgroundImage: `url(${latestContents[currentSlide]?.thumbnail_url || '/img/practice-default.jpg'})` }}
-                  >
-                    <button 
-                      className={`latest-favorite-btn ${isFavorite(latestContents[currentSlide]?.id) ? 'active' : ''}`}
-                      onClick={(e) => handleToggleFavorite(e, latestContents[currentSlide]?.id)}
-                    >
-                      {isFavorite(latestContents[currentSlide]?.id) ? '❤️' : '🤍'}
-                    </button>
+        <Page back={false}>
+          {user && <div className="!py-2 !px-4 flex justify-between items-center border-b border-black">
+            <Link to={'/'} >
+              {user.photo_url ? (
+                  <img className={'w-6 h-6 rounded-full border border-black'} src={user.photo_url}
+                       alt={user.username || user.first_name} loading="lazy"/>
+              ) : (
+                  <div className="w-6 h-6 rounded-full !bg-gray-200 flex items-center justify-center"
+                       aria-hidden="true">
+                    {user.first_name.charAt(0)}
                   </div>
-                  <div className="latest-card-content">
-                    <div className="latest-meta">
-                      {Math.floor(latestContents[currentSlide]?.duration / 60)} мин • {latestContents[currentSlide]?.categories?.name || 'Практика'}
+              )}
+            </Link>
+
+            <img src={'/logo.svg'} alt={''}/>
+            <img src={'/settings.svg'} alt={''}/>
+
+
+          </div>}
+          <div>
+
+
+            {/* Слайдер "Новое" */}
+            <div>
+
+              {latestLoading ? (
+                  <div className="latest-loading">Загрузка...</div>
+              ) : latestContents.length > 0 ? (
+                  <div className="latest-slider-container">
+                    <div className="flex flex-col h-[260px] bg-cover" style={{backgroundImage: `url(${latestContents[currentSlide]?.thumbnail_url || '/img/practice-default.jpg'})`}}
+                         onClick={() => handlePracticeSelect(latestContents[currentSlide])}>
+                      <div
+                          className="latest-card-image"
+
+                      >
+                      </div>
+                      <div className="latest-card-content">
+                        <div className="flex items-center gap-2">
+                          <p style={{ fontFamily: 'RF Dewi, sans-serif', letterSpacing: '-0.07em' }} className={'text-sm !py-1 !px-2 bg-[#414141] text-white border border-black'}>{Math.floor(latestContents[currentSlide]?.duration / 60)} мин</p>
+                          <p style={{ fontFamily: 'RF Dewi, sans-serif', letterSpacing: '-0.07em' }} className={'text-sm !py-1 !px-2 bg-[#414141] text-white border border-black'}>{latestContents[currentSlide]?.categories?.name || 'Практика'}</p>
+                        </div>
+                        <h3 style={{ fontFamily: 'RF Dewi, sans-serif', letterSpacing: '-0.07em' }} className="text-white font-bold text-2xl !mb-2">{latestContents[currentSlide]?.title}</h3>
+
+                      </div>
                     </div>
-                    <h3 className="latest-card-title">{latestContents[currentSlide]?.title}</h3>
-                    <p className="latest-description">
-                      {latestContents[currentSlide]?.short_description || latestContents[currentSlide]?.description}
-                    </p>
+
+                    {/* Пагинация точками */}
+                    {latestContents.slice(0, 3).length > 1 && (
+                        <div className="slider-dots absolute bottom-2 left-1/2 -translate-x-1/2">
+                          {latestContents.slice(0, 3).map((_, index) => (
+                              <button
+                                  key={index}
+                                  className={`slider-dot ${index === currentSlide ? 'active' : ''}`}
+                                  onClick={() => setCurrentSlide(index)}
+                              />
+                          ))}
+                        </div>
+                    )}
                   </div>
-                </div>
-                
-                {/* Пагинация точками */}
-                {latestContents.slice(0, 3).length > 1 && (
-                  <div className="slider-dots">
-                    {latestContents.slice(0, 3).map((_, index) => (
-                      <button
-                        key={index}
-                        className={`slider-dot ${index === currentSlide ? 'active' : ''}`}
-                        onClick={() => setCurrentSlide(index)}
-                      />
-                    ))}
+              ) : null}
+            </div>
+
+            {/* Главные категории */}
+            <div>
+              {mainCategories.map(category => (
+                  <div className={'!p-4 border-b border-black'} key={category.id}>
+                    <div className={'flex flex-col gap-3'} onClick={() => handleMainCategorySelect(category.id)}>
+
+                      <div className={'flex items-center justify-between gap-2'}>
+                        <h3 style={{ fontFamily: 'RF Dewi, sans-serif', letterSpacing: '-0.07em' }} className="font-bold text-2xl !text-black">{category.name}</h3>
+                        <p style={{ fontFamily: 'RF Dewi, sans-serif', letterSpacing: '-0.07em' }} className={'text-[#191919]/40 underline underline-offset-4 cursor-pointer'}>все практики</p>
+                      </div>
+                      <p className=" text-[#191919]">{category.description}</p>
+                      <img src={category.img} className={''}/>
+                    </div>
                   </div>
-                )}
+              ))}
+            </div>
+
+            {/* Раздел избранного */}
+            <div className={'!p-5 border-b border-black'}>
+              <div className={'flex justify-center'} onClick={handleFavoritesClick}>
+                <h3 className="font-bold !text-black underline underline-offset-3" style={{ fontFamily: 'RF Dewi, sans-serif', letterSpacing: '-0.07em' }}>избранное</h3>
               </div>
-            ) : null}
+            </div>
           </div>
-          
-          {/* Главные категории */}
-          <div className="main-categories">
-            {mainCategories.map(category => (
-              <div 
-                key={category.id}
-                className="main-category-card"
-                onClick={() => handleMainCategorySelect(category.id)}
-              >
-                <div className="category-icon">{category.icon}</div>
-                <h3 className="category-name">{category.name}</h3>
-                <p className="category-description">{category.description}</p>
-              </div>
-            ))}
-          </div>
-          
-          {/* Кнопка избранного */}
-          <button className="favorites-main-button" onClick={handleFavoritesClick}>
-            ❤️ Избранное
-          </button>
-        </div>
-      </Page>
+        </Page>
     );
   }
-
+  console.log(supaUser)
   // Страница выбранной категории с практиками
   return (
-    <Page back={true} onBackClick={handleBackToMain}>
-      <div className={`library-container ${contentVisible ? 'content-visible' : ''}`}>
-        <div className="library-header">
-          <h1 className="library-title">
-            {allCategories.find(cat => cat.id === selectedCategory)?.name || 'Категория'}
-          </h1>
-          <div className="time-filter-toggle" onClick={toggleTimeFilter}>
-            {timeFilter ? getTimeFilterLabel(timeFilter) : 'Время'} {showTimeFilter ? '▲' : '▼'}
+      <Page back={true} onBackClick={handleBackToMain}>
+        {/* Header с фото профиля пользователя */}
+        {user && <div className="!py-2 !px-4 flex justify-between items-center border-b border-black">
+          <Link to={'/'} >
+            {user.photo_url ? (
+                <img className={'w-6 h-6 rounded-full border border-black'} src={user.photo_url}
+                     alt={user.username || user.first_name} loading="lazy"/>
+            ) : (
+                <div className="w-6 h-6 rounded-full !bg-gray-200 flex items-center justify-center"
+                     aria-hidden="true">
+                  {user.first_name.charAt(0)}
+                </div>
+            )}
+          </Link>
+
+          <img src={'/logo.svg'} alt={''}/>
+          <img src={'/settings.svg'} alt={''}/>
+        </div>}
+
+        <div className={`library-container ${contentVisible ? 'content-visible' : ''}`}>
+          <div className="!px-3 flex items-center gap-2 justify-between !mb-4 !text-[#191919]">
+            <h1 style={{ fontFamily: 'RF Dewi, sans-serif', letterSpacing: '-0.07em' }} className="font-bold text-2xl ">
+              {allCategories.find(cat => cat.id === selectedCategory)?.name || 'Категория'}
+            </h1>
+            <div style={{ fontFamily: 'RF Dewi, sans-serif', letterSpacing: '-0.07em' }} className="time-filter-toggle !bg-transparent" onClick={toggleTimeFilter}>
+              {timeFilter ? getTimeFilterLabel(timeFilter) : 'время'} <svg className={`duration-200 ${showTimeFilter ? "rotate-180" : ''}`} width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M15 11L12 14L9 11" stroke="#191919" stroke-width="1.5" stroke-linecap="round"
+                    stroke-linejoin="round"/>
+            </svg>
+            </div>
           </div>
-        </div>
-        
-        {/* Фильтр по времени */}
-        {showTimeFilter && (
-          <div className="time-filter-dropdown">
-            <button 
-              onClick={() => handleTimeFilterSelect('under7')}
+
+          {/* Фильтр по времени */}
+          {showTimeFilter && (
+              <div className="time-filter-dropdown">
+                <button
+                    onClick={() => handleTimeFilterSelect('under7')}
               className={timeFilter === 'under7' ? 'active' : ''}
             >
               до 7 минут
@@ -262,20 +320,20 @@ const LibraryPage: React.FC = () => {
         )}
         
         {/* Подкатегории */}
-        <div className="category-tabs">
+        <div className="category-tabs !px-3 ">
           {allCategories.map(cat => (
             <button
               key={cat.id}
-              className={`category-tab ${selectedCategory === cat.id ? 'active' : ''}`}
+              style={{ fontFamily: 'RF Dewi, sans-serif', letterSpacing: '-0.07em' }}
+              className={`cursor-pointer !py-2 !px-4 text-[#191919] bg-[#F1F1F1] ${selectedCategory === cat.id ? '!bg-[#191919] text-white' : ''}`}
               onClick={() => handleSubCategorySelect(cat.id)}
             >
               {cat.name}
             </button>
           ))}
         </div>
-        
         {/* Контент библиотеки */}
-        <div className="library-content">
+        <div className="library-content border-b border-black">
           {loading ? (
             <div className="library-loading">Загрузка...</div>
           ) : error ? (
@@ -287,40 +345,52 @@ const LibraryPage: React.FC = () => {
                 : 'В этой категории пока нет практик'}
             </div>
           ) : (
-            <div className="practice-grid">
-              {contents.map((item: ContentItem) => (
-                <div 
-                  key={item.id} 
-                  className="practice-square-card"
-                  onClick={() => handlePracticeSelect(item)}
-                >
-                  <div 
-                    className="practice-square-thumbnail" 
-                    style={{ backgroundImage: `url(${item.thumbnail_url || '/img/practice-default.jpg'})` }}
-                  >
-                    <button 
-                      className={`square-favorite-button ${isFavorite(item.id) ? 'active' : ''}`}
-                      onClick={(e) => handleToggleFavorite(e, item.id)}
+            <div className="practice-list">
+
+              {contents.map((item: ContentItem) => {
+                return (
+                    <div
+                        key={item.id}
+                        className="flex flex-col gap-3 !py-4 !px-3 border-t border-black"
+                        onClick={() => handlePracticeSelect(item)}
                     >
-                      {isFavorite(item.id) ? '❤️' : '🤍'}
-                    </button>
-                    <div className="practice-duration-badge">
-                      {Math.floor(item.duration / 60)} мин
+                      <div
+                          className="practice-full-thumbnail"
+                          style={{backgroundImage: `url(${item.thumbnail_url || '/img/practice-default.jpg'})`}}
+                      >
+                      </div>
+                      <div className="flex flex-col gap-3">
+                        <div className="flex justify-between items-start gap-4">
+                          <h3 className="text-xl text-black font-bold"
+                              style={{fontFamily: 'RF Dewi, sans-serif', letterSpacing: '-0.07em'}}>{item.title}</h3>
+                          {((item.power_needed && item.power_needed !== null) ? item.power_needed : 2) <= (supaUser?.power || -1) ? <img
+                              onClick={(e) => handleToggleFavorite(e, item.id)}
+                              src={isFavorite(item.id) ? "/flag-filled.svg" : "/flag-empty.svg"}
+                              alt={isFavorite(item.id) ? "Убрать из избранного" : "Добавить в избранное"}
+                              className={`!mt-[2px] favorite-flag-icon cursor-pointer ${isFavorite(item.id) ? 'favorited' : ''}`}
+                          /> : <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                    xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M9.23047 9H7.2002C6.08009 9 5.51962 9 5.0918 9.21799C4.71547 9.40973 4.40973 9.71547 4.21799 10.0918C4 10.5196 4 11.0801 4 12.2002V17.8002C4 18.9203 4 19.4801 4.21799 19.9079C4.40973 20.2842 4.71547 20.5905 5.0918 20.7822C5.5192 21 6.07902 21 7.19694 21H16.8031C17.921 21 18.48 21 18.9074 20.7822C19.2837 20.5905 19.5905 20.2842 19.7822 19.9079C20 19.4805 20 18.9215 20 17.8036V12.1969C20 11.079 20 10.5192 19.7822 10.0918C19.5905 9.71547 19.2837 9.40973 18.9074 9.21799C18.4796 9 17.9203 9 16.8002 9H14.7689M9.23047 9H14.7689M9.23047 9C9.10302 9 9 8.89668 9 8.76923V6C9 4.34315 10.3431 3 12 3C13.6569 3 15 4.34315 15 6V8.76923C15 8.89668 14.8964 9 14.7689 9"
+                                stroke="#191919" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                          </svg>
+                          }
+                        </div>
+                        <div className="practice-full-tags">
+                          <span className="practice-tag">{Number(item.difficulty) || 2} силы</span>
+                          <span
+                              className="practice-tag">{Math.floor(item.duration / 60)} минут</span>
+                          <span className="practice-tag">{item.categories?.name || 'практика'}</span>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                  <div className="practice-square-info">
-                    <h3 className="practice-square-title">{item.title}</h3>
-                    <div className="practice-difficulty-stars">
-                      {'⭐'.repeat(Number(item.difficulty) || 2)}
-                    </div>
-                  </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           )}
         </div>
-      </div>
-    </Page>
+        </div>
+      </Page>
   );
 };
 

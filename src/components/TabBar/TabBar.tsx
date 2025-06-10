@@ -28,34 +28,34 @@ const TabBar: FC<TabBarProps> = ({ className }) => {
   };
   
   return (
-    <nav className={`tab-bar ${className || ''}`} aria-label="Основная навигация">
-      <button 
-        className={`tab-item ${isActive('/') ? 'active' : ''}`} 
-        onClick={() => handleTabClick('/')}
-        aria-current={isActive('/') ? 'page' : undefined}
-        aria-label="Перейти на главную страницу"
-      >
-        <span>главная</span>
-      </button>
-      
-      <button 
-        className={`tab-item ${isActive('/library') ? 'active' : ''}`} 
-        onClick={() => handleTabClick('/library')}
-        aria-current={isActive('/library') ? 'page' : undefined}
-        aria-label="Перейти в библиотеку"
-      >
-        <span>библиотека</span>
-      </button>
-      
-      <button 
-        className={`tab-item ${isActive('/calendar') ? 'active' : ''}`} 
-        onClick={() => handleTabClick('/calendar')}
-        aria-current={isActive('/calendar') ? 'page' : undefined}
-        aria-label="Перейти в расписание"
-      >
-        <span>расписание</span>
-      </button>
-    </nav>
+      <nav className={`tab-bar ${className || ''}`} aria-label="Основная навигация">
+
+          <button
+              className={`tab-item ${isActive('/calendar') ? 'active' : ''}`}
+              onClick={() => handleTabClick('/calendar')}
+              aria-current={isActive('/calendar') ? 'page' : undefined}
+              aria-label="Перейти в расписание"
+          >
+              <span>расписание</span>
+          </button>
+          <button
+              className={`tab-item ${isActive('/') ? 'active' : ''}`}
+              onClick={() => handleTabClick('/')}
+              aria-current={isActive('/') ? 'page' : undefined}
+              aria-label="Перейти на главную страницу"
+          >
+              <span>главная</span>
+          </button>
+          <button
+              className={`tab-item ${isActive('/library') ? 'active' : ''}`}
+              onClick={() => handleTabClick('/library')}
+              aria-current={isActive('/library') ? 'page' : undefined}
+              aria-label="Перейти в библиотеку"
+          >
+              <span>библиотека</span>
+          </button>
+
+      </nav>
   );
 };
 

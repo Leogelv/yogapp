@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+// import { useNavigate } from 'react-router-dom';
 import { QuizProvider, useQuiz } from '@/contexts/QuizContext';
 import './QuizFlow.css';
 
@@ -10,60 +10,53 @@ import QuizGoalStep from './components/QuizGoalStep';
 import QuizApproachStep from './components/QuizApproachStep';
 import QuizMeditationObjectStep from './components/QuizMeditationObjectStep';
 import QuizResultsStep from './components/QuizResultsStep';
+import {Page} from "@/components";
 
 // Убираем QuizProgress - в новом дизайне нет прогресс бара
 
 // Основной компонент с навигацией между шагами
 const QuizFlowContent: React.FC = () => {
-  const { state, goBack, goNext, resetQuiz, canGoNext } = useQuiz();
-  const navigate = useNavigate();
+  const { state, resetQuiz } = useQuiz();
+  // const navigate = useNavigate();
 
   // Автосброс квиза при каждом заходе
   useEffect(() => {
     resetQuiz();
-  }, [resetQuiz]);
+  }, []);
 
   // Автопереход по шагам с задержкой
-  useEffect(() => {
-    if (canGoNext && state.step < getTotalSteps() - 1) {
-      const timer = setTimeout(() => {
-        goNext();
-      }, 800); // Задержка 800мс для плавности
 
-      return () => clearTimeout(timer);
-    }
-  }, [canGoNext, state.step, goNext]);
 
   // Обработчик кнопки назад
-  const handleBack = () => {
-    if (state.step === 0) {
-      navigate('/');
-    } else {
-      goBack();
-    }
-  };
+  // const handleBack = () => {
+  //   if (state.step === 0) {
+  //     navigate('/');
+  //   } else {
+  //     goBack();
+  //   }
+  // };
 
   // Получение общего количества шагов
-  const getTotalSteps = () => {
-    if (!state.practiceType) return 5;
-    
-    switch (state.practiceType) {
-      case 'short':
-      case 'breathing':
-        return 3; // Тип -> Цель -> Результат
-      case 'physical':
-        return 4; // Тип -> Длительность -> Цель -> Результат
-      case 'meditation':
-        if (state.approach === 'self') {
-          return 5; // Тип -> Подход -> Объект -> Длительность -> Результат
-        } else if (state.approach === 'guided') {
-          return 4; // Тип -> Подход -> Цель -> Результат
-        }
-        return 3; // Тип -> Подход -> ...
-      default:
-        return 5;
-    }
-  };
+  // const getTotalSteps = () => {
+  //   if (!state.practiceType) return 5;
+  //
+  //   switch (state.practiceType) {
+  //     case 'short':
+  //     case 'breathing':
+  //       return 3; // Тип -> Цель -> Результат
+  //     case 'physical':
+  //       return 4; // Тип -> Длительность -> Цель -> Результат
+  //     case 'meditation':
+  //       if (state.approach === 'self') {
+  //         return 5; // Тип -> Подход -> Объект -> Длительность -> Результат
+  //       } else if (state.approach === 'guided') {
+  //         return 4; // Тип -> Подход -> Цель -> Результат
+  //       }
+  //       return 3; // Тип -> Подход -> ...
+  //     default:
+  //       return 5;
+  //   }
+  // };
 
   // Получение заголовка текущего шага по дизайну Figma
   const getStepTitle = () => {
@@ -81,7 +74,7 @@ const QuizFlowContent: React.FC = () => {
         break;
       case 2:
         if (state.practiceType === 'short' || state.practiceType === 'breathing') {
-          return 'рекомендация';
+          return '';
         } else if (state.practiceType === 'physical') {
           return 'выбери цель';
         } else if (state.practiceType === 'meditation') {
@@ -95,13 +88,13 @@ const QuizFlowContent: React.FC = () => {
       case 3:
         if (state.practiceType === 'physical' || 
             (state.practiceType === 'meditation' && state.approach === 'guided')) {
-          return 'рекомендация';
+          return '';
         } else if (state.practiceType === 'meditation' && state.approach === 'self') {
           return 'выбери время медитации';
         }
         break;
       case 4:
-        return 'рекомендация';
+        return '';
       default:
         return 'квиз';
     }
@@ -154,22 +147,22 @@ const QuizFlowContent: React.FC = () => {
   return (
     <div className="quiz-container">
       {/* Кнопка назад только если не первый шаг */}
-      {state.step > 0 && (
-        <div className="quiz-back-container">
-          <button className="quiz-back-button" onClick={handleBack}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            Назад
-          </button>
-        </div>
-      )}
+      {/*{state.step >= 0 && (*/}
+      {/*  <div className="quiz-back-container">*/}
+      {/*    <button className="quiz-back-button" onClick={handleBack}>*/}
+      {/*      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">*/}
+      {/*        <path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>*/}
+      {/*      </svg>*/}
+      {/*      Назад*/}
+      {/*    </button>*/}
+      {/*  </div>*/}
+      {/*)}*/}
 
       {/* Заголовок квиза */}
-      <div className="quiz-title">
+      {getStepTitle() && <div className="quiz-title">
         {getStepTitle()}
-      </div>
-      
+      </div>}
+
       {/* Контент шага */}
       <div className="quiz-step-container">
         {renderStepComponent()}
@@ -184,8 +177,6 @@ const QuizFlowContent: React.FC = () => {
         </div>
       )}
 
-      {/* Home indicator */}
-      <div className="quiz-home-indicator"></div>
     </div>
   );
 };
@@ -193,8 +184,10 @@ const QuizFlowContent: React.FC = () => {
 // Главный компонент с провайдером контекста
 export const QuizFlow: React.FC = () => {
   return (
-    <QuizProvider>
-      <QuizFlowContent />
-    </QuizProvider>
+    <Page showTabBar={false}>
+      <QuizProvider>
+        <QuizFlowContent />
+      </QuizProvider>
+    </Page>
   );
 }; 

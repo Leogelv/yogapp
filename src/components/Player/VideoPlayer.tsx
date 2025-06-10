@@ -1,46 +1,44 @@
-import React, { useEffect, useState } from 'react';
+import React, {useState} from 'react';
 import KinescopePlayer from '@kinescope/react-kinescope-player';
-import { usePlayer, PlayerState } from '../../contexts/PlayerContext';
 import './Player.css';
 
 interface VideoPlayerProps {
   // videoId будет браться из PlayerContext.state.contentData.kinescopeId
   // title будет браться из PlayerContext.state.contentData.title
   // description будет браться из PlayerContext.state.contentData.description
+  kinescopeId?: string
 }
 
-const VideoPlayer: React.FC<VideoPlayerProps> = () => {
-  const { state, setState, play, pause } = usePlayer();
-  const { contentData, playing, muted, fullscreen } = state as PlayerState;
-  const [playerError, setPlayerError] = useState<boolean>(false);
+const VideoPlayer: React.FC<VideoPlayerProps> = ({kinescopeId}) => {
+  //const { state, setState, play, pause } = usePlayer();
+  //const { contentData, playing, muted, fullscreen } = state as PlayerState;
+  const [, setPlayerError] = useState<boolean>(false);
   // const kinescopePlayerRef = useRef<any>(null); // Если понадобится прямой доступ к методам плеера
 
-  const kinescopeId = contentData?.kinescopeId;
-  const title = contentData?.title || 'Видео';
-  const description = contentData?.description;
+  //const kinescopeId = contentData?.kinescopeId;
 
   // Fallback для демо/тестирования, если kinescopeId отсутствует
-  const fallbackVideoId = 'CetLf3cKNDETJhGsUaP2s9';
+  const fallbackVideoId = '75EPdFkFahbUdBqsPvBmqA';
   const effectiveVideoId = kinescopeId || fallbackVideoId;
 
-  useEffect(() => {
-    const playerContainer = document.querySelector('.video-player-wrapper');
-    if (!playerContainer) return;
-
-    if (fullscreen) {
-      if (document.fullscreenElement !== playerContainer) {
-        playerContainer.requestFullscreen().catch(err => {
-          console.error('Ошибка перехода в полноэкранный режим:', err);
-        });
-      }
-    } else {
-      if (document.fullscreenElement === playerContainer) {
-        document.exitFullscreen().catch(err => {
-          console.error('Ошибка выхода из полноэкранного режима:', err);
-        });
-      }
-    }
-  }, [fullscreen]);
+  // useEffect(() => {
+  //   const playerContainer = document.querySelector('.video-player-wrapper');
+  //   if (!playerContainer) return;
+  //
+  //   if (fullscreen) {
+  //     if (document.fullscreenElement !== playerContainer) {
+  //       playerContainer.requestFullscreen().catch(err => {
+  //         console.error('Ошибка перехода в полноэкранный режим:', err);
+  //       });
+  //     }
+  //   } else {
+  //     if (document.fullscreenElement === playerContainer) {
+  //       document.exitFullscreen().catch(err => {
+  //         console.error('Ошибка выхода из полноэкранного режима:', err);
+  //       });
+  //     }
+  //   }
+  // }, [fullscreen]);
 
   const handlePlayerError = (error: any) => {
     console.error('Ошибка Kinescope плеера:', error, 'для videoId:', kinescopeId);
@@ -50,27 +48,27 @@ const VideoPlayer: React.FC<VideoPlayerProps> = () => {
     //   // Попробовать загрузить fallback (но это может вызвать рекурсию, если и он недоступен)
     // }
   };
-  
-  const handleReady = (data: { duration: number }) => {
-    setState((prevState: PlayerState) => ({ ...prevState, duration: data.duration }));
-  };
 
-  const handleTimeUpdate = (data: { currentTime: number }) => {
-    setState((prevState: PlayerState) => ({ ...prevState, currentTime: data.currentTime }));
-  };
-
-  const handlePlay = () => {
-    if (!playing) play();
-  };
-
-  const handlePause = () => {
-    if (playing) pause();
-  };
-
-  const handleEnded = () => {
-    pause();
-    // Можно добавить логику перехода к следующему видео или закрытия плеера
-  };
+  // const handleReady = (data: { duration: number }) => {
+  //   setState((prevState: PlayerState) => ({ ...prevState, duration: data.duration }));
+  // };
+  //
+  // const handleTimeUpdate = (data: { currentTime: number }) => {
+  //   setState((prevState: PlayerState) => ({ ...prevState, currentTime: data.currentTime }));
+  // };
+  //
+  // const handlePlay = () => {
+  //   if (!playing) play();
+  // };
+  //
+  // const handlePause = () => {
+  //   if (playing) pause();
+  // };
+  //
+  // const handleEnded = () => {
+  //   pause();
+  //   // Можно добавить логику перехода к следующему видео или закрытия плеера
+  // };
   
   // Синхронизация состояния PlayerContext с KinescopePlayer
   // Этот useEffect не нужен, если KinescopePlayer сам управляет своим состоянием проигрывания/паузы/громкости
@@ -90,7 +88,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = () => {
 
   return (
     <div className="video-player-container">
-      <div className="video-player-header">
+      {/*<div className="video-player-header">
         <h2>{title}</h2>
         {description && <p className="video-description">{description}</p>}
         {playerError && (
@@ -98,7 +96,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = () => {
             <p>Ошибка загрузки видео. {kinescopeId ? 'Попробуйте обновить страницу.' : 'Используется демо-контент.'}</p>
           </div>
         )}
-      </div>
+      </div>*/}
       
       <div className="video-player-wrapper" style={{ position: 'relative', width: '100%', aspectRatio: '16/9' }}>
         <KinescopePlayer
@@ -106,17 +104,18 @@ const VideoPlayer: React.FC<VideoPlayerProps> = () => {
           videoId={effectiveVideoId}
           width="100%"
           height="100%"
-          autoPlay={playing} // Управляем автовоспроизведением из контекста
-          muted={muted}      // Управляем Mute из контекста
-          // volume={volume}    // Управляем громкостью из контекста
-          // playsInline // По умолчанию true, важно для мобильных
-          // controls // По умолчанию true, используем стандартные контролы Kinescope
-          // title={title} // Kinescope сам подтянет, если есть
-          onReady={handleReady}
-          onPlay={handlePlay}
-          onPause={handlePause}
-          onEnded={handleEnded}
-          onTimeUpdate={handleTimeUpdate}
+          className={'border-none'}
+          // autoPlay={playing} // Управляем автовоспроизведением из контекста
+          // muted={muted}      // Управляем Mute из контекста
+          // // volume={volume}    // Управляем громкостью из контекста
+          // // playsInline // По умолчанию true, важно для мобильных
+          // // controls // По умолчанию true, используем стандартные контролы Kinescope
+          // // title={title} // Kinescope сам подтянет, если есть
+          // onReady={handleReady}
+          // onPlay={handlePlay}
+          // onPause={handlePause}
+          // onEnded={handleEnded}
+          // onTimeUpdate={handleTimeUpdate}
           onError={handlePlayerError}
           style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
           // Тут можно добавить другие пропсы из документации Kinescope, если нужно

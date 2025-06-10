@@ -38,11 +38,7 @@
   padding: 0;
   margin: 0;
   box-sizing: border-box;
-  overflow: hidden;
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 1000;
+
 }
 
 /* Кнопка назад */
@@ -98,7 +94,6 @@
 /* Контейнер шага */
 .quiz-step-container {
   flex: 1;
-  padding: 0 20px;
   background: white;
   display: flex;
   flex-direction: column;
@@ -117,13 +112,15 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding: 0;
+  padding: 0 12px;
   margin: 0;
   list-style: none;
+  padding-bottom: 32px;
 }
 
 /* Карточка опции по дизайну Figma */
 .quiz-option {
+  text-transform: lowercase;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -165,7 +162,7 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding: 0;
+  padding: 0 12px;
   margin: 0;
 }
 
@@ -316,7 +313,6 @@
 .recommendation-image {
   width: 100%;
   height: 200px;
-  border-radius: 16px;
   overflow: hidden;
   background: #f3f4f6;
   position: relative;
@@ -328,25 +324,13 @@
   object-fit: cover;
 }
 
-.recommendation-image::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 40px;
-  height: 40px;
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 0 16px 0 16px;
-  background-image: url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z' stroke='%23191919' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: 24px 24px;
-}
+
 
 .recommendation-details {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  padding: 0 12px;
 }
 
 .recommendation-title {
@@ -370,8 +354,7 @@
 .recommendation-duration,
 .recommendation-category {
   padding: 6px 12px;
-  background: #191919;
-  border-radius: 8px;
+  background: #414141;
   font-size: 12px;
   font-weight: 600;
   color: #ffffff;
@@ -400,9 +383,7 @@
     margin: 100px 16px 30px;
   }
   
-  .quiz-step-container {
-    padding: 0 16px;
-  }
+
   
   .quiz-option,
   .quiz-duration-option {
@@ -411,60 +392,155 @@
   }
   
   .quiz-back-container {
-    top: 50px;
-    left: 20px;
+    top: 15px;
+    left: 12px;
   }
 }
 
-/* Темная тема */
-@media (prefers-color-scheme: dark) {
-  .quiz-container {
-    background: #111827;
+/* Настройка времени медитации */
+.meditation-timer-setup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 20px;
+  background: #ffffff;
+}
+
+.meditation-timer-setup .quiz-title {
+  font-size: 32px;
+  font-weight: 600;
+  color: #191919;
+  text-align: center;
+  margin: 40px 20px 60px;
+  line-height: 1.2;
+}
+
+.time-picker-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 40px 0 80px;
+}
+
+.time-selector {
+  display: flex;
+  gap: 40px;
+  align-items: center;
+  justify-content: center;
+}
+
+.time-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.time-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  backdrop-filter: none;
+}
+
+.time-option {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #191919;
+  font-size: 24px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 60px;
+}
+
+.time-option:hover {
+  background: rgba(0, 0, 0, 0.05);
+  transform: scale(1.05);
+}
+
+.time-option.selected {
+  background: #191919;
+  color: #ffffff;
+  font-weight: 700;
+  transform: scale(1.1);
+}
+
+.time-label {
+  font-size: 20px;
+  font-weight: 600;
+  color: #191919;
+  text-align: center;
+  margin-top: 10px;
+}
+
+.meditation-start-container {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 40px);
+  max-width: 400px;
+}
+
+.meditation-start-btn {
+  width: 100%;
+  padding: 18px 24px;
+  background: #333;
+  color: white;
+  border: none;
+  /* border-radius: 12px; */
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.meditation-start-btn:hover {
+  background: #555;
+  transform: translateY(-2px);
+}
+
+.meditation-start-btn:active {
+  transform: translateY(0);
+}
+
+/* Контейнер для таймера медитации */
+.meditation-timer-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #000;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 1000;
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 480px) {
+  .time-selector {
+    gap: 20px;
   }
   
-  .quiz-header,
-  .quiz-title,
-  .quiz-step-container,
-  .quiz-footer {
-    background: #1f2937;
-    border-color: #374151;
+  .time-options {
+    max-height: 200px;
   }
   
-  .quiz-title {
-    color: #f9fafb;
+  .time-option {
+    padding: 10px 12px;
+    font-size: 16px;
+    min-width: 50px;
   }
-  
-  .quiz-description {
-    color: #9ca3af;
-  }
-  
-  .quiz-section-title {
-    color: #f9fafb;
-  }
-  
-  .quiz-option {
-    background: #1f2937;
-    border-color: #374151;
-    color: #f9fafb;
-  }
-  
-  .quiz-option:hover {
-    border-color: #3b82f6;
-  }
-  
-  .quiz-option.selected {
-    background: #1e3a8a;
-    border-color: #3b82f6;
-    color: #dbeafe;
-  }
-  
-  .quiz-back-button {
-    background: #374151;
-    color: #9ca3af;
-  }
-  
-  .quiz-back-button:hover {
-    background: #4b5563;
-    color: #f9fafb;
-  }
-} 
+}

@@ -5,7 +5,7 @@
   width: 100%;
   max-width: 600px;
   margin: 0 auto;
-  padding: 16px;
+  padding: 16px 0 0 0;
   box-sizing: border-box;
 }
 
@@ -37,7 +37,6 @@
 .video-player-wrapper {
   position: relative;
   width: 100%;
-  border-radius: 10px;
   overflow: hidden;
   background-color: #000;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
@@ -70,6 +69,10 @@
   background-color: rgba(0, 0, 0, 0.7);
 }
 
+.fullscreen-btn:active {
+  transform: scale(0.98);
+}
+
 .error-message {
   background-color: rgba(244, 67, 54, 0.1);
   border: 1px solid rgba(244, 67, 54, 0.3);
@@ -93,76 +96,110 @@
 
 /* Стили для аудио плеера */
 .audio-player-container {
-  width: 100%;
-  margin: 0 auto;
-  padding: 20px;
-  box-sizing: border-box;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #000;
+  background-image: url('/timer.png');
+  background-size: 450px 450px;
+  background-position: center center;
+  background-repeat: no-repeat;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
   color: white;
+  overflow: hidden;
+  padding: 60px 20px 40px 20px;
+  box-sizing: border-box;
+  z-index: 1000;
 }
 
 .audio-player-header {
-  margin-bottom: 20px;
   text-align: center;
+  z-index: 2;
+  width: 100%;
+  flex-shrink: 0;
+  margin-bottom: 0;
 }
 
 .audio-player-header h2 {
-  margin: 0 0 10px;
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 600;
+  color: white;
+  margin: 0 0 30px 0;
+  line-height: 1.1;
 }
 
 .audio-description {
-  font-size: 16px;
-  opacity: 0.8;
+  font-size: 14px;
+  font-weight: 400;
+  color: white;
+  line-height: 1.4;
   margin: 0;
+  opacity: 0.8;
+  max-width: 300px;
+  margin: 0 auto;
 }
 
 .audio-player-wrapper {
-  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
   width: 100%;
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  position: relative;
+  border-radius: 0;
+  overflow: visible;
+  box-shadow: none;
+  height: 100%;
 }
 
 .audio-player-background {
-  background-size: cover;
-  background-position: center;
-  background-color: var(--tgui-secondary-bg);
-  padding: 30px 20px;
-  min-height: 300px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  width: 100%;
   position: relative;
-  overflow: hidden;
-  border-radius: 16px;
+  background: transparent !important;
+  padding: 0;
+  min-height: auto;
+  border-radius: 0;
+  overflow: visible;
+  height: 100%;
 }
 
 .audio-visualization {
-  position: absolute;
-  bottom: 130px;
-  left: 0;
-  width: 100%;
-  height: 100px;
-  opacity: 0.8;
+  display: none;
 }
 
 .audio-controls {
-  background-color: rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(10px);
-  border-radius: 12px;
-  padding: 20px;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
   gap: 20px;
   width: 100%;
-  margin-top: auto;
-  z-index: 2;
+  background: transparent;
+  backdrop-filter: none;
+  border-radius: 0;
+  padding: 0;
+  margin: 0;
+  z-index: 3;
+  flex-shrink: 0;
+  position: absolute;
+  bottom: 40px;
+  left: 0;
+  right: 0;
 }
 
 .play-pause-btn {
-  background-color: var(--tgui-button-color);
+  background-color: rgba(255, 255, 255, 0.2);
   color: white;
   border: none;
   border-radius: 50%;
@@ -172,40 +209,61 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  box-shadow: none;
   transition: all 0.2s ease;
-  margin: 0 auto;
+  margin: 0;
+  backdrop-filter: blur(10px);
+  order: 2;
 }
 
 .play-pause-btn:hover {
+  background-color: rgba(255, 255, 255, 0.3);
   transform: scale(1.05);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
 }
 
 .play-pause-btn:active {
   transform: scale(0.98);
 }
 
+.play-pause-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.play-pause-btn:disabled:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  transform: none !important;
+}
+
+.play-pause-btn svg {
+  width: 32px;
+  height: 32px;
+}
+
 .progress-container {
   width: 100%;
+  max-width: 350px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 16px;
+  order: 1;
+  padding: 0 20px;
 }
 
 .progress-bar {
   width: 100%;
-  height: 8px;
-  background-color: rgba(255, 255, 255, 0.2);
-  border-radius: 4px;
+  height: 6px;
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
   cursor: pointer;
   position: relative;
 }
 
 .progress-fill {
   height: 100%;
-  background-color: var(--tgui-button-color);
-  border-radius: 4px;
+  background-color: white;
+  border-radius: 3px;
   position: absolute;
   top: 0;
   left: 0;
@@ -213,14 +271,14 @@
 }
 
 .progress-handle {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
   background-color: white;
   position: absolute;
   top: 50%;
   transform: translate(-50%, -50%);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
   z-index: 3;
   display: none;
 }
@@ -236,43 +294,11 @@
   font-size: 14px;
   color: white;
   opacity: 0.9;
+  font-weight: 400;
 }
 
 .volume-control {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  color: white;
-}
-
-.volume-slider {
-  flex: 1;
-  height: 6px;
-  -webkit-appearance: none;
-  background-color: rgba(255, 255, 255, 0.2);
-  border-radius: 3px;
-  outline: none;
-}
-
-.volume-slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: white;
-  cursor: pointer;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-}
-
-.volume-slider::-moz-range-thumb {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: white;
-  cursor: pointer;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-  border: none;
+  display: none;
 }
 
 .audio-loading {
@@ -285,7 +311,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.6);
+  background-color: rgba(0, 0, 0, 0.8);
   z-index: 10;
   backdrop-filter: blur(4px);
   color: white;
@@ -308,46 +334,105 @@
 }
 
 /* Стили для таймера */
-.timer-player-wrapper {
-  width: 100%;
-  min-height: 400px;
-  border-radius: 16px;
-  overflow: hidden;
-  background-size: cover;
-  background-position: center;
-  background-color: var(--tgui-secondary-bg);
+.timer-player-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #000;
+  background-image: url('/timer.png');
+  background-size: 450px 450px;
+  background-position: center center;
+  background-repeat: no-repeat;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
+  justify-content: space-between;
+  color: white;
+  overflow: hidden;
+  padding: 60px 20px 40px 20px;
+  box-sizing: border-box;
+  z-index: 1000;
+}
+
+.timer-player-header {
+  text-align: center;
+  z-index: 2;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.timer-player-header h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: white;
+  margin: 0 0 30px 0;
+  line-height: 1.1;
+}
+
+.meditation-instructions {
+  font-size: 14px;
+  font-weight: 400;
+  color: white;
+  line-height: 1.4;
+  margin: 0;
+  opacity: 0.8;
+  max-width: 300px;
+  margin: 0 auto;
+}
+
+.timer-player-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  width: 100%;
+  position: relative;
 }
 
 .timer-display {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 20px;
-  background-color: rgba(0, 0, 0, 0.5);
-  padding: 30px;
-  border-radius: 15px;
+  justify-content: center;
+  position: relative;
+  z-index: 2;
 }
 
-.timer-canvas {
-  max-width: 100%;
-  height: auto;
+.timer-time-display {
+  font-size: 60px;
+  font-weight: 600;
+  color: white;
+  text-align: center;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  letter-spacing: 2px;
+  margin-top: -120px;
 }
 
 .timer-controls {
-  display: flex;
-  gap: 16px;
+  text-align: center;
+  z-index: 3;
+  width: 100%;
+  flex-shrink: 0;
 }
 
 .stop-btn {
-  background-color: var(--tgui-destructive);
-  color: white;
+  padding: 0;
   border: none;
-  border-radius: 8px;
-  padding: 10px 20px;
+  border-radius: 0;
+  background: transparent;
+  color: white;
+  font-size: 18px;
+  font-weight: 400;
   cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: none;
+  min-width: auto;
+  text-decoration: underline;
+  text-underline-offset: 4px;
 }
 
 /* Адаптивные стили */
@@ -387,4 +472,44 @@
     bottom: 110px;
     height: 80px;
   }
+}
+
+/* Удаляю ненужные стили */
+.timer-canvas {
+  display: none;
+}
+
+.meditation-object {
+  display: none;
+}
+
+.audio-player-container .mobile-touch-hint {
+  display: flex !important;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  right: unset !important;
+  bottom: unset !important;
+  transform: translate(-50%, -50%) !important;
+  background-color: rgba(0, 0, 0, 0.8);
+  padding: 20px;
+  border-radius: 12px;
+  z-index: 99999 !important;
+  backdrop-filter: blur(4px);
+  color: white;
+  font-size: 16px;
+  text-align: center;
+  animation: pulse 2s infinite;
+  width: auto;
+  max-width: 280px;
+  margin: 0 !important;
+  box-sizing: border-box;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 1; }
 } 

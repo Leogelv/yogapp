@@ -57,12 +57,8 @@
 
 .tab-item.active {
   color: var(--tgui-text, #000000);
-  background-color: rgba(0, 0, 0, 0.03);
 }
 
-.tab-item.active span {
-  font-weight: 700;
-}
 
 /* Удаляем стили для SVG, так как иконок больше нет */
 .tab-item svg {

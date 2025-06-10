@@ -3,7 +3,7 @@ import { useQuiz } from '../../../contexts/QuizContext';
 import { useQuizStepsRealtime } from '../../../contexts/QuizContext';
 
 const QuizDurationStep: React.FC = () => {
-  const { state, setDuration } = useQuiz();
+  const { state, setDuration, setStep } = useQuiz();
   const { steps, loading } = useQuizStepsRealtime();
 
   // Находим шаг с type === 'duration'
@@ -15,6 +15,15 @@ const QuizDurationStep: React.FC = () => {
     // value ожидается в формате '300-600' (секунды)
     const [min, max] = value.split('-').map(Number);
     setDuration({ min, max });
+    
+    // Определяем следующий шаг в зависимости от типа практики
+    setTimeout(() => {
+      if (state.practiceType === 'physical') {
+        setStep(2); // Переходим к выбору цели
+      } else if (state.practiceType === 'meditation' && state.approach === 'self') {
+        setStep(4); // Переходим к результатам для самостоятельной медитации
+      }
+    }, 0);
   };
 
   if (loading) {

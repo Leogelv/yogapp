@@ -64,6 +64,9 @@ export interface User {
   created_at: string;
   last_login?: string;
   updated_at?: string;
+  power?: number;
+  strike?: number
+  practice_minutes?: number;
 }
 
 // Типы для событий

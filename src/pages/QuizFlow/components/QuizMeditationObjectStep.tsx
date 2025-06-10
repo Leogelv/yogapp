@@ -3,7 +3,7 @@ import { useQuiz } from '../../../contexts/QuizContext';
 import { useQuizStepsRealtime } from '../../../contexts/QuizContext';
 
 const QuizMeditationObjectStep: React.FC = () => {
-  const { state, setSelfMeditationSettings } = useQuiz();
+  const { state, setSelfMeditationSettings, setStep } = useQuiz();
   const { steps, loading } = useQuizStepsRealtime();
 
   // Находим шаг с type === 'meditation_object'
@@ -16,6 +16,11 @@ const QuizMeditationObjectStep: React.FC = () => {
       duration: state.selfMeditationSettings?.duration || 600, // 10 минут по умолчанию
       object: value as any
     });
+    
+    // 🎯 ИСПРАВЛЕНИЕ: Сразу переходим к результатам (таймер), минуя выбор времени
+    setTimeout(() => {
+      setStep(4); // Переходим сразу к результатам вместо шага 3 (выбор времени)
+    }, 0);
   };
 
   if (loading) {
@@ -32,6 +37,12 @@ const QuizMeditationObjectStep: React.FC = () => {
       <div className="quiz-error">
         <h3>Ошибка загрузки</h3>
         <p>Нет доступных объектов медитации</p>
+        <div style={{ marginTop: '10px', fontSize: '12px', color: '#666' }}>
+          <p>Отладочная информация:</p>
+          <p>Всего шагов: {steps.length}</p>
+          <p>Шаг meditation_object найден: {objectStep ? 'Да' : 'Нет'}</p>
+          {objectStep && <p>Вариантов ответов: {objectStep.answers.length}</p>}
+        </div>
       </div>
     );
   }

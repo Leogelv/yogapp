@@ -45,18 +45,3 @@
   opacity: 0.9;
 }
 
-/* Темная тема */
-@media (prefers-color-scheme: dark) {
-  .access-status--active {
-    background-color: rgba(var(--tg-theme-button-color-rgb, 0, 136, 204), 0.15);
-  }
-  
-  .access-status--expired {
-    background-color: rgba(255, 77, 77, 0.15);
-  }
-  
-  .access-status--loading,
-  .access-status--error {
-    background-color: rgba(var(--tg-theme-secondary-bg-color-rgb, 36, 36, 36), 0.7);
-  }
-} 

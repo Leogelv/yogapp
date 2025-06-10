@@ -203,12 +203,11 @@ const CalendarEvents: FC<CalendarEventsProps> = ({
         ) : (
           <div className="calendar-events__list">
             {/* Добавим демо-события для проверки дизайна */}
-            <EventItem
+            {/*<EventItem
               event={{
                 id: "1",
                 title: "Утренняя йога",
                 description: "Мягкая практика для начала дня",
-                duration: 45,
                 difficulty_level: "beginner",
                 event_date: selectedDate.toISOString().split("T")[0],
                 start_time: "08:00:00",
@@ -226,7 +225,6 @@ const CalendarEvents: FC<CalendarEventsProps> = ({
                 id: "2",
                 title: "Медитация осознанности",
                 description: "Групповая медитация с инструктором",
-                duration: 45,
                 difficulty_level: "intermediate",
                 event_date: selectedDate.toISOString().split("T")[0],
                 start_time: "12:30:00",
@@ -244,7 +242,6 @@ const CalendarEvents: FC<CalendarEventsProps> = ({
                 id: "3",
                 title: "Дыхательные практики",
                 description: "Разбор различных техник для начинающих",
-                duration: 60,
                 difficulty_level: "advanced",
                 event_date: selectedDate.toISOString().split("T")[0],
                 start_time: "18:00:00",
@@ -256,7 +253,7 @@ const CalendarEvents: FC<CalendarEventsProps> = ({
                 created_at: new Date().toISOString(),
                 updated_at: new Date().toISOString(),
               }}
-            />
+            />*/}
             {/* Здесь будут реальные события из БД */}
             {events.map((event) => (
               <EventItem key={event.id} event={event} />

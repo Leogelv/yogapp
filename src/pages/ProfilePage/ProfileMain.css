@@ -20,15 +20,23 @@
 
 /* Темная тема */
 :root.dark {
-  --profile-bg: #1a202c;
-  --profile-text-primary: #f7fafc;
-  --profile-text-secondary: #e2e8f0;
-  --profile-text-tertiary: #a0aec0;
-  --profile-item-bg: #2d3748;
-  --profile-card-bg: #2d3748;
-  --profile-border: #4a5568;
-  --profile-progress-bg: #2c5282;
-  --profile-progress-fill: #63b3ed;
+  --profile-bg: #ffffff;
+  --profile-text-primary: var(--text-primary, #1a1a1a);
+  --profile-text-secondary: var(--text-secondary, #4a4a4a);
+  --profile-text-tertiary: var(--text-tertiary, #6d6d6d);
+  --profile-accent: var(--accent-color, #4e9bff);
+  --profile-accent-hover: var(--accent-hover, #3a87ff);
+  --profile-item-bg: var(--bg-item, #f9f9f9);
+  --profile-card-bg: var(--bg-card, #ffffff);
+  --profile-border: var(--border-color, #f0f0f0);
+  --profile-progress-bg: #e7f0ff;
+  --profile-progress-fill: var(--accent-color, #4e9bff);
+  --profile-shadow-sm: var(--shadow-sm, 0 2px 8px rgba(0, 0, 0, 0.03));
+  --profile-shadow-md: var(--shadow-md, 0 8px 16px rgba(0, 0, 0, 0.04));
+  --profile-radius-sm: var(--border-radius-sm, 0.5rem);
+  --profile-radius-md: var(--border-radius-md, 0.875rem);
+  --profile-radius-lg: var(--border-radius-lg, 1.25rem);
+  --profile-transition: var(--transition-standard, all 0.3s cubic-bezier(0.4, 0, 0.2, 1));
 }
 
 /* Анимация пульсации */
@@ -497,4 +505,175 @@
 
 .ml-2 {
   margin-left: 0.5rem;
+}
+
+/* Упрощенный профиль - новый дизайн */
+.profile-main-simple {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: #ffffff;
+  padding: 0;
+  box-sizing: border-box;
+  width: 100%;
+  color: #1a1a1a;
+}
+
+/* Верхний блок с аватаром и именем - упрощенный */
+.profile-header-simple {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem 1.5rem;
+  background-color: #ffffff;
+  text-align: center;
+  height: 50vh;
+  flex-shrink: 0;
+}
+
+.profile-avatar-container-simple {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  margin-bottom: 16px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #f5f5f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid #000000;
+  flex-shrink: 0;
+}
+
+.profile-avatar-simple {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-avatar-placeholder-simple {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f5f5f5;
+  color: #666666;
+  font-size: 3rem;
+  font-weight: 600;
+}
+
+.profile-user-info-simple {
+  text-align: center;
+}
+
+.profile-name-simple {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+  color: #1a1a1a;
+  text-transform: lowercase;
+}
+
+.profile-subscription-simple {
+  font-size: 1rem;
+  color: #666666;
+  margin: 0;
+  font-weight: 400;
+}
+
+/* Кнопки действий - упрощенные */
+.profile-actions-simple {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 2rem 1.5rem;
+  height: 50vh;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.action-button-simple {
+  width: 100%;
+  padding: 1.2rem 1.5rem;
+  border-radius: 0px;
+  border: none;
+  background-color: #000000;
+  color: #ffffff;
+  font-weight: 400;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+  text-transform: lowercase;
+  letter-spacing: 0.01em;
+  box-shadow: none;
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-button-simple:hover {
+  background-color: #333333;
+  transform: none;
+}
+
+.action-button-simple:active {
+  transform: none;
+  background-color: #000000;
+}
+
+/* Кнопка администратора - упрощенная */
+.admin-button-container-simple {
+  padding: 1rem 1.5rem 2rem;
+}
+
+.admin-button-simple {
+  background-color: #dc2626 !important;
+  color: white !important;
+}
+
+.admin-button-simple:hover {
+  background-color: #b91c1c !important;
+}
+
+/* Разделительная линия */
+.profile-divider {
+  width: 100%;
+  height: 1px;
+  background-color: #000000;
+  margin: 0;
+}
+
+/* Медиа-запросы для адаптивности */
+@media (max-width: 380px) {
+  .profile-header-simple {
+    padding: 1rem;
+  }
+  
+  .profile-avatar-container-simple {
+    width: 100px;
+    height: 100px;
+  }
+  
+  .profile-name-simple {
+    font-size: 1.5rem;
+  }
+  
+  .profile-actions-simple {
+    padding: 1.5rem 1rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .profile-main-simple {
+    max-width: 480px;
+    margin: 0 auto;
+  }
 } 
