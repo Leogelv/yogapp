@@ -1,6 +1,13 @@
 import React, { type PropsWithChildren, useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
-import { hideBackButton, onBackButtonClick, showBackButton, postEvent } from '@telegram-apps/sdk-react';
+import { 
+  hideBackButton, 
+  onBackButtonClick, 
+  showBackButton, 
+  postEvent,
+  viewport,
+  viewportSafeAreaInsets
+} from '@telegram-apps/sdk-react';
 import { SafeAreaFade } from '@/components/SafeAreaFade/SafeAreaFade';
 import TabBar from '@/components/TabBar/TabBar';
 import { useNavigationHistory } from '@/lib/hooks/useNavigationHistory';
@@ -264,10 +271,26 @@ export function Page({
   useEffect(() => {
     if (isInTelegram) {
       try {
-        postEvent('web_app_request_safe_area');
-        postEvent('web_app_request_viewport');
+        // Используем новый API если доступен
+        if (viewport && viewport.mount.isAvailable()) {
+          const safeArea = viewportSafeAreaInsets();
+          if (safeArea) {
+            // Применяем safe area значения через CSS переменные
+            document.documentElement.style.setProperty('--safe-area-top', `${safeArea.top}px`);
+            document.documentElement.style.setProperty('--safe-area-right', `${safeArea.right}px`);
+            document.documentElement.style.setProperty('--safe-area-bottom', `${safeArea.bottom}px`);
+            document.documentElement.style.setProperty('--safe-area-left', `${safeArea.left}px`);
+          }
+        } else {
+          // Fallback для старых версий (только если поддерживается)
+          try {
+            postEvent('web_app_request_viewport');
+          } catch (e) {
+            console.log('Viewport API не поддерживается в данной версии');
+          }
+        }
       } catch (error) {
-        console.log('Ошибка при запросе safe area:', error);
+        console.log('Ошибка при работе с viewport:', error);
       }
     }
 

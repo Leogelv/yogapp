@@ -1,5 +1,12 @@
 import { FC, useEffect, ReactNode } from 'react';
-import { postEvent } from '@telegram-apps/sdk-react';
+import { 
+  postEvent, 
+  viewport,
+  viewportSafeAreaInsets,
+  requestFullscreen,
+  mountViewport,
+  bindViewportCssVars
+} from '@telegram-apps/sdk-react';
 
 interface AppWrapperProps {
   children: ReactNode;
@@ -14,18 +21,60 @@ interface SafeAreaData {
 
 export const AppWrapper: FC<AppWrapperProps> = ({ children }) => {
   useEffect(() => {
-    // Автоматически включаем полноэкранный режим на всех страницах
-    try {
-      postEvent('web_app_request_fullscreen')
-    } catch (e) {
-      console.error('Fullscreen request failed:', e)
-    }
+    const initializeViewport = async () => {
+      try {
+        // Инициализируем viewport если доступно
+        if (mountViewport.isAvailable()) {
+          await mountViewport();
+          
+          // Привязываем CSS переменные viewport
+          if (bindViewportCssVars.isAvailable()) {
+            bindViewportCssVars();
+          }
+        }
 
-    // Отключаем вертикальные свайпы для закрытия приложения 
-    postEvent('web_app_setup_swipe_behavior', { allow_vertical_swipe: false });
-    
-    // Запрашиваем информацию о safe area
-    postEvent('web_app_request_safe_area');
+        // Автоматически включаем полноэкранный режим на всех страницах
+        if (requestFullscreen.isAvailable()) {
+          await requestFullscreen();
+        } else {
+          // Fallback для старых версий
+          try {
+            postEvent('web_app_request_fullscreen');
+          } catch (e) {
+            console.error('Fullscreen request failed:', e);
+          }
+        }
+
+        // Отключаем вертикальные свайпы для закрытия приложения 
+        postEvent('web_app_setup_swipe_behavior', { allow_vertical_swipe: false });
+        
+        // Используем новый способ получения safe area
+        if (viewport && viewport.mount.isAvailable()) {
+          // Получаем safe area инсеты через новый API
+          try {
+            const safeArea = viewportSafeAreaInsets();
+            if (safeArea) {
+              applySafeAreaToCSS(safeArea);
+            }
+          } catch (e) {
+            console.log('Safe area не доступна в текущей версии');
+          }
+        }
+
+      } catch (error) {
+        console.error('Ошибка инициализации viewport:', error);
+        
+        // Fallback к старым методам для совместимости
+        try {
+          postEvent('web_app_request_fullscreen');
+          postEvent('web_app_setup_swipe_behavior', { allow_vertical_swipe: false });
+        } catch (e) {
+          console.error('Fallback methods failed:', e);
+        }
+      }
+    };
+
+    initializeViewport();
     
     // Подписываемся на события используя window.addEventListener
     const handleEvents = (event: MessageEvent) => {
@@ -37,7 +86,6 @@ export const AppWrapper: FC<AppWrapperProps> = ({ children }) => {
           : event.data;
           
         if (data.eventType === 'safe_area_changed' && data.eventData) {
-          // Убираем логи safe area, они очень часто повторяются
           applySafeAreaToCSS(data.eventData);
         } else if (data.eventType === 'viewport_changed') {
           // Обновляем состояние fullscreen, но убираем логи
@@ -56,8 +104,24 @@ export const AppWrapper: FC<AppWrapperProps> = ({ children }) => {
     
     // Снижаем частоту запросов для уменьшения логов
     const intervalId = setInterval(() => {
-      postEvent('web_app_request_safe_area');
-      postEvent('web_app_request_viewport');
+      try {
+        // Используем новый API если доступен
+        if (viewport && viewport.mount.isAvailable()) {
+          const safeArea = viewportSafeAreaInsets();
+          if (safeArea) {
+            applySafeAreaToCSS(safeArea);
+          }
+        } else {
+          // Fallback для старых версий (но только если поддерживается)
+          try {
+            postEvent('web_app_request_viewport');
+          } catch (e) {
+            // Игнорируем ошибки для неподдерживаемых методов
+          }
+        }
+      } catch (e) {
+        // Игнорируем ошибки
+      }
     }, 15000); // Увеличиваем до 15 секунд
     
     // Устанавливаем дополнительный отступ для fullscreen
@@ -67,15 +131,17 @@ export const AppWrapper: FC<AppWrapperProps> = ({ children }) => {
     return () => {
       window.removeEventListener('message', handleEvents);
       clearInterval(intervalId);
-      postEvent('web_app_exit_fullscreen');
+      try {
+        postEvent('web_app_exit_fullscreen');
+      } catch (e) {
+        // Игнорируем ошибки при выходе
+      }
     };
   }, []);
   
   // Применяет safe area к CSS переменным
   const applySafeAreaToCSS = (safeArea: SafeAreaData) => {
     const { top, right, bottom, left } = safeArea;
-    
-    // Убираем лишний лог про применение значений
     
     // Проверяем, что все значения числовые и не undefined
     const topValue = typeof top === 'number' ? `${top}px` : '0px';
@@ -87,10 +153,7 @@ export const AppWrapper: FC<AppWrapperProps> = ({ children }) => {
     document.documentElement.style.setProperty('--safe-area-right', rightValue);
     document.documentElement.style.setProperty('--safe-area-bottom', bottomValue);
     document.documentElement.style.setProperty('--safe-area-left', leftValue);
-    
-    // Убираем лишний лог про установку CSS-переменных
   };
   
-  // Теперь мы не применяем стили отступов здесь, это делает компонент Page
   return <>{children}</>;
 }; 
