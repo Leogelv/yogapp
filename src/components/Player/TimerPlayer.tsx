@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import TimerSphereCanvas from '../TimerSphere';
 import './Player.css';
 
 interface TimerPlayerProps {
@@ -39,6 +40,7 @@ const TimerPlayer: React.FC<TimerPlayerProps> = ({
       audioRef.current.src = fullAudioUrl;
       audioRef.current.loop = true;
       audioRef.current.volume = 0.3; // Тихое фоновое аудио
+      audioRef.current.crossOrigin = 'anonymous'; // Для визуализации
       console.log('🔧 Аудио настроено: src =', audioRef.current.src, 'volume =', audioRef.current.volume);
     } else if (!audioUrl) {
       console.warn('⚠️ audioUrl не передан в TimerPlayer');
@@ -139,41 +141,90 @@ const TimerPlayer: React.FC<TimerPlayerProps> = ({
   }, [isPlaying, duration, timeLeft, audioUrl]);
 
   return (
-    <div className="timer-player-container">
+    <div className="timer-player-container" style={{
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      gap: '2rem',
+      padding: '2rem',
+      background: '#191919',
+      minHeight: '100vh',
+      color: 'white'
+    }}>
       {/* Скрытый аудио элемент для фонового звука */}
       {audioUrl && (
         <audio ref={audioRef} preload="auto" style={{ display: 'none' }} />
       )}
       
-      <div className="timer-player-header">
-        <h2>Закройте глаза<br />и сфокусируйтесь на себе</h2>
-        <p className="meditation-instructions">
+      <div className="timer-player-header" style={{ textAlign: 'center', maxWidth: '400px' }}>
+        <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '1rem' }}>
+          Закройте глаза<br />и сфокусируйтесь на себе
+        </h2>
+        <p className="meditation-instructions" style={{ opacity: 0.8, fontSize: '0.875rem' }}>
           Расслабьтесь и закройте глаза.<br />
           Не блокируйте телефон, чтобы услышать<br />
           звуковой сигнал об окончании практики
         </p>
       </div>
       
-      <div className="timer-player-wrapper">
-        <div className="timer-display">
-          <div className="timer-time-display">
-            {formatTime(timeLeft)}
-          </div>
-        </div>
+      {/* Анимированная сфера таймера */}
+      <div style={{ width: '300px', height: '300px' }}>
+        <TimerSphereCanvas
+          isPlaying={isPlaying}
+          timeLeft={timeLeft}
+          totalDuration={duration}
+        />
+      </div>
+      
+      {/* Отображение времени */}
+      <div className="timer-time-display" style={{
+        fontSize: '3rem',
+        fontWeight: 'bold',
+        fontFamily: 'monospace',
+        background: 'linear-gradient(135deg, #6366f1, #a855f7)',
+        backgroundClip: 'text',
+        WebkitBackgroundClip: 'text',
+        WebkitTextFillColor: 'transparent',
+        textAlign: 'center'
+      }}>
+        {formatTime(timeLeft)}
       </div>
       
       <div className="timer-controls">
-        <button className="stop-btn" onClick={() => {
-          // Останавливаем фоновое аудио
-          if (audioRef.current) {
-            audioRef.current.pause();
-            audioRef.current.currentTime = 0;
-          }
-          
-          setIsPlaying(false);
-          setTimeLeft(duration);
-          startTimeRef.current = null;
-        }}>
+        <button 
+          className="stop-btn" 
+          onClick={() => {
+            // Останавливаем фоновое аудио
+            if (audioRef.current) {
+              audioRef.current.pause();
+              audioRef.current.currentTime = 0;
+            }
+            
+            setIsPlaying(false);
+            setTimeLeft(duration);
+            startTimeRef.current = null;
+          }}
+          style={{
+            padding: '12px 32px',
+            fontSize: '1rem',
+            fontWeight: 'bold',
+            background: 'rgba(255, 255, 255, 0.1)',
+            border: '2px solid rgba(255, 255, 255, 0.2)',
+            borderRadius: '50px',
+            color: 'white',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            backdropFilter: 'blur(10px)'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
+            e.currentTarget.style.transform = 'scale(1.05)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
+            e.currentTarget.style.transform = 'scale(1)';
+          }}
+        >
           остановиться
         </button>
       </div>

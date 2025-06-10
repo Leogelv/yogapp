@@ -118,7 +118,10 @@ export function Page({
     };
   }, []);
 
-  // Проверяем, работает ли приложение в Telegram
+  // Состояние для fullscreen режима
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // Проверяем Telegram окружение и fullscreen режим
   useEffect(() => {
     const checkTelegramEnvironment = () => {
       try {
@@ -130,17 +133,9 @@ export function Page({
           isTelegram = true;
         }
         
-        // Способ 2: Проверяем наличие объекта Telegram и инициализируем WebApp
+        // Способ 2: Проверяем наличие объекта Telegram
         else if ((window as any).Telegram) {
-          try {
-            // Инициализируем WebApp если он не инициализирован
-            if (!(window as any).Telegram.WebApp) {
-              (window as any).Telegram.WebApp = (window as any).Telegram.WebApp || {};
-            }
-            isTelegram = true;
-          } catch (error) {
-            console.log('❌ Ошибка инициализации WebApp:', error);
-          }
+          isTelegram = true;
         }
         
         // Способ 3: Проверяем User Agent
@@ -154,30 +149,52 @@ export function Page({
           isTelegram = true;
         }
         
-        // Если мы в Telegram, инициализируем WebApp
-        if (isTelegram && (window as any).Telegram?.WebApp) {
-          try {
-            const tg = (window as any).Telegram.WebApp;
-            
-            // Вызываем ready() для полной инициализации
-            if (typeof tg.ready === 'function') {
-              tg.ready();
-            }
-          } catch (error) {
-            console.error('❌ Ошибка инициализации WebApp:', error);
-          }
-        }
-        
         setIsInTelegram(isTelegram);
-        return isTelegram;
+        
+        // Если мы в Telegram, проверяем fullscreen
+        if (isTelegram && (window as any).Telegram?.WebApp) {
+          const webApp = (window as any).Telegram.WebApp;
+          
+          const checkFullscreen = () => {
+            // Проверяем различные признаки fullscreen режима
+            const isFS = webApp.isExpanded || webApp.viewportHeight === window.screen.height;
+            setIsFullscreen(isFS);
+            
+            // Устанавливаем CSS переменную для дополнительного отступа
+            document.documentElement.style.setProperty('--fullscreen-extra-padding', isFS ? '100px' : '0px');
+            console.log('Fullscreen check:', isFS, 'viewportHeight:', webApp.viewportHeight, 'screenHeight:', window.screen.height);
+          };
+
+          // Проверяем при загрузке
+          checkFullscreen();
+
+          // Слушаем изменения viewport
+          const handleViewportChanged = () => {
+            checkFullscreen();
+          };
+
+          if (webApp.onEvent) {
+            webApp.onEvent('viewportChanged', handleViewportChanged);
+          }
+
+          // Проверяем периодически
+          const interval = setInterval(checkFullscreen, 1000);
+
+          return () => {
+            if (webApp.offEvent) {
+              webApp.offEvent('viewportChanged', handleViewportChanged);
+            }
+            clearInterval(interval);
+          };
+        }
       } catch (error) {
         console.log('Не удалось определить окружение Telegram:', error);
         setIsInTelegram(false);
-        return false;
       }
     };
 
-    checkTelegramEnvironment();
+    const cleanup = checkTelegramEnvironment();
+    return cleanup;
   }, []);
 
   // Обработчик кнопки "Назад" - используем useCallback для стабильной ссылки
@@ -271,7 +288,7 @@ export function Page({
   useEffect(() => {
     if (isInTelegram) {
       try {
-        // Сначала пробуем новый API
+        // Используем новый API если доступен
         let newApiSuccess = false;
         
         if (viewport && viewportSafeAreaInsets) {
@@ -284,28 +301,24 @@ export function Page({
               document.documentElement.style.setProperty('--safe-area-bottom', `${safeArea.bottom}px`);
               document.documentElement.style.setProperty('--safe-area-left', `${safeArea.left}px`);
               newApiSuccess = true;
-              console.log('Page: safe area получена через новый API');
+              console.log('Page: Новый API viewport успешно применен');
             }
           } catch (e) {
-            console.log('Page: новый safe area API недоступен');
+            console.log('Page: Новый API недоступен, пробуем старый');
           }
         }
         
-        // Fallback к старому API если новый не сработал
+        // Если новый API не сработал, пробуем старый
         if (!newApiSuccess) {
-          postEvent('web_app_request_safe_area');
-          postEvent('web_app_request_viewport');
-          console.log('Page: используем старый API');
+          try {
+            postEvent('web_app_request_safe_area');
+            console.log('Page: Используем старый API для safe area');
+          } catch (e) {
+            console.error('Page: Ошибка при запросе safe area:', e);
+          }
         }
       } catch (error) {
-        console.log('Page: ошибка при работе с viewport, используем fallback:', error);
-        // Полный fallback к старому API
-        try {
-          postEvent('web_app_request_safe_area');
-          postEvent('web_app_request_viewport');
-        } catch (fallbackError) {
-          console.log('Page: fallback API тоже недоступен:', fallbackError);
-        }
+        console.error('Page: Ошибка при работе с safe area:', error);
       }
     }
 
@@ -324,6 +337,11 @@ export function Page({
     paddingBottom: showTabBar && !isTimerPage ? 'calc(70px + env(safe-area-inset-bottom, 0) + 8px)' : 'var(--safe-area-bottom, 0px)',
     ...(isTimerPage ? { background: '#000', padding: 0, margin: 0 } : {})
   };
+
+  // Логируем состояние fullscreen для отладки
+  useEffect(() => {
+    console.log('Page fullscreen state:', isFullscreen);
+  }, [isFullscreen]);
 
   // Определяем CSS класс для контейнера
   const containerClass = useMemo(() => {
